@@ -9,22 +9,32 @@ Analogy (see experiments/trailing_window_analysis.py for the evidence):
 
 Because expert load is highly persistent (lag-1 autocorr ~0.5) and recency
 weighting (EWMA) gave no edge over a flat window, the estimator is a simple
-trailing sum. The value-add is the *no-trade band*: every cycle we recompute
-the ideal load-balanced placement, but only *apply* it to layers whose modeled
-PAR improvement exceeds TAU. That avoids paying transfer cost for negligible
-gains -- the portfolio-rebalancing-band rule -- so a stable trace converges to
-"deploy once, then hold".
+trailing window. Two finance ideas drive the placement:
+
+  * No-trade band (TAU): every cycle we recompute the ideal placement but only
+    *apply* it to layers whose modeled PAR gain exceeds TAU, so we don't pay
+    transfer cost for negligible gains -- a stable trace converges to "deploy
+    once, then hold".
+
+  * Variance-aware replication (LAMBDA): packing the *mean* load is already
+    near-optimal; the realized PAR is driven by per-iteration *variance* (a
+    device with few experts can't average it out). So replicas are allocated by
+    a risk measure, mean + LAMBDA * std, giving volatile experts extra copies
+    that split their fluctuations across devices -- portfolio diversification /
+    risk budgeting. The no-trade band still evaluates on the mean (expected load).
 
 Tunables (module attributes; also read from env so benchmarks can sweep):
   WINDOW : int | None  -- use only the last WINDOW iterations of the given window.
   TAU    : float       -- no-trade band width, in PAR points (0 => always trade).
+  LAMBDA : float       -- risk weight for replication (0 => mean-only).
 """
 import os
 import numpy as np
 
 _w = os.environ.get("FB_WINDOW")
 WINDOW = None if _w in (None, "", "all") else int(_w)
-TAU = float(os.environ.get("FB_TAU", "0.2"))  # swept sweet spot on LmSys EP32
+TAU = float(os.environ.get("FB_TAU", "0.2"))      # swept sweet spot on LmSys EP32
+LAMBDA = float(os.environ.get("FB_LAMBDA", "2.0"))  # variance weight for replication
 
 # Persistent placement state across calls within a run (single process).
 _STATE = {}
@@ -82,13 +92,17 @@ def _par(load, deploy):
 def rebalance(hotness, n_device, n_red_expert):
     if WINDOW is not None:
         hotness = hotness[-WINDOW:]
-    load = hotness.sum(axis=0).astype(np.float64)        # (n_layers, n_experts)
-    n_layers, n_experts = load.shape
+    hotness = hotness.astype(np.float64)
+    mean = hotness.mean(axis=0)                          # (n_layers, n_experts)
+    # Risk-adjusted load: replicate volatile experts more (diversification).
+    risk = mean + LAMBDA * hotness.std(axis=0) if LAMBDA else mean
+    n_layers, n_experts = mean.shape
     n_exp_per_dev = (n_experts + n_red_expert) // n_device
 
+    # Placement is driven by risk; the band judges quality on expected (mean) load.
     candidate = np.zeros((n_layers, n_device, n_exp_per_dev), dtype=np.int64)
     for l in range(n_layers):
-        candidate[l] = _build_layer(load[l], n_device, n_exp_per_dev)
+        candidate[l] = _build_layer(risk[l], n_device, n_exp_per_dev)
 
     # Key state by problem shape so reused processes / new cases auto-reset
     # even if the grader never calls reset().
@@ -101,7 +115,7 @@ def rebalance(hotness, n_device, n_red_expert):
         return True, np.arange(n_layers, dtype=np.int64), candidate, None
 
     # No-trade band: only redeploy layers whose modeled PAR gain clears TAU.
-    improve = np.array([_par(load[l], cur[l]) - _par(load[l], candidate[l])
+    improve = np.array([_par(mean[l], cur[l]) - _par(mean[l], candidate[l])
                         for l in range(n_layers)])
     sel = np.where(improve > TAU)[0]
     if sel.size == 0:
