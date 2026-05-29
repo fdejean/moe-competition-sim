@@ -27,6 +27,8 @@ outputs/
 *.jpeg
 *.pdf
 
+# keep submission zips tracked (one per codes/ entry)
 *.zip
+!submissions/*.zip
 *.tar
 *.tar.gz
