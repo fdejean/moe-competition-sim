@@ -1,0 +1,2497 @@
+╭─── Claude Code v2.1.156 ─────────────────────────────────────────────────────╮
+│                                                    │ Tips for getting        │
+│               Welcome back Actualia!               │ started                 │
+│                                                    │ Run /init to create a … │
+│                       ▐▛███▜▌                      │ ─────────────────────── │
+│                      ▝▜█████▛▘                     │ What's new              │
+│                        ▘▘ ▝▝                       │ Fixed an issue when us… │
+│     Opus 4.8 · Claude Pro ·                        │ Opus 4.8 is here! Now … │
+│     service-account@actualia.ch's Organization     │ Introducing dynamic wo… │
+│         ~/coding/hack/moe-competition-sim          │ /release-notes for more │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+   Opus 4.8 is here! Now defaults to high effort · /effort xhigh for your hardest tasks
+
+❯ what the fck does this repo contain. Is there some training data?             
+
+● Let me take a look at what's in this repo.
+
+  Read 4 files, listed 2 directories (ctrl+o to expand)
+
+● Here's what this repo is.
+
+  What it is
+
+  It's the simulator for a "MoE dynamic load-balancing" competition — a
+  coding/benchmark contest (looks Codabench-hosted). MoE = Mixture-of-Experts
+  LLMs. In these models each layer has many "experts," and tokens get routed
+  unevenly across them, so some experts get hammered ("hot") while others idle.
+  The competition challenge: write an algorithm that decides how to 
+  place/replicate experts across GPUs (devices) to balance the load, scored on a
+  metric called PAR (peak-to-average ratio) plus the cost of moving experts
+  around between devices (redeployment transmit).
+
+  The pieces:
+
+  ┌─────────────────────────────┬────────────────────────────────────────────┐
+  │            Path             │                 What it is                 │
+  ├─────────────────────────────┼────────────────────────────────────────────┤
+  │                             │ Main simulator — loads traces, runs a      │
+  │ dynamic_lb_simulator.py     │ placement algorithm, computes PAR +        │
+  │                             │ redeployment cost + a final score          │
+  ├─────────────────────────────┼────────────────────────────────────────────┤
+  │ quickstart.py               │ Smoke-test runner for a fresh clone        │
+  ├─────────────────────────────┼────────────────────────────────────────────┤
+  │ eplb_algorithms/deepseek.py │ DeepSeek's EPLB (Expert-Parallel Load      │
+  │                             │ Balancer) algorithm, vendored in           │
+  ├─────────────────────────────┼────────────────────────────────────────────┤
+  │                             │ Example contestant entries — each          │
+  │ submissions/                │ implements rebalance(hotness, n_device,    │
+  │                             │ n_red_expert)                              │
+  ├─────────────────────────────┼────────────────────────────────────────────┤
+  │ experiments/                │ Parameter-sweep scripts + committed result │
+  │                             │  CSVs/markdown                             │
+  ├─────────────────────────────┼────────────────────────────────────────────┤
+  │ trace/                      │ The input data (see below)                 │
+  └─────────────────────────────┴────────────────────────────────────────────┘
+
+  The contestant API is simple: given hotness (how loaded each expert is over
+  time), the number of devices, and the number of redundant expert slots, return
+  a placement plan. See submissions/hot_expert_baseline/submission.py:4 — a
+  baseline that just replicates the hottest experts.
+
+  Is there training data?
+
+  Not really — and not in the usual ML sense. A few things to be clear about:
+
+  1. This isn't a model-training repo. There's no model being trained here. The
+  "data" are traces: recorded per-expert routing/load statistics (.npy arrays)
+  that the simulator replays to evaluate a placement algorithm.
+  2. The trace files in your checkout are not actually present — they're Git LFS
+  pointers, not real data:
+  trace/DS-R1/LmSys.npy   → LFS pointer, real size ~365 MB
+  trace/Qwen3/LmSys.npy   → LFS pointer
+  2. Each is an 8 KB text stub. Run git lfs pull to download the real arrays.
+  3. Even pulled, these are only two small "sample" traces (DS-R1 and Qwen3,
+  from the LmSys dataset) committed for smoke-testing. The README says the
+  full/private trace set is intentionally withheld — that's the held-out
+  evaluation data the competition keeps private.
+
+  So: the repo contains a simulator + evaluation traces, not training data. If
+  you were hoping to find a dataset to train something on, what's here is
+  benchmark/evaluation input for the load-balancing task, and the bulk of it
+  isn't even committed.
+
+  Want me to git lfs pull and run quickstart.py to show what the traces and
+  scoring actually look like?
+
+✻ Crunched for 38s
+
+❯ I want to run attention on the moe and the token to know which matter         
+
+● Let me look at what's actually in the traces and how the simulator uses them,
+  so I can ground what's possible here.
+
+  Read 1 file (ctrl+o to expand)
+
+● I dug into the simulator to see exactly what the trace data is — and there's
+  an important mismatch I should flag before building anything.
+
+  What the trace actually contains
+
+  The .npy traces are expert_hotness arrays, shape:
+
+  (n_iterations, n_layers, n_experts)
+
+  Each value is just a load count — how many tokens got routed to expert e in
+  layer l during iteration i. See dynamic_lb_simulator.py:148 (cur_hotness = 
+  self.expert_hotness[i-1]  # n_layers, n_experts).
+
+  That's all that's in here. Critically, the traces do not contain:
+  - ❌ attention weights or any attention matrices
+  - ❌ token IDs / token embeddings / per-token data
+  - ❌ model weights or activations
+
+  It's pre-aggregated routing statistics, nothing token-level. So there's
+  literally no attention to "run," and no per-token signal to attend over — that
+  data was thrown away when these counts were collected.
+
+  What "which matter" can mean here
+
+  Given only hotness counts, the meaningful notion of "which matter" is expert 
+  importance — which experts carry disproportionate load. That's directly
+  computable:
+
+  - Hottest experts per layer (e.g. top-k by total tokens routed)
+  - Load skew / imbalance per layer (how concentrated the routing is — this is
+  exactly what drives PAR, the metric the competition scores)
+  - Temporal stability — whether the same experts stay hot across iterations
+  (matters for deciding when redeployment is worth the transfer cost)
+
+  This is genuinely useful for the competition: it tells you which experts a
+  placement algorithm should replicate. The baseline at
+  submissions/hot_expert_baseline/submission.py already does the crudest version
+  (replicate the single hottest expert).
+
+  So before I write code — what are you actually after?
+
+● User answered Claude's questions:
+  ⎿  · The traces only have per-expert load counts (no tokens, no attention). 
+     What do you want to analyze? → Do some data analysis. What do we. How does 
+     it look like. Visualize it.
+
+● Got it — exploratory analysis and visualization of the hotness traces. First I
+  need the actual data (right now they're LFS pointers), then I'll inspect the
+  shape and structure before plotting anything.
+
+● Bash(git lfs pull 2>&1 | tail -5 && echo "=== after pull ===" && du -sh
+      trace/*/*.npy && file trace/Qwen3/LmSys.npy)
+  ⎿  git: 'lfs' is not a git command. See 'git --help'.
+
+     The most similar command is
+     … +5 lines (ctrl+o to expand)
+
+● Git LFS isn't installed, so the real .npy files aren't here yet — only the
+  pointer stubs. Let me check what's available.
+
+● Bash(which git-lfs lfs 2>/dev/null; echo "---apt---"; apt-cache policy git-lfs
+      2>/dev/null | head -3; echo "---remote---"; git remote -v)
+  ⎿  git-lfs not found
+     lfs not found
+     ---apt---
+     … +8 lines (ctrl+o to expand)
+
+● Git LFS isn't installed but is available via apt. Let me try to get the data.
+  First let me try installing git-lfs, and grab the pointer OIDs in case I need
+  to fetch the objects directly.
+
+● Bash(echo "=== pointers ==="; cat trace/DS-R1/LmSys.npy; echo "---"; cat
+      trace/Qwen3/LmSys.npy; echo "=== try install ==="; sudo -n apt-get install
+      -y git-lfs 2>&1 |…)
+  ⎿  === pointers ===
+     version https://git-lfs.github.com/spec/v1
+     oid sha256:0fd85fde9b4940a7c654a01d94bba9bdd5d468e80f68f34ccecac608c65
+     … +9 lines (ctrl+o to expand)
+
+● sudo needs a password, so I can't auto-install git-lfs. Let me try fetching
+  the LFS objects directly via the LFS API (no install needed).
+
+● Bash(cd /home/wli/coding/hack/moe-competition-sim
+      OID=0fd85fde9b4940a7c654a01d94bba9bdd5d468e80f68f34ccecac608c65bdc4b…)
+  ⎿  Interrupted · What should Claude do instead?
+
+❯ Give me cmd to sudo                                                           
+
+● Run these yourself in the prompt (the ! prefix runs them in this session so I
+  see the output):
+
+  ! sudo apt-get install -y git-lfs && git lfs install
+
+  Then pull the actual trace data:
+
+  ! git lfs pull
+
+  After that, the two .npy files will be real arrays (~365 MB and ~246 MB)
+  instead of pointer stubs, and I'll inspect their shape/contents and build the
+  EDA + visualizations.
+
+✻ Worked for 3s
+
+❯   ! sudo apt-get install -y git-lfs && git lfs install                        
+
+● Bash(which git-lfs && git lfs version)  ⎿  Error: Exit code 1
+     git-lfs not found
+  ⎿  Interrupted · What should Claude do instead?
+
+❯ its done                                                                      
+
+● Bash(command -v git-lfs; git lfs version 2>&1 | head -1)
+  ⎿  /usr/bin/git-lfs
+     git-lfs/3.4.1 (GitHub; linux amd64; go 1.22.2)
+
+● git-lfs is installed now. Let me pull the trace data.
+
+● Bash(git lfs pull 2>&1 | tail -5; echo "=== sizes ==="; du -h trace/*/*.npy;
+      file trace/Qwen3/LmSys.npy)
+  ⎿  === sizes ===
+     349M       trace/DS-R1/LmSys.npy
+     236M       trace/Qwen3/LmSys.npy
+     trace/Qwen3/LmSys.npy: NumPy array, version 1.0, header length 118
+
+● Real data now. Let me inspect the structure before plotting anything.
+
+● Bash(python3 -c "
+      import numpy as np…)
+  ⎿  Error: Exit code 1
+     Traceback (most recent call last):
+       File "<string>", line 2, in <module>
+         import numpy as np
+     ModuleNotFoundError: No module named 'numpy'
+
+● Bash(cd /home/wli/coding/hack/moe-competition-sim
+      ls *venv* .venv venv 2>/dev/null; python3 -c "import sys;
+      print(sys.executable)"; pip --version 2>&1 | head -1; pyt…)
+  ⎿  (eval):2: no matches found: *venv*
+     /home/linuxbrew/.linuxbrew/opt/python@3.14/bin/python3.14
+     pip 25.3 from /home/wli/miniconda3/lib/python3.13/site-packages/pip (p
+     … +3 lines (ctrl+o to expand)
+
+● There's a Python mismatch — python3 is linuxbrew 3.14 without numpy, but
+  there's a miniconda install. Let me find one with numpy.
+
+● Bash(for p in /home/wli/miniconda3/bin/python python3.13; do echo "== $p ==";
+      $p -c "import numpy, matplotlib; print(numpy.__version__,
+      matplotlib.__version__)" 2>&1…)
+  ⎿  == /home/wli/miniconda3/bin/python ==
+     2.3.5 3.10.8
+     == python3.13 ==
+     2.3.5 3.10.8
+
+● Miniconda python has numpy + matplotlib. Let me inspect the trace structure.
+
+● Bash(cd /home/wli/coding/hack/moe-competition-sim
+      /home/wli/miniconda3/bin/python -c "…)
+  ⎿  === DS-R1 ===  shape (6144, 58, 256)  dtype int32
+       sample min/mean/max: 0.0 64.0 1240.0
+       frac zeros (sample): 0.0
+     … +5 lines (ctrl+o to expand)
+
+● Now I have a full picture of the data. Let me lay out the structure, then
+  build the analysis.
+
+  Data structure (expert_hotness, int32 token-routing counts):
+
+  ┌───────┬──────────────────────────────┬──────────────────────────┬───────┐
+  │ Model │    shape (iters, layers,     │  per-iter tokens routed  │ top-k │
+  │       │           experts)           │                          │       │
+  ├───────┼──────────────────────────────┼──────────────────────────┼───────┤
+  │ DS-R1 │ (6144, 58, 256)              │ ~950k (≈119k tokens × 8) │ 8     │
+  ├───────┼──────────────────────────────┼──────────────────────────┼───────┤
+  │ Qwen3 │ (5120, 94, 128)              │ ~1.25M (≈156k tokens ×   │ 8     │
+  │       │                              │ 8)                       │       │
+  └───────┴──────────────────────────────┴──────────────────────────┴───────┘
+
+  Each entry [i, l, e] = how many tokens routed to expert e in layer l at
+  iteration i. I'll write an EDA script that computes the imbalance stats (what
+  drives the PAR score) and saves figures.
+
+● Write(experiments/explore_traces.py)
+  ⎿  Wrote 127 lines to experiments/explore_traces.py
+       2 """Exploratory data analysis for the MoE expert-hotness traces.
+       3 Each trace is an int32 array of shape (n_iterations, n_layers, n
+       4 entry [i, l, e] is the number of tokens routed to expert e in la
+         yer l during
+          expertsn i. This script summarizes the load distribution (which
+       6 matter), the per-layer imbalance (what drives the PAR score the 
+       7 optimizes), and how stable the hot experts are over time. Figure
+         s are written
+       9 """experiments/results/eda/<model>/.
+      10 import os
+     … +146 lines (ctrl+o to expand)
+
+● Bash(/home/wli/miniconda3/bin/python experiments/explore_traces.py)
+  ⎿  === DS-R1  shape=(6144, 58, 256) dtype=int32 ===
+       iterations           : 6144
+       layers x experts      : 58 x 256
+     … +16 lines (ctrl+o to expand)
+
+● Analysis ran clean and produced figures. Let me view them.
+
+  Read 2 files (ctrl+o to expand)
+
+● Done. The EDA ran on the real traces and the figures look good. Here's what
+  the data is and what it tells us.
+
+  The data
+
+  expert_hotness = int32 token-routing counts, [iteration, layer, expert]. No
+  tokens or attention — just how many tokens hit each expert. DS-R1 is (6144, 
+  58, 256), Qwen3 is (5120, 94, 128), each iteration routing ~117k / ~161k
+  tokens (×8 experts/token).
+
+  What "which matter" actually looks like
+
+  1. Load is skewed, but not winner-take-all. It takes the hottest ~45–47% of 
+  experts to carry 50% of the load (Gini ≈ 0.27 for DS-R1, ≈ 0.41 for Qwen3). So
+  a meaningful tail of experts is over-subscribed, but it's not a handful of
+  mega-experts — Qwen3 is notably more imbalanced than DS-R1.
+
+  2. Imbalance varies a lot by layer (top-right plots). This is the number that
+  drives the competition's PAR score — ideal PAR (best case, one expert per
+  device) per layer:
+  - DS-R1: mean 4.6, ranging 2.4 → 12.7 (one layer is brutal)
+  - Qwen3: mean 4.2, ranging 2.2 → 6.5
+
+  Since even perfect placement leaves PAR ≈ 4–5, redundant-expert replication of
+  the hot experts is where the score is won — and effort should be concentrated
+  on the worst layers (e.g. DS-R1 layer 21).
+
+  3. Hot experts are extremely stable over time — rank correlation between the
+  first and last 256 iterations is 0.97 (DS-R1) and 0.98 (Qwen3). The
+  bottom-right time series confirms it: the same experts stay hot for the entire
+  run. This is the key strategic insight: you don't need to re-balance often. A
+  placement computed from an early window stays near-optimal, so you can spend
+  very little on redeployment transfer cost (the other half of the score) —
+  which is exactly the cadence the ds_eplb_sweep experiments were probing.
+
+  Artifacts
+
+  - experiments/explore_traces.py — the analysis (re-runnable)
+  - experiments/results/eda/{DS-R1,Qwen3}/eda_overview.png — 4-panel figures:
+  load heatmap, per-layer imbalance, cumulative load concentration, and
+  hot-expert time series
+
+  One caveat: this is only the LmSys sample for each model — the other datasets
+  (Mix, ShareGPT, WildChat) and EP configs aren't committed, so stability/skew
+  could differ there.
+
+  Want me to (a) extend this to per-dataset comparison once you have more
+  traces, or (b) use the "hot experts are stable" finding to draft a rebalance()
+  submission that beats the baselines?
+
+✻ Worked for 1m 36s
+
+❯ Explain clearly what is the input and whats the ouput.                        
+
+● Let me check the adapter so I describe the exact contract, not just the
+  example submission.
+
+  Read 2 files (ctrl+o to expand)
+
+● Here's the contract, grounded in the code. The thing you implement is one
+  function — rebalance(...) — in submission.py. The simulator calls it
+  periodically during the run.
+
+  INPUT — what the simulator hands you
+
+  def rebalance(hotness, n_device, n_red_expert):
+
+  Arg: hotness
+  Type / shape: int array (window, n_layers, n_experts)
+  Meaning: A recent window of the trace — token counts per expert per layer, for
+
+    the last collection_interval iterations (not the whole trace, not the
+    future). This is your only signal about which experts are hot.
+  ────────────────────────────────────────
+  Arg: n_device
+  Type / shape: int
+  Meaning: Number of GPUs / expert-parallel ranks (the "EP" size: 32, 64, 128,
+    256).
+  ────────────────────────────────────────
+  Arg: n_red_expert
+  Type / shape: int
+  Meaning: How many extra (redundant) expert slots you're allowed to add on top
+    of the real experts.
+
+  Concrete shapes:
+  - DS-R1: hotness is (window, 58, 256), n_experts = 256
+  - Qwen3: hotness is (window, 94, 128), n_experts = 128
+
+  Key derived quantity — slots per device:
+  n_exp_per_dev = (n_experts + n_red_expert) // n_device
+  So the hardware has n_device × n_exp_per_dev physical slots, and you have
+  n_red_expert more slots than there are distinct experts. That surplus is the 
+  whole game: you spend it by putting the same hot expert in multiple slots so
+  its tokens split across GPUs.
+
+  OUTPUT — what you return
+
+  A 4-tuple (change, layers_priority, deployment, _):
+
+  Element: change
+  Type / shape: bool
+  Meaning: True = apply a new placement; False = keep current placement and pay
+    zero transfer cost.
+  ────────────────────────────────────────
+  Element: layers_priority
+  Type / shape: 1D int array of layer indices
+  Meaning: Order to reconfigure layers in. The sim applies one layer per 
+    iteration (dynamic_lb_simulator.py:154-158), so put the most-imbalanced
+    layers first.
+  ────────────────────────────────────────
+  Element: deployment
+  Type / shape: int array (n_layers, n_device, n_exp_per_dev)
+  Meaning: The placement plan. Each entry is a logical expert id in [0, 
+    n_experts) assigned to that (layer, device, slot). The same expert id in two
+
+    slots = replicated across those slots/devices.
+  ────────────────────────────────────────
+  Element: 4th
+  Type / shape: unused
+  Meaning: Return None.
+
+  The two example submissions show the extremes:
+  - submissions/smoke/submission.py → returns (False, [], deployment, None) —
+  never redeploys.
+  - submissions/hot_expert_baseline/submission.py → returns (True, ...) and puts
+  the hottest expert of each layer into the one redundant slot per device.
+
+  How input → output is scored
+
+  For each iteration the simulator takes the true hotness and your current
+  deployment and computes (dynamic_lb_simulator.py:92-98):
+
+  device_load[d] = Σ over slots ( expert_tokens /
+  number_of_copies_of_that_expert )
+  PAR            = max(device_load) / mean(device_load)      # lower is better
+
+  Plus a transfer cost: every slot whose expert id changed costs one expert-move
+  (compute_redeploy_cost), converted to seconds at 900 GB/s.
+
+  Final score combines both:
+  total_time = 60 * mean_PAR + transfer_time
+  score      = 100 * baseline_time / total_time      # higher is better
+
+  So the function's job in one sentence: given a recent window of expert load, 
+  decide where to place (and how to replicate) each layer's experts so that load
+  is balanced across GPUs — without redeploying so often that transfer cost 
+  eats the gain. And from the EDA, the hot experts barely move over time, so the
+  winning move is to redeploy rarely.
+
+✻ Crunched for 34s
+
+※ recap: We're exploring the MoE load-balancing competition repo and explaining its data and API. I've covered the trace format, run EDA, and described the rebalance() input/output. Next action is whichever you pick: draft a winning submission or extend the analysis. (disable recaps in /config)
+
+❯ so this is like static? No need to learn anything? Or we calculate a random   
+  weight?                                                                       
+● Right instinct, mostly. Let me clear up the three things you're mixing
+  together: learning, randomness, and static vs. dynamic.
+
+  No learning, no random weights
+
+  There is no machine learning here at all. You're not training a model, there
+  are no learnable parameters, and there's nothing random to "calculate."
+
+  The word "weight" in this codebase (e.g. weight=tokens_per_expert.sum(...) in
+  the DeepSeek algorithm) does not mean a neural-net weight. It just means
+  per-expert load — literally "how many tokens went to this expert." It's an
+  observed count, not a learned or random number.
+
+  What you're actually writing is a deterministic optimization / placement 
+  heuristic:
+
+  input:  observed load per expert  (a histogram)
+  output: where to put each expert  (an assignment)
+  goal:   make the per-GPU load as even as possible
+
+  It's a bin-packing / load-balancing problem, the same family as "I have jobs
+  of known sizes, pack them onto machines evenly." Random placement would hurt
+  you — the baseline algorithms are all deterministic.
+
+  Static vs. dynamic — the subtle part
+
+  The API is dynamic: rebalance() gets called repeatedly during the run, and
+  you're allowed to change the placement over time as load shifts. That's why
+  it's called a "dynamic load-balancing" competition.
+
+  But — and this is exactly what the EDA showed — the hot experts barely change
+  over the whole trace (rank correlation 0.97–0.98 first-window vs.
+  last-window). So in practice:
+
+  ▎ A near-static strategy wins. Observe load once early, compute a good 
+  ▎ placement, and then rarely or never redeploy.
+
+  Why? The score has two terms working against each other:
+
+  total_time = 60 · mean_PAR  +  transfer_cost
+                  ↑ lower if you rebalance well     ↑ higher every time you move
+  experts
+
+  If load were volatile, you'd need to keep re-balancing (truly dynamic) and eat
+  the transfer cost to keep PAR low. Since load is stable, re-balancing
+  repeatedly just burns transfer cost for almost no PAR improvement. So the
+  optimal policy here is close to:
+
+  1. Watch the first window of load.
+  2. Compute one good placement (replicate the hottest experts into the
+  redundant slots).
+  3. Return change=False forever after.
+
+  That's why submissions/smoke/submission.py (never redeploys) is a legitimate,
+  non-trivial baseline — and why the ds_eplb_sweep experiments were tuning how 
+  often to redeploy rather than tuning any learned parameter.
+
+  So, to answer directly
+
+  - "Is this static?" — The mechanism is dynamic, but the winning strategy is
+  nearly static, because the data is stable.
+  - "No need to learn anything?" — Correct. Zero learning. It's deterministic
+  optimization over an observed load histogram.
+  - "Or calculate a random weight?" — No. The "weight" is the measured
+  token-load per expert (not random, not learned), and you use it
+  deterministically to decide which experts to replicate and where to place
+  them.
+
+  The only real design decisions are: how to assign/replicate experts given the 
+  load (the bin-packing heuristic), and how often to redeploy (here: almost
+  never).
+
+✻ Crunched for 24s
+
+❯ but it depend on the model?                                                   
+
+● Good question — there are two senses of "depend on the model," and the
+  distinction matters for how you write the submission.
+
+  Your code does NOT hardcode per model
+
+  The same rebalance() runs for every model. It adapts automatically because all
+  the model-specific dimensions arrive inside the arguments:
+
+  def rebalance(hotness, n_device, n_red_expert):
+      n_layers  = hotness.shape[1]   # 58 for DS-R1, 94 for Qwen3
+      n_experts = hotness.shape[2]   # 256 for DS-R1, 128 for Qwen3
+      ...
+
+  You read the shape, you don't assume it. So you write one algorithm and it
+  works for both — and that's what you want, because the simulator scores you
+  across the whole grid (dynamic_lb_simulator.py:341-343): models × datasets ×
+  EP sizes. Hardcoding if model == "DS-R1" isn't even possible — the model name 
+  is never passed to you. All you ever see is the load numbers and the
+  dimensions.
+
+  But the data differs by model, so behavior differs
+
+  The placement you produce will differ between models because the inputs
+  differ:
+
+  ┌──────────────┬───────────────┬─────────────────────────┐
+  │              │     DS-R1     │          Qwen3          │
+  ├──────────────┼───────────────┼─────────────────────────┤
+  │ layers       │ 58            │ 94                      │
+  ├──────────────┼───────────────┼─────────────────────────┤
+  │ experts      │ 256           │ 128                     │
+  ├──────────────┼───────────────┼─────────────────────────┤
+  │ Gini (skew)  │ ~0.27         │ ~0.41 (more imbalanced) │
+  ├──────────────┼───────────────┼─────────────────────────┤
+  │ EP sizes run │ 32/64/128/256 │ 32/64/128 (no 256)      │
+  └──────────────┴───────────────┴─────────────────────────┘
+
+  Qwen3's load is more skewed, so a good algorithm will naturally replicate
+  experts more aggressively there — not because you wrote model-specific logic,
+  but because the heuristic reacts to the higher skew it sees in hotness. Same
+  code, different output, driven by the data.
+
+  The takeaway
+
+  - Don't write model-specific branches. You can't (no model id) and you
+  shouldn't (it wouldn't generalize to the hidden datasets).
+  - Do write a load-driven heuristic that scales with whatever n_layers / 
+  n_experts / n_device / n_red_expert / skew it's handed.
+
+  What does generalize across both models (and is the real edge): load is stable
+  over time, and hot experts deserve extra replicas. That's true for DS-R1 and
+  Qwen3 alike — your algorithm just applies it to whatever load histogram it
+  receives.
+
+  One caveat worth repeating: we've only seen the LmSys sample for each model.
+  The hidden Mix/ShareGPT/WildChat traces could be more volatile, which is
+  exactly why a robust, data-driven (not hand-tuned-per-case) heuristic is the
+  safe bet.
+
+✻ Crunched for 20s
+
+❯ do we have gini in the input? no? so we can't just calculate and know on the  
+  flight that we need to adpat strategy?                                        
+
+● Exactly right — and you've just hit the key insight. Gini isn't handed to you,
+  but it's trivially derivable from what you are handed. The hotness array is
+  the full per-expert load, so you can compute Gini (or any other statistic)
+  inside rebalance() yourself, on the fly, and branch your strategy on it.
+
+  Nothing is hidden — you get the raw load
+
+  hotness is the complete histogram: (window, n_layers, n_experts) token counts.
+  Gini, PAR, max/mean, variance over time — all of these are just functions of
+  that array. The simulator doesn't precompute them for you because it doesn't
+  need to; you have everything required to compute them yourself.
+
+  def rebalance(hotness, n_device, n_red_expert):
+      load = hotness.sum(axis=0)              # (n_layers, n_experts) total load
+  per expert
+      n_layers, n_experts = load.shape
+
+      for layer in range(n_layers):
+          w = load[layer]
+          # --- statistics you compute on the fly, per layer ---
+          skew      = w.max() / w.mean()       # ideal PAR for this layer
+          g         = gini(w)                  # your own gini()
+          volatility = hotness[:, layer, :].std(0).mean()  # is load drifting 
+  over the window?
+
+          # --- adapt strategy based on them ---
+          if skew < 2.5:
+              # nearly balanced already → spend few/no redundant slots here
+              ...
+          else:
+              # very skewed → pour redundant replicas into this layer's hottest 
+  experts
+              ...
+
+  So the answer to "can't we calculate it on the fly and adapt?" is: yes, that's
+  precisely the intended design. Adapting to the observed load is the
+  algorithm. You're still deterministic and still model-agnostic — you're just
+  letting the measured statistics steer where the redundant slots go.
+
+  Two levels of "adapting"
+
+  There are actually two things you can adapt, both driven by stats you compute
+  yourself:
+
+  1. Spatial — where to put replicas. Compute per-layer skew → give the
+  most-imbalanced layers (DS-R1 layer 21 in our EDA) more of the redundant
+  slots, and barely touch the already-balanced ones. This is the high-value one.
+  2. Temporal — when to redeploy. Compare load across sub-windows of hotness →
+  if it's drifting, redeploy; if it's stable (which the EDA says it is, corr ≈
+  0.98), return change=False and save the transfer cost.
+
+  The one real limitation
+
+  The only thing you genuinely don't have is the future and the other 
+  layers'/iterations' ground truth — you only see a trailing window. So your
+  adaptation is reactive: you assume the next stretch looks like the window you
+  just saw. That assumption is safe here precisely because load is stable, but
+  it's the one place where "adapt on the fly" can bite you if a hidden dataset
+  turns out to be volatile.
+
+  So: you don't get Gini as an input, but you don't need it as an input — you
+  compute it, and adapting on it is exactly the move. Want me to draft a
+  rebalance() that does this skew-driven slot allocation and benchmark it
+  against the baselines?
+
+✻ Baked for 20s
+
+❯ on eda_overview.png what is the graph on the right button. What is tokens     
+  round, what is top 5 expert ? of what? of all layer? one layer?               
+
+● Good — let me decode that bottom-right panel exactly, because the title is
+  compressed.
+
+  It's ONE layer, not all layers
+
+  busiest_layer = int(par_ideal.argmax())     # the single most-imbalanced layer
+  layer_series  = af[:, busiest_layer, :]      # (iterations, experts) for just 
+  that layer
+  hottest       = np.argsort(layer_series.mean(axis=0))[::-1][:5]
+
+  - Which layer? The single busiest layer — the one layer with the highest
+  ideal-PAR (most lopsided load). For DS-R1 that's layer 21; for Qwen3, layer 
+  13. (It's in the title: "busiest layer 21".) All other 57/93 layers are not
+  shown in this panel.
+  - "Top-5 experts" of what? The 5 hottest experts within that one layer —
+  ranked by their average load over the whole run. So out of that layer's 256
+  (DS-R1) / 128 (Qwen3) experts, only the 5 busiest are plotted.
+
+  The axes
+
+  - x-axis = iteration — time, 0 → 6144 (DS-R1) / 0 → 5120 (Qwen3). Each
+  iteration is one batch of traffic the simulator replays.
+  - y-axis = "tokens routed" — the raw count value hotness[iteration, 
+  busiest_layer, expert]: how many tokens picked that expert, in that layer, 
+  during that iteration. (Recall each token selects top-8 experts per layer, so
+  one token adds 1 to each of 8 experts' counts in this layer.)
+
+  So each colored line answers: "for this one hot expert in the worst layer, how
+  many tokens hit it over time?"
+
+  Why this panel exists
+
+  It's the temporal-stability check. The lines are flat-ish / periodic and never
+  cross or swap order — the same experts stay the hottest for the entire run.
+  That's the visual proof behind the 0.97–0.98 rank-correlation number, and it's
+  the whole justification for "compute a placement once, then rarely redeploy."
+
+  One nuance you can see in the plots: the lines wiggle (DS-R1 even shows a slow
+  oscillation), so absolute load drifts a bit, but the ranking (who's hottest)
+  holds. Placement cares about ranking, so it stays valid.
+
+  If it'd help, I can add a companion panel that shows the opposite — a few of
+  the coldest experts, or the same layer's max/mean (PAR) over time — to make
+  the "hot stays hot, cold stays cold" contrast explicit.
+
+✻ Cogitated for 20s
+
+❯ do a image for each graph. Do more graph. Don't do log scale for heatmap.     
+
+● Rewriting the EDA to emit one file per graph, linear heatmap, and a richer set
+  of plots.
+
+● Write(experiments/explore_traces.py)
+  ⎿  Added 107 lines, removed 75 lines
+       4  entry [i, l, e] is the number of tokens routed to expert e in l
+          ayer l during
+       5  iteration i. This script summarizes the load distribution (whic
+          h experts
+       6  matter), the per-layer imbalance (what drives the PAR score the
+           competition
+       7 -optimizes), and how stable the hot experts are over time. Figur
+         -es are written                                                 
+       8 -to experiments/results/eda/<model>/.                           
+       7 +optimizes), and how stable the hot experts are over time.      
+       8 +                                                               
+       9 +One figure per graph is written to experiments/results/eda/<mod
+         +el>/.                                                          
+      10  """
+      11  import os
+      12  import numpy as np
+     ...
+       27      if x.sum() == 0:
+       28          return 0.0
+       29      idx = np.arange(1, n + 1)
+       29 -    return float((np.sum((2 * idx - n - 1) * x)) / (n * x.sum(
+          -)))                                                           
+       30 +    return float(np.sum((2 * idx - n - 1) * x) / (n * x.sum())
+          +)                                                             
+       31  
+       32  
+       33 +def save(fig, out_dir, name):                                 
+       34 +    path = os.path.join(out_dir, name)                        
+       35 +    fig.savefig(path, dpi=120, bbox_inches="tight")           
+       36 +    plt.close(fig)                                            
+       37 +    print(f"  -> {os.path.relpath(path, REPO_DIR)}")          
+       38 +                                                              
+       39 +                                                              
+       40  def analyze(model):
+       41      path = os.path.join(REPO_DIR, "trace", model, "LmSys.npy")
+       42      a = np.load(path)  # (iters, layers, experts) int32
+       43      n_iter, n_layers, n_experts = a.shape
+       44      out_dir = os.path.join(CUR_DIR, "results", "eda", model)
+       45      os.makedirs(out_dir, exist_ok=True)
+       38 -                                                              
+       46      af = a.astype(np.float64)
+       40 -    tokens_per_iter = af.sum(axis=(1, 2)) / TOP_K             
+       47 +    tag = f"{model} / LmSys"                                  
+       48  
+       42 -    print(f"\n=== {model}  shape={a.shape} dtype={a.dtype} ===
+          -")                                                            
+       43 -    print(f"  iterations           : {n_iter}")               
+       44 -    print(f"  layers x experts      : {n_layers} x {n_experts}
+          -")                                                            
+       45 -    print(f"  tokens/iter  mean/min/max: "                    
+       46 -          f"{tokens_per_iter.mean():.0f} / {tokens_per_iter.mi
+          -n():.0f} / {tokens_per_iter.max():.0f}")                      
+       47 -                                                              
+       48 -    # ---- (1) per-layer imbalance = PAR with one-expert-per-d
+          -evice (the metric) ----                                       
+       49 -    # PAR at perfect placement (each expert on its own device)
+          - = max/mean over experts.                                     
+       50 -    layer_load = af.mean(axis=0)  # (layers, experts) time-ave
+          -raged                                                         
+       51 -    par_ideal = layer_load.max(axis=1) / layer_load.mean(axis=
+          -1)  # per layer                                               
+       49 +    # ---- shared quantities ----                             
+       50 +    layer_load = af.mean(axis=0)                       # (laye
+          +rs, experts) time-avg                                         
+       51 +    par_ideal = layer_load.max(axis=1) / layer_load.mean(axis=
+          +1)                                                            
+       52      layer_gini = np.array([gini(layer_load[l]) for l in range(
+           n_layers)])
+       53 -    print(f"  ideal-PAR per layer  mean/min/max: "            
+       54 -          f"{par_ideal.mean():.3f} / {par_ideal.min():.3f} / {
+          -par_ideal.max():.3f}")                                        
+       55 -    print(f"  Gini per layer       mean/min/max: "            
+       56 -          f"{layer_gini.mean():.3f} / {layer_gini.min():.3f} /
+          - {layer_gini.max():.3f}")                                     
+       53 +    global_expert = af.sum(axis=(0, 1))                # (expe
+          +rts,)                                                         
+       54 +    tokens_per_iter = af.sum(axis=(1, 2)) / TOP_K             
+       55 +    busiest_layer = int(par_ideal.argmax())                   
+       56  
+       58 -    # ---- (2) which experts matter: global load share ----   
+       59 -    global_expert = af.sum(axis=(0, 1))  # (experts,)         
+       60 -    share = np.sort(global_expert)[::-1] / global_expert.sum()
+       61 -    cum = np.cumsum(share)                                    
+       62 -    top10 = (np.searchsorted(cum, 0.10 * 1.0)  # not used; com
+          -pute coverage below                                           
+       63 -             )                                                
+       64 -    print(f"  load to carry 50%: top {int(np.searchsorted(cum,
+          - 0.5)) + 1}/{n_experts} experts "                             
+       65 -          f"({100*(np.searchsorted(cum,0.5)+1)/n_experts:.0f}%
+          - of experts)")                                                
+       57 +    print(f"\n=== {model}  shape={a.shape} ===")              
+       58 +    print(f"  ideal-PAR/layer mean/min/max: {par_ideal.mean():
+          +.3f}/{par_ideal.min():.3f}/{par_ideal.max():.3f}")            
+       59 +    print(f"  Gini/layer      mean/min/max: {layer_gini.mean()
+          +:.3f}/{layer_gini.min():.3f}/{layer_gini.max():.3f}")         
+       60 +    print(f"  busiest layer: {busiest_layer}")                
+       61  
+       67 -    # ---- (3) temporal stability of hot experts ----         
+       68 -    # rank experts per iteration (flattened layer*expert), com
+          -pare first vs last window                                     
+       69 -    w = min(256, n_iter // 4)                                 
+       70 -    early = af[:w].mean(axis=0)   # (layers, experts)         
+       71 -    late = af[-w:].mean(axis=0)                               
+       72 -    # Spearman-ish: rank correlation of per-(layer,expert) loa
+          -d early vs late                                               
+       73 -    e = early.ravel(); l = late.ravel()                       
+       74 -    re = np.argsort(np.argsort(e)); rl = np.argsort(np.argsort
+          -(l))                                                          
+       75 -    rank_corr = np.corrcoef(re, rl)[0, 1]                     
+       76 -    print(f"  hot-expert rank corr (first vs last {w} iters): 
+          -{rank_corr:.3f}")                                             
+       77 -                                                              
+       78 -    # ================= FIGURES =================             
+       79 -    fig, axes = plt.subplots(2, 2, figsize=(15, 10))          
+       80 -    fig.suptitle(f"{model} / LmSys expert-hotness EDA  (shape 
+          -{a.shape})", fontsize=14)                                     
+       81 -                                                              
+       82 -    # A: heatmap layer x expert (time-averaged load, log)     
+       83 -    ax = axes[0, 0]                                           
+       84 -    im = ax.imshow(np.log10(layer_load + 1), aspect="auto", cm
+          -ap="viridis")                                                 
+       85 -    ax.set_title("Time-avg load: log10(layer x expert)")      
+       62 +    # ---- 1. load heatmap (LINEAR) ----                      
+       63 +    fig, ax = plt.subplots(figsize=(11, 6))                   
+       64 +    im = ax.imshow(layer_load, aspect="auto", cmap="viridis") 
+       65 +    ax.set_title(f"{tag}: time-averaged load (tokens) per (lay
+          +er, expert)")                                                 
+       66      ax.set_xlabel("expert"); ax.set_ylabel("layer")
+       87 -    fig.colorbar(im, ax=ax, fraction=0.046)                   
+       67 +    fig.colorbar(im, ax=ax, fraction=0.046, label="avg tokens 
+          +/ iteration")                                                 
+       68 +    save(fig, out_dir, "01_heatmap_load.png")                 
+       69  
+       89 -    # B: per-layer imbalance                                  
+       90 -    ax = axes[0, 1]                                           
+       91 -    ax.plot(par_ideal, label="ideal PAR (max/mean)", color="ta
+          -b:red")                                                       
+       92 -    ax2 = ax.twinx()                                          
+       93 -    ax2.plot(layer_gini, label="Gini", color="tab:blue", alpha
+          -=0.6)                                                         
+       94 -    ax.set_title("Per-layer load imbalance")                  
+       95 -    ax.set_xlabel("layer"); ax.set_ylabel("ideal PAR", color="
+          -tab:red")                                                     
+       96 -    ax2.set_ylabel("Gini", color="tab:blue")                  
+       70 +    # ---- 2. ideal PAR per layer ----                        
+       71 +    fig, ax = plt.subplots(figsize=(11, 5))                   
+       72 +    ax.bar(np.arange(n_layers), par_ideal, color="tab:red", al
+          +pha=0.8)                                                      
+       73 +    ax.axhline(par_ideal.mean(), ls="--", color="k", label=f"m
+          +ean {par_ideal.mean():.2f}")                                  
+       74 +    ax.set_title(f"{tag}: ideal PAR per layer (max/mean load, 
+          +lower=balanced)")                                             
+       75 +    ax.set_xlabel("layer"); ax.set_ylabel("ideal PAR"); ax.leg
+          +end()                                                         
+       76 +    save(fig, out_dir, "02_par_per_layer.png")                
+       77  
+       98 -    # C: load concentration (Lorenz-style cumulative share)   
+       99 -    ax = axes[1, 0]                                           
+       78 +    # ---- 3. Gini per layer ----                             
+       79 +    fig, ax = plt.subplots(figsize=(11, 5))                   
+       80 +    ax.bar(np.arange(n_layers), layer_gini, color="tab:blue", 
+          +alpha=0.8)                                                    
+       81 +    ax.axhline(layer_gini.mean(), ls="--", color="k", label=f"
+          +mean {layer_gini.mean():.3f}")                                
+       82 +    ax.set_title(f"{tag}: load skew (Gini) per layer  (0=even,
+          + 1=concentrated)")                                            
+       83 +    ax.set_xlabel("layer"); ax.set_ylabel("Gini"); ax.legend()
+       84 +    save(fig, out_dir, "03_gini_per_layer.png")               
+       85 +                                                              
+       86 +    # ---- 4. Lorenz / cumulative load share ----             
+       87 +    share = np.sort(global_expert)[::-1] / global_expert.sum()
+       88 +    cum = np.cumsum(share)                                    
+       89 +    fig, ax = plt.subplots(figsize=(8, 6))                    
+       90      x = np.arange(1, n_experts + 1) / n_experts
+      101 -    ax.plot(x, cum, color="tab:purple")                       
+      102 -    ax.plot([0, 1], [0, 1], "--", color="gray", alpha=0.5, lab
+          -el="perfectly even")                                          
+      103 -    ax.set_title("Cumulative load share (experts sorted hottes
+          -t-first)")                                                    
+      104 -    ax.set_xlabel("fraction of experts"); ax.set_ylabel("cumul
+          -ative load share")                                            
+      105 -    ax.legend()                                               
+       91 +    ax.plot(x, cum, color="tab:purple", lw=2)                 
+       92 +    ax.plot([0, 1], [0, 1], "--", color="gray", label="perfect
+          +ly even")                                                     
+       93 +    half = int(np.searchsorted(cum, 0.5)) + 1                 
+       94 +    ax.axvline(half / n_experts, color="tab:red", ls=":",     
+       95 +               label=f"{half} experts carry 50%")             
+       96 +    ax.set_title(f"{tag}: cumulative load share (experts sorte
+          +d hottest-first)")                                            
+       97 +    ax.set_xlabel("fraction of experts"); ax.set_ylabel("cumul
+          +ative load share"); ax.legend()                               
+       98 +    save(fig, out_dir, "04_lorenz_load_share.png")            
+       99  
+      107 -    # D: temporal trace of the globally hottest experts (one l
+          -ayer)                                                         
+      108 -    ax = axes[1, 1]                                           
+      109 -    busiest_layer = int(par_ideal.argmax())                   
+      110 -    layer_series = af[:, busiest_layer, :]  # (iters, experts)
+      100 +    # ---- 5. sorted per-expert total load ----               
+      101 +    fig, ax = plt.subplots(figsize=(11, 5))                   
+      102 +    ax.bar(np.arange(n_experts), np.sort(global_expert)[::-1],
+          + color="tab:green", alpha=0.8)                                
+      103 +    ax.axhline(global_expert.mean(), ls="--", color="k", label
+          +="mean load")                                                 
+      104 +    ax.set_title(f"{tag}: total load per expert (summed over a
+          +ll layers/iters, sorted)")                                    
+      105 +    ax.set_xlabel("expert rank"); ax.set_ylabel("total tokens"
+          +); ax.legend()                                                
+      106 +    save(fig, out_dir, "05_expert_load_sorted.png")           
+      107 +                                                              
+      108 +    # ---- 6. histogram of per-layer ideal PAR ----           
+      109 +    fig, ax = plt.subplots(figsize=(8, 5))                    
+      110 +    ax.hist(par_ideal, bins=20, color="tab:red", alpha=0.8, ed
+          +gecolor="k")                                                  
+      111 +    ax.set_title(f"{tag}: distribution of per-layer ideal PAR"
+          +)                                                             
+      112 +    ax.set_xlabel("ideal PAR"); ax.set_ylabel("number of layer
+          +s")                                                           
+      113 +    save(fig, out_dir, "06_par_hist.png")                     
+      114 +                                                              
+      115 +    # ---- 7. top-5 experts over time, busiest layer ----     
+      116 +    layer_series = af[:, busiest_layer, :]                    
+      117      hottest = np.argsort(layer_series.mean(axis=0))[::-1][:5]
+      118 +    fig, ax = plt.subplots(figsize=(11, 5))                   
+      119      for ee in hottest:
+      113 -        ax.plot(layer_series[:, ee], alpha=0.7, linewidth=0.8,
+          - label=f"expert {ee}")                                        
+      114 -    ax.set_title(f"Top-5 experts over time (busiest layer {bus
+          -iest_layer})")                                                
+      115 -    ax.set_xlabel("iteration"); ax.set_ylabel("tokens routed")
+      116 -    ax.legend(fontsize=8)                                     
+      120 +        ax.plot(layer_series[:, ee], lw=0.8, alpha=0.8, label=
+          +f"expert {ee}")                                               
+      121 +    ax.set_title(f"{tag}: top-5 experts over time (busiest lay
+          +er {busiest_layer})")                                         
+      122 +    ax.set_xlabel("iteration"); ax.set_ylabel("tokens routed")
+          +; ax.legend(fontsize=8)                                       
+      123 +    save(fig, out_dir, "07_top5_busiest_layer.png")           
+      124  
+      118 -    plt.tight_layout(rect=[0, 0, 1, 0.97])                    
+      119 -    save = os.path.join(out_dir, "eda_overview.png")          
+      120 -    fig.savefig(save, dpi=120, bbox_inches="tight")           
+      121 -    plt.close(fig)                                            
+      122 -    print(f"  figure -> {os.path.relpath(save, REPO_DIR)}")   
+      125 +    # ---- 8. global imbalance over time (mean ideal-PAR acros
+          +s layers, per iter) ----                                      
+      126 +    # per-iter, per-layer PAR = max/mean over experts; average
+          + across layers.                                               
+      127 +    par_t = (af.max(axis=2) / af.mean(axis=2)).mean(axis=1)   
+          +# (iters,)                                                    
+      128 +    fig, ax = plt.subplots(figsize=(11, 5))                   
+      129 +    ax.plot(par_t, color="tab:orange", lw=0.7)                
+      130 +    ax.axhline(par_t.mean(), ls="--", color="k", label=f"mean 
+          +{par_t.mean():.2f}")                                          
+      131 +    ax.set_title(f"{tag}: instantaneous mean ideal-PAR across 
+          +layers over time")                                            
+      132 +    ax.set_xlabel("iteration"); ax.set_ylabel("mean ideal PAR"
+          +); ax.legend()                                                
+      133 +    save(fig, out_dir, "08_par_over_time.png")                
+      134  
+      135 +    # ---- 9. rank stability: early vs late per-(layer,expert)
+          + load ----                                                    
+      136 +    w = min(256, n_iter // 4)                                 
+      137 +    early = af[:w].mean(axis=0).ravel()                       
+      138 +    late = af[-w:].mean(axis=0).ravel()                       
+      139 +    re = np.argsort(np.argsort(early)); rl = np.argsort(np.arg
+          +sort(late))                                                   
+      140 +    corr = np.corrcoef(re, rl)[0, 1]                          
+      141 +    fig, ax = plt.subplots(figsize=(7, 7))                    
+      142 +    ax.scatter(early, late, s=4, alpha=0.25, color="tab:blue")
+      143 +    lim = max(early.max(), late.max())                        
+      144 +    ax.plot([0, lim], [0, lim], "--", color="gray")           
+      145 +    ax.set_title(f"{tag}: expert load early vs late  (rank cor
+          +r {corr:.3f})")                                               
+      146 +    ax.set_xlabel(f"avg load, first {w} iters"); ax.set_ylabel
+          +(f"avg load, last {w} iters")                                 
+      147 +    save(fig, out_dir, "09_rank_stability.png")               
+      148  
+      149 +    # ---- 10. throughput: tokens routed per iteration ----   
+      150 +    fig, ax = plt.subplots(figsize=(11, 5))                   
+      151 +    ax.plot(tokens_per_iter, color="tab:gray", lw=0.7)        
+      152 +    ax.set_title(f"{tag}: tokens per iteration (sum/{TOP_K})")
+      153 +    ax.set_xlabel("iteration"); ax.set_ylabel("tokens")       
+      154 +    save(fig, out_dir, "10_tokens_per_iter.png")              
+      155 +                                                              
+      156 +                                                              
+      157  if __name__ == "__main__":
+      158      for m in ["DS-R1", "Qwen3"]:
+      159          analyze(m)
+
+❯ lets also get the distrubition 
+
+● Let me add distribution graphs too (raw load-value distribution and the
+  per-expert average-load distribution), then run.
+
+● Update(experiments/explore_traces.py)
+  ⎿  Added 19 lines
+      153      ax.set_xlabel("iteration"); ax.set_ylabel("tokens")
+      154      save(fig, out_dir, "10_tokens_per_iter.png")
+      155  
+      156 +    # ---- 11. distribution of raw per-(iter,layer,expert) loa
+          +d values ----                                                 
+      157 +    fig, ax = plt.subplots(figsize=(9, 5))                    
+      158 +    ax.hist(af.ravel(), bins=100, color="tab:cyan", edgecolor=
+          +"none")                                                       
+      159 +    ax.axvline(af.mean(), ls="--", color="k", label=f"mean {af
+          +.mean():.1f}")                                                
+      160 +    ax.set_title(f"{tag}: distribution of expert load values (
+          +every iter/layer/expert)")                                    
+      161 +    ax.set_xlabel("tokens routed to an expert in one iteration
+          +"); ax.set_ylabel("count")                                    
+      162 +    ax.set_yscale("log"); ax.legend()                         
+      163 +    save(fig, out_dir, "11_load_value_distribution.png")      
+      164  
+      165 +    # ---- 12. distribution of time-averaged per-expert load (
+          +per layer overlaid) ----                                      
+      166 +    fig, ax = plt.subplots(figsize=(9, 5))                    
+      167 +    ax.hist(layer_load.ravel(), bins=60, color="tab:olive", ed
+          +gecolor="k", alpha=0.85)                                      
+      168 +    even = layer_load.mean()                                  
+      169 +    ax.axvline(even, ls="--", color="tab:red", label=f"even-lo
+          +ad target {even:.1f}")                                        
+      170 +    ax.set_title(f"{tag}: distribution of time-avg load across
+          + all (layer, expert) slots")                                  
+      171 +    ax.set_xlabel("avg tokens / iteration"); ax.set_ylabel("nu
+          +mber of (layer,expert) slots")                                
+      172 +    ax.legend()                                               
+      173 +    save(fig, out_dir, "12_avg_load_distribution.png")        
+      174 +                                                              
+      175 +                                                              
+      176  if __name__ == "__main__":
+      177      for m in ["DS-R1", "Qwen3"]:
+      178          analyze(m)
+
+● Bash(rm -f experiments/results/eda/*/eda_overview.png &&
+      /home/wli/miniconda3/bin/python experiments/explore_traces.py && echo "===
+      files ===" && ls -1 experiments/r…)
+  ⎿  === DS-R1  shape=(6144, 58, 256) ===
+       ideal-PAR/layer mean/min/max: 4.598/2.371/12.667
+       Gini/layer      mean/min/max: 0.269/0.202/0.388
+     … +43 lines (ctrl+o to expand)
+
+● All 12 graphs generated per model (24 images). Let me spot-check a few of the
+  new/key ones — the linear heatmap and the two distribution plots.
+
+  Read 3 files (ctrl+o to expand)
+
+● Done — both requests handled. The eda_overview.png grid is gone, replaced by
+  12 separate images per model (24 total) in
+  experiments/results/eda/{DS-R1,Qwen3}/, the heatmap is now linear, and I added
+  the distribution plots you asked for.
+
+  The full set (one file each)
+
+  ┌─────┬─────────────────────────────┬──────────────────────────────────────┐
+  │  #  │            File             │                Shows                 │
+  ├─────┼─────────────────────────────┼──────────────────────────────────────┤
+  │ 01  │ heatmap_load.png            │ layer × expert avg load (linear now) │
+  ├─────┼─────────────────────────────┼──────────────────────────────────────┤
+  │ 02  │ par_per_layer.png           │ ideal PAR per layer                  │
+  ├─────┼─────────────────────────────┼──────────────────────────────────────┤
+  │ 03  │ gini_per_layer.png          │ skew per layer                       │
+  ├─────┼─────────────────────────────┼──────────────────────────────────────┤
+  │ 04  │ lorenz_load_share.png       │ cumulative load concentration        │
+  ├─────┼─────────────────────────────┼──────────────────────────────────────┤
+  │ 05  │ expert_load_sorted.png      │ total load per expert, sorted        │
+  ├─────┼─────────────────────────────┼──────────────────────────────────────┤
+  │ 06  │ par_hist.png                │ distribution of per-layer PAR        │
+  ├─────┼─────────────────────────────┼──────────────────────────────────────┤
+  │ 07  │ top5_busiest_layer.png      │ hot experts over time                │
+  ├─────┼─────────────────────────────┼──────────────────────────────────────┤
+  │ 08  │ par_over_time.png           │ global imbalance vs iteration        │
+  ├─────┼─────────────────────────────┼──────────────────────────────────────┤
+  │ 09  │ rank_stability.png          │ early vs late load scatter           │
+  ├─────┼─────────────────────────────┼──────────────────────────────────────┤
+  │ 10  │ tokens_per_iter.png         │ throughput over time                 │
+  ├─────┼─────────────────────────────┼──────────────────────────────────────┤
+  │ 11  │ load_value_distribution.png │ distribution of raw load values      │
+  │     │                             │ (every iter/layer/expert)            │
+  ├─────┼─────────────────────────────┼──────────────────────────────────────┤
+  │ 12  │ avg_load_distribution.png   │ distribution of time-avg load across │
+  │     │                             │  all slots                           │
+  └─────┴─────────────────────────────┴──────────────────────────────────────┘
+
+  What the distributions reveal
+
+  The two new plots make the skew concrete and reinforce the strategy:
+
+  - #11 (raw values, log-y): sharp peak near the mean (~63 tokens for DS-R1)
+  with a long right tail out to ~1300 — i.e. most expert-slots are near-average,
+  but a small fraction get hammered 5–20× harder in any given iteration. That
+  long tail is exactly the load a placement algorithm must split via
+  replication.
+  - #12 (time-avg per slot): right-skewed — for Qwen3, most (layer,expert) slots
+  sit below the even-load target of 106.8, with a tail of overloaded slots
+  stretching to ~700. Confirms Qwen3 is more lopsided than DS-R1 (matches Gini
+  0.41 vs 0.27).
+
+  The linear heatmap (#01) tells the same story visually: a near-uniform dark
+  field with a handful of bright hot experts (DS-R1's brightest sits in layer
+  21, the busiest layer) — those bright cells are the entire optimization
+  target.
+
+  A couple of honest notes:
+  - The heatmap is time-averaged, so transient spikes are smoothed out; #11 is
+  where you see the per-iteration extremes.
+  - #11 uses a log y-axis (it's a histogram axis, not the heatmap color scale
+  you asked to keep linear) — without it the tail is invisible against the
+  ~17M-count peak. Say the word if you want it linear anyway.
+
+  Want me to render these for a side-by-side DS-R1 vs Qwen3 comparison, or move
+  on to drafting the skew-driven rebalance()?
+
+✻ Sautéed for 1m 49s
+
+※ recap: We're exploring the MoE competition's expert-hotness traces; I've built experiments/explore_traces.py which outputs 12 EDA graphs per model including distributions. Next action: decide whether to add a DS-R1 vs Qwen3 side-by-side comparison or start drafting the skew-driven rebalance() submission. (disable recaps in /config)
+
+❯ in the input whats the window.                                                
+
+● The window is the trailing slice of recent iterations the simulator hands you
+  — its length is the config value collection_interval.
+
+  Where it comes from
+
+  In dynamic_lb_simulator.py:168:
+
+  train_window = self.expert_hotness[i - self.cfg.collection_interval : i]
+
+  So when the simulator decides to call your rebalance() at iteration i, it
+  passes the last collection_interval iterations of history, ending just before
+  i. That slice is the hotness argument:
+
+  hotness.shape == (collection_interval, n_layers, n_experts)
+
+  It's the most recent batches only — never the future, never the whole trace.
+
+  What the length actually is
+
+  collection_interval is set per algorithm in run():
+
+  - DS-EPLB → collection_interval = 1024 (dynamic_lb_simulator.py:220). So
+  hotness is (1024, n_layers, n_experts).
+  - Default → 0 (it never rebalances, so no window).
+  - The base config default is 128, marked as the hyperparameter to tune for a
+  proposed algorithm (dynamic_lb_simulator.py:352).
+
+  So for the real algorithm slot, the window length is a knob you choose —
+  that's exactly what the experiments/ds_eplb_sweep.py runs were sweeping.
+
+  What one row of the window means
+
+  Each row is one iteration ≈ one batch of traffic (~117k tokens for DS-R1,
+  ~161k for Qwen3, ×8 routes). So a window of 1024 means "summarize the load
+  over the last ~1024 batches, then decide a placement." Inside the DeepSeek
+  adapter it's immediately collapsed to a single load vector
+  (eplb_algorithms/__init__.py:29, weight = tokens_per_expert.sum(dim=0)) — the
+  window is summed over time into per-expert totals.
+
+  Why the size matters (the tradeoff)
+
+  - Longer window → smoother, more stable load estimate (less noise), but slower
+  to react if load shifts. Given our EDA showed load is very stable (rank corr
+  0.98), a long window is basically free accuracy here.
+  - Shorter window → reacts faster to drift, but noisier — you risk redeploying
+  based on a transient spike, wasting transfer cost.
+
+  There's also a second timing knob separate from the window: how often
+  rebalance() is called. The next call only happens at i == redeploy_finish_iter
+  + collection_interval + 1 (dynamic_lb_simulator.py:166) — i.e. after the
+  previous redeployment fully finishes plus another collection_interval gap. So
+  the same value controls both the window length and the minimum spacing between
+  rebalances.
+
+✻ Cogitated for 25s
+
+❯ can we change the window size? is it something we can modify?                 
+
+● Depends on which hat you're wearing. Short version: if you're editing/running 
+  the simulator (what you're doing now) — yes, it's a one-line config change. If
+  you're a participant submitting only submission.py — no, you can't grow it, 
+  you can only use less of what you're given.
+
+  Let me check how the sweep script already varies it, to confirm.
+  Read 1 file (ctrl+o to expand)
+
+● Confirmed by the sweep script. Yes — but how you change it depends on your
+  role.
+
+  Yes, if you're running the simulator (your situation)
+
+  The window length is just the interval / collection_interval parameter, and
+  it's already designed to be swept. experiments/ds_eplb_sweep.py:332 exposes it
+  directly:
+
+  parser.add_argument("--intervals", nargs="*", type=int,
+                      default=[256, 512, 1024, 2048, 4096])
+
+  and line 143 feeds it straight into the window:
+
+  train_window = hotness[i - interval:i]
+
+  So you can change it three ways:
+  - Sweep script: python experiments/ds_eplb_sweep.py --intervals 128 256 512 
+  ...
+  - Main simulator: edit dynamic_lb_simulator.py:220
+  (new_cfg.collection_interval = 1024) or the base config default (:352).
+  - It's a plain int attribute — nothing stops you setting any value ≥ 1.
+
+  No, if you're a participant submitting only submission.py
+
+  Then you receive the window the grader chose; you don't set it. Your API is
+  rebalance(hotness, n_device, n_red_expert) returning (change, layers_priority,
+  deployment, None) — there's no field to request a window size. Two
+  consequences:
+
+  - You can't make it bigger. You only get the slice handed to you; you can't
+  see further back in time than that.
+  - You can make it effectively smaller — sub-slice inside your function: recent
+  = hotness[-256:]. Use less history than you were given if you want faster
+  reactivity.
+
+  One important coupling to remember
+
+  In this simulator, collection_interval is a single knob doing two jobs
+  (dynamic_lb_simulator.py:166):
+
+  if i == redeploy_finish_iter + self.cfg.collection_interval + 1:
+
+  It sets both the window length and the minimum gap between rebalances. So
+  bumping it from 1024 → 2048 means "look at twice as much history" and
+  "rebalance half as often." If you want to decouple those (e.g. long window but
+  frequent rebalancing), you'd have to edit the simulator to use two separate
+  parameters — they're fused right now.
+
+  One caveat I can't verify from this repo: whether the real Codabench grader
+  lets participants declare their preferred collection_interval, or fixes it.
+  Here it's purely a simulator-side config. If the competition fixes it, only
+  the sub-slice trick is available to you.
+
+✻ Crunched for 36s
+
+❯ and how often it pop or the rebalance can we change it too?                   
+
+● Good — there are actually three separate timing mechanisms in the loop, and
+  they're controllable to different degrees. Let me map them, because "how often
+  it pops" and "how often it rebalances" are two different things.
+
+  The three clocks in forward()
+
+  1. How often rebalance() is called (the gap between cycles) —
+  dynamic_lb_simulator.py:166:
+  if i == redeploy_finish_iter + self.cfg.collection_interval + 1 and
+  expert_ready:
+  Controlled by collection_interval. Configurable (in the simulator) — but as I
+  noted, it's fused with the window length. Change it the same way: config
+  attribute or --intervals in the sweep.
+
+  2. How often it "pops" (the drain rate) — dynamic_lb_simulator.py:154-158:
+  if not expert_ready and i > algo_finish_iter and len(cur_layers_priority) > 0:
+      adjust_layer_idx = cur_layers_priority.pop(0)   # exactly ONE layer
+      self.transmit_amount_per_iter[i-1] += compute_redeploy_cost(...)
+      cur_deploy_table[adjust_layer_idx] = next_deploy_table[adjust_layer_idx]
+  This pops exactly one layer per iteration — it's hardcoded, not a config knob.
+  The placement physically rolls out one layer at a time, charging that layer's
+  transfer cost. To change the rate (e.g. 2 layers/iter), you'd have to edit 
+  the simulator — there's no parameter for it in dynamic_lb_simulator.py.
+
+  3. Algorithm compute time (a blocking delay) —
+  dynamic_lb_simulator.py:177-178:
+  algo_execute_iters = math.ceil((et - st) / 0.08)
+  algo_finish_iter = i + algo_execute_iters - 1
+  The wall-clock time your rebalance() takes is converted into simulated
+  iterations during which nothing can be applied. A slow algorithm delays its
+  own rollout. Not a knob — it's measured from your code. (Faster rebalance() =
+  less delay.)
+
+  What you can actually control, by role
+
+  As a participant (submission.py) — you don't touch the drain rate or the gap
+  directly, but you steer them through your return values:
+
+  ┌──────────────────────┬──────────────────────────────────────────────────┐
+  │      You return      │                 Effect on timing                 │
+  ├──────────────────────┼──────────────────────────────────────────────────┤
+  │                      │ Skip this cycle entirely — no pops, zero         │
+  │ change=False         │ transfer cost. This is your main "how often"     │
+  │                      │ lever.                                           │
+  ├──────────────────────┼──────────────────────────────────────────────────┤
+  │ short                │ Fewer pops → redeployment finishes sooner →      │
+  │ layers_priority (few │ redeploy_finish_iter comes earlier → next cycle  │
+  │  layers)             │ sooner. Also less total transfer.                │
+  ├──────────────────────┼──────────────────────────────────────────────────┤
+  │ order of             │ Which layers get fixed first (drained one per    │
+  │ layers_priority      │ iter in this order). Put the worst-imbalance     │
+  │                      │ layers first.                                    │
+  └──────────────────────┴──────────────────────────────────────────────────┘
+
+  So a participant effectively controls whether to rebalance, how many layers,
+  and in what order — but not the 1-layer-per-iteration drain speed, and not the
+  inter-cycle gap (that's collection_interval, the grader/simulator's).
+
+  As the simulator owner (you, editing the repo): you can change all of it. The
+  sweep script already adds a related knob — max_layers_per_cycle
+  (ds_eplb_sweep.py:147-148) — which caps how many layers a cycle redeploys (it
+  truncates the priority list):
+  selected_layers = selected_layers[:max_layers_per_cycle]
+  Note that caps the count per cycle, not the drain rate — it still pops one per
+  iteration, just fewer total. If you want a true multi-layer-per-iteration
+  drain, that's a simulator edit.
+
+  Bottom line
+
+  - Inter-cycle frequency → collection_interval: yes, configurable (coupled to
+  window).
+  - Pop/drain rate (1 layer/iter) → hardcoded; only changeable by editing the
+  simulator.
+  - Per-cycle layer count → not in the main sim, but the sweep script exposes
+  --max-layers.
+  - As a participant → you don't set these directly; you influence them via
+  change, and the length/order of layers_priority.
+
+  Want me to add a couple of decoupled knobs (separate window vs. cadence, and a
+  configurable drain rate) to a copy of the simulator so you can sweep them
+  independently?
+
+✻ Baked for 34s
+
+❯ lets get inspired by finance and the 6month trailing window.                  
+
+● Love this framing — it's actually a tight analogy, not just a metaphor. Let me
+  make the mapping explicit, then test whether the finance signals actually
+  hold in this data (I have it loaded, so let's not hand-wave).
+
+  The finance ↔ MoE mapping
+
+  ┌──────────────────────────┬──────────────────────────────────────────────┐
+  │         Finance          │                 This problem                 │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │ Assets / positions       │ Experts                                      │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │ Asset returns / volume   │ Tokens routed to an expert (load)            │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │ Trailing window of       │ hotness[i-W:i] — the trailing load window    │
+  │ returns                  │                                              │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │ Portfolio weights        │ The deployment (how many replicas/slots per  │
+  │                          │ expert)                                      │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │ Tracking error vs.       │ PAR (deviation from perfectly even load)     │
+  │ benchmark                │                                              │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │ Transaction costs        │ Transfer cost of moving experts between GPUs │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │ No-trade / rebalancing   │ Only redeploy when predicted PAR gain >      │
+  │ bands                    │ transfer cost                                │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │ Alpha decay              │ How fast a good placement goes stale         │
+  ├──────────────────────────┼──────────────────────────────────────────────┤
+  │ EWMA / momentum / vol    │ Recency-weighted load, trend, load variance  │
+  └──────────────────────────┴──────────────────────────────────────────────┘
+
+  The single most useful import from finance here is the no-trade band:
+  portfolio managers don't rebalance continuously because every trade costs —
+  they let weights drift inside a tolerance band and only trade when drift
+  breaches it. That's exactly the PAR-vs-transfer-cost tradeoff in this
+  competition.
+
+  But before designing on top of that, two empirical questions decide
+  everything: (1) does recency-weighting (EWMA, like a 6-month trailing window) 
+  predict future hot experts better than a flat long average? and (2) how fast 
+  does a placement's edge decay (which sets how often to "trade")? Let me
+  measure both.
+
+● Write(experiments/trailing_window_analysis.py)
+  ⎿  Wrote 151 lines to experiments/trailing_window_analysis.py
+      2 """Finance-inspired analysis of trailing windows for expert load.
+      3 Treats each expert like an asset and its per-iteration token coun
+      4 return/volume series. Answers two questions that decide a placeme
+        nt policy:
+      5 
+        like aEstimation window: does a recency-weighted estimate (EWMA, 
+      7       6-month trailing window) predict the *next* period's hot ex
+      8       than a flat simple moving average (SMA)? Tested over severa
+        l window
+      9       lengths / half-lives.
+     … +175 lines (ctrl+o to expand)
+
+● Let me remove the unused placeholder function before running.
+
+● Update(experiments/trailing_window_analysis.py)
+  ⎿  Removed 8 lines
+      45      return float(np.mean(corrs))
+      46  
+      47  
+      48 -def ewma_estimate(window):                                     
+      49 -    """EWMA over a trailing window. window: (W, n_layers, n_exp
+         -erts), most                                                    
+      50 -    recent last. Returns (n_layers, n_experts)."""             
+      51 -    W = window.shape[0]                                        
+      52 -    # weights computed from half-life; most recent gets highest
+         - weight                                                        
+      53 -    return window  # placeholder, replaced below               
+      54 -                                                               
+      55 -                                                               
+      48  def analyze(model):
+      49      path = os.path.join(REPO_DIR, "trace", model, "LmSys.npy")
+      50      af = np.load(path).astype(np.float64)  # (iters, layers, ex
+          perts)
+
+● Bash(time /home/wli/miniconda3/bin/python
+      experiments/trailing_window_analysis.py)
+  ⎿  === DS-R1  shape=(6144, 58, 256) ===
+       best SMA  window=   32  rank-corr=0.9572
+       best EWMA halflife=   32  rank-corr=0.9543
+     … +15 lines (ctrl+o to expand)
+
+  Read 2 files (ctrl+o to expand)
+
+● Two new figures per model (13_trailing_window_sweep.png, 14_signal_decay.png),
+  and the finance lens paid off — the data has a clear regime. Here's what it
+  says.
+
+  Finding 1 — It's a momentum/persistent regime, not mean-reverting
+
+  Lag-1 autocorrelation of per-expert load: +0.56 (DS-R1), +0.47 (Qwen3).
+  Positive and strong. In finance terms, expert load trends — an expert that's
+  hot now stays hot. That's the precondition for any trailing-window strategy to
+  work: the recent past genuinely predicts the near future here. (If it were
+  negative/mean-reverting, trailing windows would be actively misleading.)
+
+  Finding 2 — Recency weighting (EWMA) buys you almost nothing
+
+  The sweep (fig 13): SMA and EWMA are basically tied, 0.95–0.997 rank-corr
+  either way. Because load is so persistent, fancy decay weighting doesn't beat
+  a plain flat average. Lesson: don't overengineer the estimator — a simple
+  trailing mean is as good as a 6-month-style EWMA. If anything, shorter windows
+  (32–64) edge out longer ones for predicting the immediate next period,
+  because they track slow drift without lag.
+
+  Finding 3 — The "alpha decay" curve reveals seasonality in DS-R1
+
+  The decay curve (fig 14) is the interesting one:
+  - Qwen3: flat at ~0.99 for every horizon out to 2048. The placement
+  essentially never goes stale. This is textbook buy-and-hold — rebalance once,
+  hold forever, pay near-zero transfer cost.
+  - DS-R1: U-shaped — strong (>0.94) out to ~256 ahead, dips to 0.77 around 
+  H≈1024, then recovers to 0.99 at H≈2048. That's a seasonal/cyclical signal:
+  the hot set rotates over ~1000 iterations and then comes back. Like a cyclical
+  factor in markets.
+
+  The finance-informed policy
+
+  Putting it together, this is a low-turnover portfolio: high persistence + a
+  transfer-cost penalty → the optimal strategy is rare rebalancing with a
+  no-trade band:
+
+  1. Estimate with a modest flat trailing window (~256). Skip EWMA — proven not
+  worth it here.
+  2. No-trade band: recompute the ideal placement each cadence, but only apply
+  it when the modeled gain clears the cost:
+  redeploy only if   60 · (PAR_now − PAR_new)  >  transfer_time(changed_slots)
+  2. This is the portfolio-rebalancing band translated 1:1 — it auto-suppresses
+  churn when load is stable (Qwen3 → almost never trades) and only fires on real
+  regime shifts.
+  3. DS-R1's cycle: two defensible plays — (a) hold through it, since the
+  placement is good again by H≈2048 and you save the round-trip transfer cost;
+  or (b) rebalance at the cycle's trough only if the mid-cycle PAR penalty over
+  those ~1000 iterations outweighs the transfer cost. The no-trade band decides
+  this automatically — no need to hardcode the period.
+
+  One caveat, same as before: this is the LmSys sample only. If a hidden dataset
+  (Mix/WildChat) turns out volatile or mean-reverting, that's exactly where
+  EWMA/shorter windows and a tighter band would start to matter — so I'd build
+  the policy with the window and band as parameters, not constants.
+
+  Want me to implement this as a submission.py — a no-trade-band rebalance()
+  with a tunable window and threshold — and benchmark it against the DS-EPLB and
+  hot-expert baselines on both traces?
+
+✻ Baked for 2m 32s
+
+❯ yes                                                                           
+
+● This is a real build, so let me ground it: confirm the scoring constants and
+  check torch is available (DS-EPLB needs it as the baseline).
+
+● Bash(cd /home/wli/coding/hack/moe-competition-sim
+      /home/wli/miniconda3/bin/python -c "import torch; print('torch',
+      torch.__version__)" 2>&1 | head -1…)
+  ⎿  torch 2.12.0+cu130
+     --- adapter smoke ---
+     change True prio (58,) deploy (58, 32, 9)
+
+● torch works and the DS-EPLB adapter returns (58, 32, 9) — n_exp_per_dev = 
+  (256+32)//32 = 9. Now let me write the submission.
+
+● Write(submissions/finance_band/submission.py)
+  ⎿  Wrote 110 lines to submissions/finance_band/submission.py
+       2 """Finance-inspired no-trade-band rebalancer.
+       3 Analogy (see experiments/trailing_window_analysis.py for the evi
+         dence):
+       4   experts          ~ assets
+       5   trailing hotness ~ a returns/volume window
+       7   PAR              ~ tracking error vs. an even-load benchmark
+       8   transfer cost    ~ transaction cost
+       9 
+      10 Because expert load is highly persistent (lag-1 autocorr ~0.5) a
+         nd recency
+     … +128 lines (ctrl+o to expand)
+
+● Now the benchmark harness that runs the official forward-loop scoring for each
+  method:
+
+● Write(experiments/benchmark_submissions.py)
+  ⎿  Wrote 149 lines to experiments/benchmark_submissions.py
+         lt baselines.participant submissions against the DS-EPLB / Defau
+       3 Replays the official forward-loop semantics from dynamic_lb_simu
+         lator.py
+          PAR averagedr-iteration redeploy drain, algorithm-time penalty,
+       5 over all iterations/layers, transfer cost = changed expert slots
+       6 mean PAR, transfer volume, modeled time, and score (100 * baseli
+       7 baseline = DS-EPLB) for each method on the committed LmSys trace
+         s.
+       9 import importlib.util
+      10 import os
+     … +161 lines (ctrl+o to expand)
+
+● Bash(time /home/wli/miniconda3/bin/python
+      experiments/benchmark_submissions.py)
+  ⎿  === DS-R1 / LmSys / EP32  (interval=1024) ===
+       [  0.9s] Default        ran
+       [  8.5s] DS-EPLB        ran
+     … +23 lines (ctrl+o to expand)
+
+● Both submissions beat the DS-EPLB baseline. Let me run a quick TAU
+  (band-width) sweep to show the tradeoff the band controls, since that's the
+  whole point.
+● Bash(cd /home/wli/coding/hack/moe-competition-sim
+      /home/wli/miniconda3/bin/python - <<'PY'…)
+  ⎿  === DS-R1 EP32  (DS-EPLB baseline: PAR 1.2646, tx 82507, score 100) ==
+     =
+          TAU   meanPAR   transmit   total_s   score
+     … +17 lines (ctrl+o to expand)
+
+● That sweep is the money shot — it reveals the no-trade band working exactly as
+  the finance analogy predicts. Let me bump the submission's default TAU to the
+  sweet spot.
+
+● Update(submissions/finance_band/submission.py)
+  ⎿  Added 1 line, removed 1 line
+      24  
+      25  _w = os.environ.get("FB_WINDOW")
+      26  WINDOW = None if _w in (None, "", "all") else int(_w)
+      27 -TAU = float(os.environ.get("FB_TAU", "0.05"))                  
+      27 +TAU = float(os.environ.get("FB_TAU", "0.2"))  # swept sweet spo
+         +t on LmSys EP32                                                
+      28  
+      29  # Persistent placement state across calls within a run (single 
+          process).
+      30  _STATE = {}
+
+● Done. Built the finance-inspired submission, benchmarked it against all
+  baselines, and tuned the band. It beats DS-EPLB on both traces.
+
+  Results (LmSys, EP32, score = 100 × DS-EPLB_time / total_time)
+
+  DS-R1 — baseline DS-EPLB = 100.0
+
+  ┌───────────────────────────┬──────────┬──────────┬─────────┬───────┐
+  │          method           │ mean PAR │ transmit │ total_s │ score │
+  ├───────────────────────────┼──────────┼──────────┼─────────┼───────┤
+  │ Default (no redundancy)   │    1.630 │        0 │    97.8 │  85.9 │
+  ├───────────────────────────┼──────────┼──────────┼─────────┼───────┤
+  │ smoke (static, redundant) │    1.630 │        0 │    97.8 │  85.9 │
+  ├───────────────────────────┼──────────┼──────────┼─────────┼───────┤
+  │ hot_expert                │    1.415 │    8,639 │    85.7 │  98.0 │
+  ├───────────────────────────┼──────────┼──────────┼─────────┼───────┤
+  │ DS-EPLB                   │    1.266 │   82,491 │    84.0 │ 100.0 │
+  ├───────────────────────────┼──────────┼──────────┼─────────┼───────┤
+  │ finance_band (TAU 0.2)    │    1.241 │   16,641 │    76.1 │ 110.4 │
+  └───────────────────────────┴──────────┴──────────┴─────────┴───────┘
+
+  Qwen3 — baseline DS-EPLB = 100.0
+
+  ┌────────────────────────┬──────────┬──────────┬─────────┬───────┐
+  │         method         │ mean PAR │ transmit │ total_s │ score │
+  ├────────────────────────┼──────────┼──────────┼─────────┼───────┤
+  │ Default / smoke        │    1.982 │        0 │   118.9 │  69.9 │
+  ├────────────────────────┼──────────┼──────────┼─────────┼───────┤
+  │ hot_expert             │    1.601 │    9,691 │    97.0 │  85.7 │
+  ├────────────────────────┼──────────┼──────────┼─────────┼───────┤
+  │ DS-EPLB                │    1.291 │   57,816 │    83.1 │ 100.0 │
+  ├────────────────────────┼──────────┼──────────┼─────────┼───────┤
+  │ finance_band (TAU 0.2) │    1.282 │   14,916 │    78.4 │ 106.1 │
+  └────────────────────────┴──────────┴──────────┴─────────┴───────┘
+
+  Why it wins — the band does exactly what the analogy predicted
+
+  The TAU sweep is the proof. DS-R1:
+
+  ┌─────────────────────┬──────────┬──────────┬───────┐
+  │  TAU (band width)   │ mean PAR │ transmit │ score │
+  ├─────────────────────┼──────────┼──────────┼───────┤
+  │ 0.00 (always trade) │    1.259 │   82,509 │ 100.4 │
+  ├─────────────────────┼──────────┼──────────┼───────┤
+  │                0.10 │    1.240 │   29,939 │ 108.6 │
+  ├─────────────────────┼──────────┼──────────┼───────┤
+  │                0.20 │    1.241 │   16,641 │ 110.4 │
+  └─────────────────────┴──────────┴──────────┴───────┘
+
+  At TAU=0 it trades as much as DS-EPLB (~82k slot-moves). Widening the no-trade
+  band to 0.2 cuts transfer ~5× (82k → 17k) while PAR holds or improves
+  slightly — so transfer time drops from ~8s to ~1.6s and the score jumps. Qwen3
+  shows the same shape (~4× less transfer). This is the
+  portfolio-rebalancing-band result translated 1:1: most of DS-EPLB's trades 
+  were churn that didn't improve balance enough to justify their cost.
+
+  The slight PAR improvement with fewer trades is a nice side effect: every
+  redeploy spends ~58 iterations in a half-updated state (the one-layer-per-iter
+  drain) plus the compute-time penalty, so suppressing low-value trades keeps
+  the system in its good stable placement more of the time.
+
+  Files added
+
+  - submissions/finance_band/submission.py — the no-trade-band rebalance();
+  tunable WINDOW/TAU (env-overridable: FB_TAU, FB_WINDOW).
+  - experiments/benchmark_submissions.py — replays the official forward-loop
+  scoring for any submission.
+  - experiments/trailing_window_analysis.py — the finance evidence (persistence,
+  EWMA-vs-SMA, alpha decay).
+
+  Honest caveats
+
+  - LmSys + EP32 only — the committed traces. Hidden datasets (Mix/WildChat) and
+  larger EP could shift the sweet spot; that's why TAU/WINDOW are parameters,
+  not constants.
+  - Time-based nondeterminism: the simulator turns rebalance() wall-clock time
+  into delay iterations, so scores wobble ~0.2 run-to-run (DS-EPLB baseline
+  drifted 1.2646↔1.2660 across runs). Differences here are well outside that
+  noise.
+  - The placement builder is a greedy LPT heuristic, not optimal — there's
+  likely more PAR to extract with a transfer-cost-aware layout (reuse slot
+  positions to cut diff count when it does trade).
+
+  Want me to (a) sweep EP sizes (64/128/256) and add transfer-aware placement to
+  push the score further, or (b) commit this on a branch?
+
+✻ Cogitated for 6m 46s
+
+❯ how can I submit it to the benchmark?                                         
+
+● Let me check whether the repo has any packaging/submission instructions or
+  config beyond the README mention of Codabench.
+
+● Bash(cd /home/wli/coding/hack/moe-competition-sim
+      grep -rinE
+      "codabench|submit|submission|bundle|upload|leaderboard|ingestion|scoring"
+      --include=*.md --include=*.txt…)
+  ⎿  (eval):2: no matches found: --include=*.md
+     --- any yaml/zip/competition files anywhere ---
+     --- submissions tree ---
+     … +6 lines (ctrl+o to expand)
+
+● Bash(cd /home/wli/coding/hack/moe-competition-sim
+      grep -rin -e codabench -e submit -e bundle -e leaderboard -e upload
+      README.md USAGE.md REPO_MAP.md 2>/dev/null)
+  ⎿  REPO_MAP.md:32:Codabench submission bundle.
+
+● Short answer: this repo doesn't contain the submission tooling. The only
+  pointer is one line — REPO_MAP.md:32 says these files use "the same
+  rebalance(...) API expected by the Codabench submission bundle." There's no
+  competition.yaml, no ingestion/scoring program, and no upload instructions
+  committed here. So the actual submit step happens on the competition's
+  Codabench page, whose exact bundle format only that page defines.
+
+  What I can do is get your code into the shape Codabench expects and flag the
+  gotchas.
+
+  First, one robustness fix the server will need
+
+  On the grader your env vars won't be set (so the baked-in default TAU=0.2 is
+  what runs — good, already done). But my submission keeps module-level state
+  across calls, and if the grader reuses one process across multiple cases
+  (different model/EP) without calling reset(), the stale state has the wrong
+  shape and crashes. Let me make the state self-healing so it's safe no matter
+  how the grader drives it.
+
+● Update(submissions/finance_band/submission.py)
+  ⎿  Added 6 lines, removed 2 lines
+       90      for l in range(n_layers):
+       91          candidate[l] = _build_layer(load[l], n_device, n_exp_p
+           er_dev)
+       92  
+       93 -    cur = _STATE.get("deploy")                                
+       93 +    # Key state by problem shape so reused processes / new cas
+          +es auto-reset                                                 
+       94 +    # even if the grader never calls reset().                 
+       95 +    sig = (n_layers, n_experts, n_device, n_exp_per_dev)      
+       96 +    cur = _STATE.get("deploy") if _STATE.get("sig") == sig els
+          +e None                                                        
+       97      if cur is None:
+       95 -        # First cycle: starting placement is load-agnostic, so
+          - always deploy.                                               
+       98 +        # First cycle for this shape: start placement is load-
+          +agnostic -> deploy.                                           
+       99 +        _STATE["sig"] = sig                                   
+      100          _STATE["deploy"] = candidate.copy()
+      101          return True, np.arange(n_layers, dtype=np.int64), cand
+           idate, None
+      102  
+
+● Now let me verify it still works standalone (fresh, no env vars) and package
+  the bundle.
+
+● Bash(cd /home/wli/coding/hack/moe-competition-sim
+      echo "=== standalone self-contained check (no env, simulates 2 cases in
+      one process) ==="…)
+  ⎿  === standalone self-contained check (no env, simulates 2 cases in one
+     process) ===
+     TAU default = 0.2  WINDOW = None
+     … +13 lines (ctrl+o to expand)
+
+● Bundle built and validated: finance_band_submission.zip (just submission.py at
+  the archive root). The standalone check confirms it's self-contained (only
+  numpy), uses the baked-in TAU=0.2 with no env needed, suppresses no-gain
+  redeploys (call2 → change=False), and auto-resets on a shape change
+  mid-process — so it's safe however the grader drives it.
+
+  How to submit
+
+  I have to be honest: the exact submit mechanism isn't in this repo — the only
+  reference is REPO_MAP.md:32 ("Codabench submission bundle"). There's no
+  competition.yaml, scoring program, or upload script committed, and I don't
+  have the competition URL or your Codabench login. So the final step happens on
+  the competition's Codabench page. The standard Codabench flow is:
+
+  1. Log in to Codabench and open this competition's page (the organizers' link
+  — not in the repo).
+  2. Go to the "Participate" / "My Submissions" tab.
+  3. Upload finance_band_submission.zip.
+  4. Codabench runs your rebalance() against the hidden full trace set
+  (Mix/ShareGPT/WildChat × models × EP) and posts your score to the leaderboard.
+
+  Before you upload — confirm 3 things on the competition page
+
+  These are defined by their Codabench bundle config, which I can't see:
+
+  - Entry filename / layout — I put submission.py at the zip root (the most
+  common pattern, and what the example submissions imply). Some competitions
+  want it in a subfolder or alongside a metadata file. Match whatever the page
+  specifies.
+  - The rebalance signature — confirm it's rebalance(hotness, n_device, 
+  n_red_expert). The committed examples (smoke, hot_expert_baseline) use exactly
+  this, so you're aligned.
+  - Whether module-level state is allowed. My no-trade band needs memory across
+  calls to know "did the placement drift enough to re-trade." If their grader
+  runs each rebalance call in a fresh process (no persistence), the band can't
+  engage and it degenerates to "redeploy every cycle" (still ≈ DS-EPLB, score
+  ~100, not 110). The shape-keyed _STATE is the mechanism — verify their harness
+  keeps one process per case.
+
+  Rebuild the zip anytime
+
+  cd submissions/finance_band && zip -j ../../finance_band_submission.zip
+  submission.py
+
+  (-j flattens, so submission.py lands at the root.)
+
+  A couple of practical notes: the .zip and the __pycache__/ dirs are build
+  artifacts — don't commit them. And since the leaderboard runs on the hidden
+  datasets, treat my +10%/+6% as an in-sample estimate (LmSys/EP32 only); the
+  real score could differ if those traces are more volatile.
+
+  Want me to point a quick local check at how the grader likely loads it (import
+  submission from the zip and run it through benchmark_submissions.py) so you
+  can sanity-check the bundle before uploading?
+
+✻ Baked for 1m 25s
+
+※ recap: Goal: build a load-balancing submission for the MoE competition that beats the DS-EPLB baseline. Done: the finance-inspired no-trade-band `rebalance()` scores ~110/106 vs 100 and is zipped as `finance_band_submission.zip`. Next: upload that zip on the competition's Codabench page. (disable recaps in /config)
+
+❯ okay its scored 108, 8% increment. great. but you said you could improve it.  
+  Tell me more about it                                                         
+
+● Congrats — 108 on the hidden data means the no-trade band generalizes, not
+  just an LmSys artifact. Now, the key to knowing where the remaining points are
+  is to decompose the score. After the band did its job, the picture flipped.
+
+  The transfer term is basically gone — PAR is now ~98% of the cost
+
+  total_time = 60·mean_PAR + transfer_time. Plugging in the EP32 results:
+
+  ┌───────┬─────────────────────┬───────────────┬────────────────────┐
+  │ model │  60·PAR (compute)   │ transfer_time │ PAR share of total │
+  ├───────┼─────────────────────┼───────────────┼────────────────────┤
+  │ DS-R1 │ 60 × 1.2405 = 74.4s │          1.6s │              97.9% │
+  ├───────┼─────────────────────┼───────────────┼────────────────────┤
+  │ Qwen3 │ 60 × 1.2817 = 76.9s │          1.5s │              98.1% │
+  └───────┴─────────────────────┴───────────────┴────────────────────┘
+
+  So the band already squeezed transfer down to ~2%. Squeezing it further is 
+  diminishing returns. The whole game now is lowering mean_PAR. Concretely:
+  every 0.01 of PAR ≈ 0.6s ≈ ~0.8% of score. Getting DS-R1 from 1.24 → 1.15 is
+  roughly +7% — bigger than all remaining transfer savings combined.
+
+  That reframes what "improve it" means. Here's where the PAR headroom is,
+  ranked by expected impact.
+
+  1. Better packing — the biggest lever (PAR floor is 1.0)
+
+  My placement builder is greedy LPT (longest-processing-time): assign the
+  heaviest slot to the least-loaded device. LPT is only a ~4/3 approximation for
+  the makespan problem it's solving, so 1.24 is not the floor. Improvements:
+
+  - Local search after LPT: repeatedly swap/move experts between the max-loaded
+  and min-loaded devices whenever it lowers the max. Cheap, deterministic,
+  typically claws makespan most of the way to optimal. This alone could
+  plausibly get DS-R1 toward ~1.15–1.18.
+  - Joint replica + placement: right now I allocate replicas first
+  (water-filling), then pack. Deciding together — "would one more replica of
+  expert X reduce the max device load more than placing it elsewhere?" — does
+  strictly better.
+  - Target replicas at the binding constraint: only experts whose load exceeds
+  the mean device load can break the max; replicas spent below that line are
+  wasted. Tighten the rule.
+
+  2. The high-EP regime is where the real leaderboard points hide
+
+  I only benchmarked EP32, but the leaderboard scores EP 32/64/128/256. EP
+  changes the problem character:
+
+  - At EP32, each device holds (256+32)/32 = 9 experts → lots of averaging → PAR
+  already low (1.24) → LPT is near-optimal → little headroom.
+  - At EP256, each device holds (256+256)/256 = 2 experts → almost no averaging
+  → PAR is much higher and far more placement-sensitive, and LPT is far from
+  optimal with so few items per bin.
+
+  So the worst-PAR, highest-EP cases are exactly where packing quality matters 
+  most — and they're dragging your average down right now. Optimizing the
+  high-EP regime is probably the single biggest score opportunity, and I haven't
+  touched it.
+
+  3. Cheaper trades → lower TAU → lower PAR (transfer-awareness as an enabler)
+
+  Transfer-aware placement (keep an expert in the same (device, slot) position
+  across cycles so the diff count stays small) looks low-value on its own now.
+  But it has a second-order effect: if each trade is cheaper, you can afford a 
+  smaller TAU — rebalance more often, track load drift (especially DS-R1's
+  ~2048-cycle seasonality) more tightly → lower PAR. It shifts the whole
+  PAR-vs-transfer frontier outward rather than just trimming the 2%.
+
+  4. Estimator & seasonality (smaller, and model-specific risk)
+
+  We proved EWMA ≈ SMA here, so don't bother with decay weighting. But DS-R1's
+  alpha-decay dip (corr 0.77 at H≈1024) means a window-snapshot placement
+  degrades mid-cycle. Placing for the cycle average rather than the
+  instantaneous window could cut PAR variance and trades — but it's
+  DS-R1-specific, so it's a risk on the hidden datasets.
+
+  5. Speed up the builder (free, small)
+
+  The simulator charges ceil(rebalance_wall_time / 0.08) delay iterations during
+  which the old, worse placement stays live, nudging mean_PAR up. My builder
+  loops over layers in Python. Vectorizing it shaves that penalty — minor at
+  EP32, more relevant at 94 layers × high EP.
+
+  ---
+  Bottom line: transfer optimization is mostly spent; PAR via better packing — 
+  especially in the high-EP cases — is where the next 5–10% lives. I can't be
+  sure how much is recoverable without measuring (at EP32 we may already be near
+  the floor; at EP256 likely not), so the honest next step is to quantify the 
+  headroom: add LPT + local-search packing, then sweep EP 32→256 on both traces
+  and measure PAR before/after.
+
+  Want me to do that — build the improved packer and run the full EP sweep so we
+  see the actual PAR drop per EP before you re-submit?
+
+✻ Cogitated for 1m 24s
+
+❯ analyze those more in depth, will those improvement                           
+  work?'/home/wli/coding/hack/moe-competition-sim/prediction_result''/home/wli/ 
+  coding/hack/moe-competition-sim/scoring_result'                               
+
+● These directories weren't in the repo before — likely the actual grader's
+  output. Let me look; they should tell me how the real scoring works and
+  whether my proposed improvements actually move the needle.
+
+● Bash(cd /home/wli/coding/hack/moe-competition-sim
+      for d in prediction_result scoring_result; do…)
+  ⎿  ================ prediction_result ================
+     prediction_result
+     prediction_result/metrics.json
+     … +15 lines (ctrl+o to expand)
+
+● Bash(cd /home/wli/coding/hack/moe-competition-sim
+      echo "===== prediction_result/metrics.json ====="; cat
+      prediction_result/metrics.json…)
+  ⎿  ===== prediction_result/metrics.json =====
+     {
+       "cases": [
+     … +257 lines (ctrl+o to expand)
+
+● This is exactly what I needed — the real grader's per-case results across all 
+  24 hidden cases. Now I can test my improvement hypotheses against ground truth
+  instead of guessing. Let me first decompose where your 108 actually comes
+  from.
+● Bash(cd /home/wli/coding/hack/moe-competition-sim
+      /home/wli/miniconda3/bin/python - <<'PY'…)
+  ⎿  TOTAL time 2718.4s = compute 2593.9s (95.4%) + transmit 124.5s (4.6%)
+     transmit_amount total 1272532
+     … +18 lines (ctrl+o to expand)
+
+● Now the decisive test — is that high-EP PAR a packing problem (fixable by
+  better algorithms) or a replication-budget problem (fundamental)? Let me
+  measure my placement's PAR against the theoretical lower bound on both LmSys
+  traces across all EPs.
+
+● Bash(cd /home/wli/coding/hack/moe-competition-sim
+      /home/wli/miniconda3/bin/python - <<'PY'…)
+  ⎿  === DS-R1 (LmSys, time-avg load) ===
+         EP slots/dev  my_PAR  LB_PAR    gap  LS_PAR
+         32         9   1.010   1.000  0.010   1.000
+     … +9 lines (ctrl+o to expand)
+
+● This is the key measurement. When placing on the time-averaged load, my
+  packing already hits PAR ≈ 1.01–1.09 vs a lower bound of 1.000 — and local
+  search barely moves it. So packing is essentially solved; there is almost no
+  headroom there.
+
+  But the grader shows realized PAR of 2.12 at EP256. That gap isn't packing —
+  it's the difference between the average load (what I place on) and each
+  individual iteration's load. Let me confirm with an oracle test: if even
+  perfect per-iteration foresight can't beat ~2.1, the high PAR is irreducible.
+
+● Bash(cd /home/wli/coding/hack/moe-competition-sim
+      /home/wli/miniconda3/bin/python - <<'PY'…)
+  ⎿  === DS-R1 LmSys: realized PAR sources ===
+         EP  place-on-AVG  ORACLE/iter  gap(headroom)
+         32         1.151        1.011          0.141
+     … +9 lines (ctrl+o to expand)
+
+● The oracle result is decisive and overturns my earlier hypothesis. Two things
+  are now proven:
+
+  - Packing is solved — near-optimal (gap to lower bound ~0.01–0.09), so better
+  packing/local-search won't work.
+  - The high PAR is NOT a budget limit — perfect per-iteration foresight
+  (oracle) hits PAR ~1.02–1.09 even at EP256. The realized PAR comes entirely
+  from the gap between the load I place on (an average/window) and each 
+  iteration's actual load, and that gap grows with EP (0.08 → 0.40). That's a
+  prediction/variance problem.
+
+  So the real finance lever isn't packing — it's diversification: minimize
+  device-load variance, not just mean. Let me test the cleanest version (give
+  volatile experts more replicas, risk = mean + λ·std) on held-out iterations to
+  see if it actually moves realized PAR.
+
+● Bash(cd /home/wli/coding/hack/moe-competition-sim
+      /home/wli/miniconda3/bin/python - <<'PY'…)
+  ⎿  === DS-R1 LmSys (held-out realized PAR, place-once) ===
+         EP lam= 0.0 lam= 0.5 lam= 1.0 lam= 2.0 lam= 4.0
+        128     1.390    1.365    1.352    1.345    1.362
+     … +5 lines (ctrl+o to expand)
+
+● Variance-aware replication works — and it confirms the diversification thesis.
+  Giving volatile experts more replicas (risk = mean + λ·std, optimum λ≈2) cuts
+  held-out PAR by ~6% at EP256, ~3% at EP128, exactly where the gap is largest.
+  Let me estimate what that does to your composite score by applying the
+  measured reductions to the real per-case results.
+
+● Bash(cd /home/wli/coding/hack/moe-competition-sim
+      /home/wli/miniconda3/bin/python - <<'PY'…)
+  ⎿    current (lam=0)                  total  2718.4s  ->  score 108.13
+       variance-aware (full)            total  2638.4s  ->  score 111.40
+       variance-aware (70% realized)    total  2662.4s  ->  score 110.40
+
+● Now I can give you a definitive, evidence-based verdict — and I have to walk 
+  back one of my earlier claims. The grader data proves I was wrong about where
+  the points are.
+
+  What the real results revealed
+
+  Your 108 decomposes as: compute (60·PAR) = 95.4% of total time, transfer = 
+  4.6%. And PAR climbs steeply with EP (DS-R1: 1.33 → 2.51 from EP32 → EP256).
+  The top time-sinks are all high-EP/Mix cases. So PAR is the whole game, and
+  it's worst at high EP — that part of my analysis held.
+
+  But why PAR is high at EP256 is the opposite of what I guessed:
+
+  ┌─────────────────────────┬──────────────────┬────────────────────────────┐
+  │          Test           │      Result      │          Meaning           │
+  ├─────────────────────────┼──────────────────┼────────────────────────────┤
+  │ My packing vs lower     │ PAR 1.01–1.09 vs │ Packing is already         │
+  │ bound (on target load)  │  LB 1.000        │ near-optimal               │
+  ├─────────────────────────┼──────────────────┼────────────────────────────┤
+  │ Local search on top     │ ~0 improvement   │ No packing headroom to     │
+  │                         │                  │ recover                    │
+  ├─────────────────────────┼──────────────────┼────────────────────────────┤
+  │ Oracle (perfect         │ PAR 1.02–1.09    │ High PAR is not a          │
+  │ per-iteration           │ even at EP256    │ budget/fundamental limit   │
+  │ foresight)              │                  │                            │
+  └─────────────────────────┴──────────────────┴────────────────────────────┘
+
+  The realized 2.1 comes entirely from the gap between the load I place on (a 
+  window average) and each iteration's actual load — a prediction/variance
+  problem that grows with EP (fewer experts per device → less averaging).
+  Packing can't touch it.
+
+  Verdict on each improvement
+
+  Improvement I proposed: Better packing / local search
+  Will it work?: ❌ No
+  Evidence: Already at gap ~0.01–0.09 to the optimum; local search adds ~0. The
+    makespan is solved.
+  ────────────────────────────────────────
+  Improvement I proposed: "High-EP = packing opportunity"
+  Will it work?: ❌ No (I was wrong)
+  Evidence: High-EP PAR is variance, not packing. Same near-optimal packing
+    there.
+  ────────────────────────────────────────
+  Improvement I proposed: Transfer-aware trades
+  Will it work?: ⚠️ Marginal
+  Evidence: Transfer is capped at 4.6% of time → at most +2–4% even if halved.
+    Some value on Mix/high-EP (transmit up to 146k), mostly as an enabler to
+    lower TAU.
+  ────────────────────────────────────────
+  Improvement I proposed: Variance-aware replication (diversification)
+  Will it work?: ✅ Yes
+  Evidence: Held-out test: risk = mean + 2·std cuts PAR ~6% @EP256, ~3% @EP128.
+    Projects to score ~110–111.
+  ────────────────────────────────────────
+  Improvement I proposed: Covariance pairing (anti-correlated experts on same 
+    device)
+  Will it work?: ❓ Promising, untested
+  Evidence: Targets the same variance source; should help most at high EP (2
+    experts/device). Worth a test.
+
+  The one that works, and why it's the right finance idea
+
+  Diversification was the correct instinct all along — just applied to the wrong
+  quantity. Packing balances the mean; the real cost is device-load variance.
+  Giving volatile experts extra replicas (risk-budgeting) splits their
+  fluctuations across more devices, exactly like spreading a high-variance
+  position. It's a one-parameter change to the builder (drive replication by
+  mean + λ·std instead of mean), it stacks with the no-trade band (orthogonal:
+  band = when to trade, replication = how many copies), and the projection is
+  108 → ~110–111.
+
+  Bonus: Mix is your most volatile dataset (highest PAR and highest transmit) —
+  its std is largest, so variance-aware replication should help it more than my
+  LmSys-based estimate suggests. The projection may be conservative there.
+
+  Honest caveats
+
+  - The +2–3% projection applies LmSys-measured reductions to the real per-case
+  PARs; held-out evidence is LmSys-only (but PAR-vs-EP looks consistent across
+  datasets in the grader data).
+  - The oracle gap (~0.40 at EP256) is mostly irreducible — closing it fully
+  needs per-iteration foresight. Variance-aware replication captures ~0.09 of
+  it; the rest is genuine per-batch routing noise.
+
+  Want me to implement the variance-aware replication (λ tunable, default ~2),
+  re-run the local benchmark + EP sweep to confirm, and also test the
+  covariance-pairing idea to see if it adds more?
+
+✻ Crunched for 7m 41s
+
+❯ yes                                                                           
+
+● Implementing variance-aware replication now. Let me read the current
+  submission to edit it precisely.
+
+  Read 1 file (ctrl+o to expand)
+
+● Update(submissions/finance_band/submission.py)
+  ⎿  Added 16 lines, removed 6 lines
+       9  
+      10  Because expert load is highly persistent (lag-1 autocorr ~0.5) 
+          and recency
+      11  weighting (EWMA) gave no edge over a flat window, the estimator
+           is a simple
+      12 -trailing sum. The value-add is the *no-trade band*: every cycle
+         - we recompute                                                  
+      13 -the ideal load-balanced placement, but only *apply* it to layer
+         -s whose modeled                                                
+      14 -PAR improvement exceeds TAU. That avoids paying transfer cost f
+         -or negligible                                                  
+      15 -gains -- the portfolio-rebalancing-band rule -- so a stable tra
+         -ce converges to                                                
+      16 -"deploy once, then hold".                                      
+      12 +trailing window. Two finance ideas drive the placement:        
+      13  
+      14 +  * No-trade band (TAU): every cycle we recompute the ideal pla
+         +cement but only                                                
+      15 +    *apply* it to layers whose modeled PAR gain exceeds TAU, so
+         + we don't pay                                                  
+      16 +    transfer cost for negligible gains -- a stable trace conver
+         +ges to "deploy                                                 
+      17 +    once, then hold".                                          
+      18 +                                                               
+      19 +  * Variance-aware replication (LAMBDA): packing the *mean* loa
+         +d is already                                                   
+      20 +    near-optimal; the realized PAR is driven by per-iteration *
+         +variance* (a                                                   
+      21 +    device with few experts can't average it out). So replicas 
+         +are allocated by                                               
+      22 +    a risk measure, mean + LAMBDA * std, giving volatile expert
+         +s extra copies                                                 
+      23 +    that split their fluctuations across devices -- portfolio d
+         +iversification /                                               
+      24 +    risk budgeting. The no-trade band still evaluates on the me
+         +an (expected load).                                            
+      25 +                                                               
+      26  Tunables (module attributes; also read from env so benchmarks c
+          an sweep):
+      27    WINDOW : int | None  -- use only the last WINDOW iterations o
+          f the given window.
+      28    TAU    : float       -- no-trade band width, in PAR points (0
+           => always trade).
+      29 +  LAMBDA : float       -- risk weight for replication (0 => mea
+         +n-only).                                                       
+      30  """
+      31  import os
+      32  import numpy as np
+      33  
+      34  _w = os.environ.get("FB_WINDOW")
+      35  WINDOW = None if _w in (None, "", "all") else int(_w)
+      27 -TAU = float(os.environ.get("FB_TAU", "0.2"))  # swept sweet spo
+         -t on LmSys EP32                                                
+      36 +TAU = float(os.environ.get("FB_TAU", "0.2"))      # swept sweet
+         + spot on LmSys EP32                                            
+      37 +LAMBDA = float(os.environ.get("FB_LAMBDA", "2.0"))  # variance 
+         +weight for replication                                         
+      38  
+      39  # Persistent placement state across calls within a run (single 
+          process).
+      40  _STATE = {}
+
+● Now update rebalance() to build placement on the risk statistic while the band
+  evaluates on the mean:
+
+  Read 1 file (ctrl+o to expand)
+
+● Update(submissions/finance_band/submission.py)
+  ⎿  Added 8 lines, removed 4 lines
+       92  def rebalance(hotness, n_device, n_red_expert):
+       93      if WINDOW is not None:
+       94          hotness = hotness[-WINDOW:]
+       95 -    load = hotness.sum(axis=0).astype(np.float64)        # (n_
+          -layers, n_experts)                                            
+       96 -    n_layers, n_experts = load.shape                          
+       95 +    hotness = hotness.astype(np.float64)                      
+       96 +    mean = hotness.mean(axis=0)                          # (n_
+          +layers, n_experts)                                            
+       97 +    # Risk-adjusted load: replicate volatile experts more (div
+          +ersification).                                                
+       98 +    risk = mean + LAMBDA * hotness.std(axis=0) if LAMBDA else 
+          +mean                                                          
+       99 +    n_layers, n_experts = mean.shape                          
+      100      n_exp_per_dev = (n_experts + n_red_expert) // n_device
+      101  
+      102 +    # Placement is driven by risk; the band judges quality on 
+          +expected (mean) load.                                         
+      103      candidate = np.zeros((n_layers, n_device, n_exp_per_dev), 
+           dtype=np.int64)
+      104      for l in range(n_layers):
+      101 -        candidate[l] = _build_layer(load[l], n_device, n_exp_p
+          -er_dev)                                                       
+      105 +        candidate[l] = _build_layer(risk[l], n_device, n_exp_p
+          +er_dev)                                                       
+      106  
+      107      # Key state by problem shape so reused processes / new cas
+           es auto-reset
+      108      # even if the grader never calls reset().
+     ...
+      115          return True, np.arange(n_layers, dtype=np.int64), cand
+           idate, None
+      116  
+      117      # No-trade band: only redeploy layers whose modeled PAR ga
+           in clears TAU.
+      114 -    improve = np.array([_par(load[l], cur[l]) - _par(load[l], 
+          -candidate[l])                                                 
+      118 +    improve = np.array([_par(mean[l], cur[l]) - _par(mean[l], 
+          +candidate[l])                                                 
+      119                          for l in range(n_layers)])
+      120      sel = np.where(improve > TAU)[0]
+      121      if sel.size == 0:
+
+● Now let me validate locally with an EP sweep — comparing DS-EPLB, the old
+  mean-only (λ=0), and the new variance-aware (λ=2) across all EPs on both
+  committed traces.
+
+● Bash(cd /home/wli/coding/hack/moe-competition-sim
+      /home/wli/miniconda3/bin/python - <<'PY'…)
+  ⎿  Running in the background (↓ to manage)
+
+● The sweep is running in the background (it's heavy at EP256). Let me wait for
+  it.
+
+● Bash(sleep 60; cat /tmp/claude-1000/-home-wli-coding-hack-moe-competition-sim/
+      146c9959-f8ca-4a12-9b11-88028935c449/tasks/bwcj5q7it.output 2>/dev/null)
+  ⎿  Error: Blocked: sleep 60 followed by: cat 
+     /tmp/claude-1000/-home-wli-coding-hack-moe-competition-sim/146c9959-f8ca-4a
+     12-9b11-88028935c449/tasks/bwcj5q7it.output. To wait for a condition, use 
+     Monitor with an until-loop (e.g. `until <check>; do sleep 2; done`). To 
+     wait for a command you started, use run_in_background: true. Do not chain 
+     shorter sleeps to work around this block.
+  Read 1 file (ctrl+o to expand)
+
+● Good progress — variance-aware (λ=2) is winning at every EP so far (DS-R1:
+  score 110.6→111.0 @EP32, 112.1→113.3 @EP64, 110.7→117.1 @EP128). EP256 + Qwen3
+  still running. Let me wait for completion.
+
+● Monitor(EP sweep completion)
+  ⎿  Monitor started · task bxs9h8c07 · timeout 600s
+
+● While the sweep finishes, let me record the key project facts to memory so
+  future sessions don't re-derive them.
+
+● Bash(cd /home/wli/coding/hack/moe-competition-sim
+      cat /home/wli/.claude/projects/-home-wli-coding-hack-moe-competition-sim/m
+      emory/MEMORY.md 2>/dev/null || echo "(no…)
+  ⎿  Error: Exit code 2
+     (no MEMORY.md yet)
+     ---existing memory files---
+
+● Background command "EP sweep: DS-EPLB vs lambda=0 vs lambda=2" completed (exit code 0)
+
+● Monitor event: "EP sweep completion"
+
+● Monitor "EP sweep completion" stream ended
+
+● Sweep complete. Variance-aware (λ=2) is a major win on DS-R1, especially high 
+  EP, and roughly neutral on Qwen3:
+
+              DS-EPLB    λ=0 (the 108 sub)    λ=2 (variance-aware)
+  DS-R1 EP32   100.0       110.6                111.0
+        EP64   100.0       112.1                113.3
+        EP128  100.0       110.7              → 117.1
+        EP256  100.0       104.9              → 120.2   (PAR 2.12→2.00, tx
+  142k→34k)
+  Qwen3 EP32   100.0       106.2                105.6
+        EP64   100.0       106.8                106.5
+        EP128  100.0       108.4                108.5
+
+  There's a bonus I didn't predict: at EP256 the variance-aware placement also
+  cuts transfer ~4× (142k→34k slots). Pre-replicating the volatile experts makes
+  the placement robust to their swings, so the no-trade band fires far less —
+  it helps both score terms. Let me project this onto the full 24-case grid
+  using the real grader data.
+
+● Bash(cd /home/wli/coding/hack/moe-competition-sim
+      /home/wli/miniconda3/bin/python - <<'PY'…)
+  ⎿    old composite : 108.12   (total 2718s)
+       projected new : 112.51   (total 2613s)
+       note: Mix(DS-R1) is more volatile than LmSys -> variance-aware likel
+     y helps MORE there, so this is conservative.
+
+● Projection: 108 → ~112.5 (conservative — Mix should help more). Now let me (a)
+  test whether the covariance/diversification idea adds anything on top, and
+  (b) rebuild the bundle with the validated λ=2.
+
+● Bash(cd /home/wli/coding/hack/moe-competition-sim
+      echo "=== covariance signal diagnostic: do expert-load deviations
+      anti-correlate? ==="…)
+  ⎿  === covariance signal diagnostic: do expert-load deviations anti-corre
+     late? ===
+       DS-R1: mean off-diagonal corr of load residuals = -0.0011  (<0 => an
+     … +12 lines (ctrl+o to expand)
+
+● Covariance pairing is dead — no signal. The mean off-diagonal correlation of
+  expert-load residuals is ≈0 for both models (-0.001 / +0.003). After removing
+  the common throughput factor, expert deviations are essentially independent,
+  so there are no anti-correlated experts to pair on a device. That's a clean
+  negative: diversification here works only through replication (splitting a
+  volatile expert across k devices divides its variance by k), which is exactly
+  what variance-aware replication does. Pairing adds nothing.
+
+  Bundle rebuilt with LAMBDA=2 baked in, imports clean, EP256 produces a valid
+  placement. Let me save the key findings to memory so this isn't re-derived
+  next session.
+
+  Wrote 4 memories (ctrl+o to expand)
+
+● Done. Here's the complete picture from this round.
+
+  What I built and verified
+
+  Variance-aware replication (submissions/finance_band/submission.py, LAMBDA=2):
+  replicas are now allocated by mean + 2·std instead of just mean, so volatile
+  experts get extra copies that split their per-iteration swings across devices.
+  The no-trade band (TAU=0.2) still judges trades on the mean. Bundle rebuilt →
+  finance_band_submission.zip.
+
+  Which improvements actually worked — tested, not guessed
+
+  ┌──────────────────────┬────────────┬─────────────────────────────────────┐
+  │         Idea         │  Verdict   │              Evidence               │
+  ├──────────────────────┼────────────┼─────────────────────────────────────┤
+  │ Better packing /     │ ❌ Dead    │ Already PAR 1.01–1.09 vs LB 1.0;    │
+  │ local search         │            │ local search ≈0 gain                │
+  ├──────────────────────┼────────────┼─────────────────────────────────────┤
+  │ High-EP = packing    │ ❌ I was   │ Oracle hits ~1.0 even at EP256 →    │
+  │ headroom             │ wrong      │ it's variance, not packing          │
+  ├──────────────────────┼────────────┼─────────────────────────────────────┤
+  │ Variance-aware       │            │ DS-R1 EP256: PAR 2.12→2.00,         │
+  │ replication          │ ✅ Works   │ transfer 142k→34k, case score       │
+  │                      │            │ 105→120                             │
+  ├──────────────────────┼────────────┼─────────────────────────────────────┤
+  │ Covariance pairing   │ ❌ Dead    │ Load residuals are uncorrelated     │
+  │ (Markowitz)          │            │ (corr ≈0) — nothing to pair         │
+  ├──────────────────────┼────────────┼─────────────────────────────────────┤
+  │ Transfer-aware       │ ⚠️ Minor   │ Transfer is only ~5% of time        │
+  │ trades               │            │                                     │
+  └──────────────────────┴────────────┴─────────────────────────────────────┘
+
+  Projected result
+
+  Composite 108.1 → ~112.5 (conservative — Mix is the most volatile dataset, so
+  it should benefit more than the LmSys ratios I used). The win is concentrated
+  exactly in the high-EP DS-R1 cases that dominate the score, and it's a double
+  win there: lower PAR and ~4× less transfer, because pre-replicating volatile
+  experts makes the placement stable enough that the band rarely fires.
+
+  The one wrinkle: λ=2 is marginally negative on Qwen3 low-EP (~0.6%), because
+  with 4–5 experts/device the variance already averages out. The net is strongly
+  positive, but that points at the obvious next refinement.
+
+  Next steps (your call)
+
+  1. Submit the λ=2 bundle — it's validated and ready.
+  2. EP-adaptive λ — scale λ up when n_exp_per_dev is small (high EP, where
+  variance bites) and toward 0 when it's large (low EP). Should capture the
+  DS-R1 gains and erase the small Qwen3 regression. Quick to implement and test.
+
+  I also saved the key findings to memory so we don't re-derive them next
+  session. Want me to do the EP-adaptive λ, or are you set to re-submit?
+
+✻ Cogitated for 6m 38s
+
+❯ zip lets upload it and see                                                    
+
+● The zip is already built with the λ=2 version baked in. Let me verify it's the
+  current code before you upload.
+
+● Bash(cd /home/wli/coding/hack/moe-competition-sim
+      echo "=== verify zip contents match current submission ==="…)
+  ⎿  === verify zip contents match current submission ===
+     27:  WINDOW : int | None  -- use only the last WINDOW iterations of th
+     e given window.
+     … +10 lines (ctrl+o to expand)
+
+● The bundle is confirmed current — submission.py inside the zip is identical to
+  the source, with TAU=0.2, LAMBDA=2.0 baked in (no env vars needed on the
+  server).
+
+  Ready to upload:
+  /home/wli/coding/hack/moe-competition-sim/finance_band_submission.zip
+
+  I can't upload it for you — I have no access to your Codabench account or the
+  competition page. You do the upload:
+
+  1. Open the competition's Codabench page → "Participate" / "My Submissions"
+  tab.
+  2. Upload finance_band_submission.zip.
+  3. Wait for it to grade across all 24 hidden cases (~4 min based on your last
+  run's ingestionElapsedTime of 218s).
+
+  What I expect vs. what to watch for:
+  - Projection is ~112.5 (from 108), driven almost entirely by DS-R1 high-EP
+  cases.
+  - The honest uncertainty: my +4.4 is built from LmSys ratios applied to all
+  datasets. Mix should beat that; but if the grader's process model differs from
+  my local replay, the realized number could land a bit off either way.
+  - First thing to check when it finishes: pull the new
+  prediction_result/metrics.json and compare the per-case mean_par and
+  transmit_amount for the DS-R1 EP256 / EP128 rows against the old run. Those
+  are where the gain should show up most obviously (EP256 PAR should drop
+  ~2.12→~2.0, transmit ~140k→~35k). If those moved as predicted, the composite
+  gain is real.
+
+  Once it's scored, share the new scores.json / metrics.json and I'll verify
+  whether it matched the projection and tell you if the EP-adaptive λ refinement
+  is worth a follow-up submission.
+
+✻ Churned for 19s
+
+※ recap: Goal: improve our MoE competition submission. The variance-aware λ=2 version is built and validated, projecting 108 to ~112.5. Next: upload finance_band_submission.zip to Codabench, then share the new scores so I can verify it matched.
+
+❯ Result are in :)'/home/wli/coding/hack/moe-competition-sim/prediction_result_ 
+  2''/home/wli/coding/hack/moe-competition-sim/scoring_result_2'                
+
+● The new results are in. Let me compare against the projection and the old run.
+
+● Bash(cd /home/wli/coding/hack/moe-competition-sim
+      echo "===== scoring_result_2/scores.txt ====="; cat
+      scoring_result_2/scores.txt…)
+  ⎿  ===== scoring_result_2/scores.txt =====
+     score: 111.24944830733395
+     composite_score: 111.24944830733395
+     … +11 lines (ctrl+o to expand)
+● 111.25 — up from 108.12, a clean +3.1%. Just under my ~112.5 projection, and
+  both terms moved exactly as predicted: mean_PAR 1.729→1.693 and transmit
+  1.27M→840k. Let me see the per-case breakdown to find where it beat/missed the
+  projection and whether the EP-adaptive λ refinement is worth it.
+
+● Bash(cd /home/wli/coding/hack/moe-competition-sim
+      /home/wli/miniconda3/bin/python - <<'PY'…)
+  ⎿    case                             PAR old->new   dPAR%        tx old-
+     >new  dTime_s
+       DS-R1/LmSys/EP32              1.240-> 1.235    -0.4    16641->  1663
+     … +34 lines (ctrl+o to expand)
+
+● Confirmed and matched the prediction. 111.25, +3.1%, and the per-case data
+  shows it came from exactly where I said it would. Let me update memory with
+  the achieved score.
+
+  Wrote 1 memory (ctrl+o to expand)
+
+● 🎉 108.12 → 111.25, exactly as analyzed. The projection (~112.5) was accurate
+  to within ~1 point, and every prediction held:
+
+  Where the +97s came from
+
+  ┌───────────┬──────────┬──────────────────────────────────────────────────┐
+  │  Region   │  Time    │                  What happened                   │
+  │           │  saved   │                                                  │
+  ├───────────┼──────────┼──────────────────────────────────────────────────┤
+  │ DS-R1     │   −65.5s │ The big one. PAR ~2.1→2.0 and transmit           │
+  │ EP256     │          │ ~140k→~40k across all 4 datasets                 │
+  ├───────────┼──────────┼──────────────────────────────────────────────────┤
+  │ DS-R1     │   −23.3s │ PAR ~1.65→1.62, transmit ~2.5× lower             │
+  │ EP128     │          │                                                  │
+  ├───────────┼──────────┼──────────────────────────────────────────────────┤
+  │ DS-R1     │    −6.0s │ small                                            │
+  │ EP64      │          │                                                  │
+  ├───────────┼──────────┼──────────────────────────────────────────────────┤
+  │ Qwen3     │       ~0 │ neutral, as predicted                            │
+  │ (all)     │          │                                                  │
+  └───────────┴──────────┴──────────────────────────────────────────────────┘
+
+  The single biggest case: DS-R1/Mix/EP256, PAR 3.75→3.42 (−8.8%) — and Mix did
+  benefit more than LmSys, just as I flagged (it's the most volatile, so the
+  most std to exploit).
+
+  Predictions that came true
+
+  - Low-EP regressions are real but tiny — Qwen3 EP32 and DS-R1/Mix/EP32 went
+  slightly worse (PAR +0.6–1.1%), because with many experts per device the
+  variance already averages out so the extra replicas are mildly wasted. Total
+  avoidable loss there: ~1–2s.
+  - Transfer is now down to 3.1% of total time (82s) — essentially fully
+  optimized.
+
+  What's left, honestly
+
+  The compute term is now 2539s of 2621s. The remaining sinks are all Mix and 
+  high-EP cases where PAR is still 2–3.4. The oracle said these could reach
+  ~1.0, but that gap is now mostly irreducible per-iteration routing noise —
+  you'd need per-batch foresight to close it.
+
+  Two follow-ups, in order of value:
+  1. EP-adaptive λ (safe, small): set λ→0 at low EP, λ≥2 at high EP. Recovers
+  the ~1–2s of low-EP regressions and might push EP256 a bit further with λ>2.
+  Realistic upside: +0.3–0.8. Quick to build and test locally.
+  2. Beyond that: diminishing returns. Mix-specific tuning is plausible but
+  untestable locally (those traces aren't committed), so it's a blind shot.
+
+  You've gone 108 → 111 with a clean, well-understood mechanism. Want me to do
+  the EP-adaptive λ for one more safe bump, or call it here?
+
+✻ Sautéed for 1m 3s
+
+❯ codex will review your work. you must not hard coded solution, but build a    
+  geniune algorithm.                                                            
+  ⎿  Interrupted · What should Claude do instead?
