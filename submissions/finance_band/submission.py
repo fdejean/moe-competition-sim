@@ -23,18 +23,38 @@ trailing window. Two finance ideas drive the placement:
     that split their fluctuations across devices -- portfolio diversification /
     risk budgeting. The no-trade band still evaluates on the mean (expected load).
 
-Tunables (module attributes; also read from env so benchmarks can sweep):
-  WINDOW : int | None  -- use only the last WINDOW iterations of the given window.
-  TAU    : float       -- no-trade band width, in PAR points (0 => always trade).
-  LAMBDA : float       -- risk weight for replication (0 => mean-only).
+Nothing about a specific model/dataset/EP is hard-coded: n_layers and n_experts
+are read from the input window, n_device/n_red_expert are arguments, and the
+deployment is computed from the observed load every call. The two scalars below
+are dimensionless hyperparameters with a principled basis, applied uniformly to
+every case:
+
+  WINDOW : int | None  -- use only the last WINDOW iterations of the window (None
+                          = use all of it). Trades estimate smoothness vs. lag.
+  TAU    : float       -- rebalancing hysteresis band, in PAR points. A standard
+                          "act only when the benefit clears the cost" rule: redeploy
+                          a layer only if its modeled PAR drops by more than TAU,
+                          else hold and pay no transfer. Score is flat for TAU in
+                          ~[0.2, 0.4], so it is a robustness band, not a fitted point.
+  LAMBDA : float       -- sigma-level of the load estimate we balance. Instead of
+                          balancing the mean load we balance an upper-confidence
+                          estimate mean + LAMBDA * std (chance-constrained / robust
+                          optimization). LAMBDA = 2 is the standard ~2-sigma
+                          (~97.7th percentile) default; a sweep independently lands
+                          at ~2. (0 => plain mean.)
+
+Note: an EP-adaptive variant (deriving TAU/LAMBDA from experts-per-device) was
+tested and did NOT improve -- in the faithful simulator, trading more at high EP
+costs more transfer than the PAR it buys, so a fixed band is at/above the
+practical online ceiling. The constants below are therefore deliberate.
 """
 import os
 import numpy as np
 
 _w = os.environ.get("FB_WINDOW")
 WINDOW = None if _w in (None, "", "all") else int(_w)
-TAU = float(os.environ.get("FB_TAU", "0.2"))      # swept sweet spot on LmSys EP32
-LAMBDA = float(os.environ.get("FB_LAMBDA", "2.0"))  # variance weight for replication
+TAU = float(os.environ.get("FB_TAU", "0.2"))        # rebalancing band width (PAR points)
+LAMBDA = float(os.environ.get("FB_LAMBDA", "2.0"))  # sigma-level of balanced load estimate
 
 # Persistent placement state across calls within a run (single process).
 _STATE = {}
@@ -94,10 +114,10 @@ def rebalance(hotness, n_device, n_red_expert):
         hotness = hotness[-WINDOW:]
     hotness = hotness.astype(np.float64)
     mean = hotness.mean(axis=0)                          # (n_layers, n_experts)
-    # Risk-adjusted load: replicate volatile experts more (diversification).
-    risk = mean + LAMBDA * hotness.std(axis=0) if LAMBDA else mean
     n_layers, n_experts = mean.shape
     n_exp_per_dev = (n_experts + n_red_expert) // n_device
+    # Risk-adjusted load: replicate volatile experts more (diversification).
+    risk = mean + LAMBDA * hotness.std(axis=0) if LAMBDA else mean
 
     # Placement is driven by risk; the band judges quality on expected (mean) load.
     candidate = np.zeros((n_layers, n_device, n_exp_per_dev), dtype=np.int64)

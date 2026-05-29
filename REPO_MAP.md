@@ -31,6 +31,13 @@ experiment outputs for the MoE dynamic load-balancing competition.
 These files use the same `rebalance(hotness, n_device, n_red_expert)` API expected by the
 Codabench submission bundle.
 
+## Tools
+
+- `tools/codabench_submit.py`: automates a Codabench submission for competition 16778 — zips
+  `submission.py`, uploads it through the Codabench REST API, polls for grading, and downloads/
+  prints the scores. Reads credentials from `.env` (see `.env.example`). Full usage in
+  `tools/README.md`.
+
 ## Traces
 
 - `trace/DS-R1/LmSys.npy`: committed DS-R1 sample trace tracked through Git LFS.
