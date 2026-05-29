@@ -2,8 +2,8 @@
 """Evaluate a single submission folder and write score.json next to it.
 
 Usage:
-    python experiments/auto/eval.py experiments/auto/runs/000_seed_smoke
-    python experiments/auto/eval.py experiments/auto/runs/000_seed_smoke --model DS-R1
+    python auto/eval.py auto/runs/000_seed_smoke
+    python auto/eval.py codes/finance_band     # also works for codes/<name>/
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ from pathlib import Path
 
 import numpy as np
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
 from quickstart import (  # noqa: E402
@@ -35,7 +35,7 @@ from quickstart import (  # noqa: E402
     transmission_time_seconds,
 )
 
-BASELINE_CACHE = REPO_ROOT / "experiments" / "auto" / "_baseline_cache.json"
+BASELINE_CACHE = REPO_ROOT / "auto" / "_baseline_cache.json"
 
 
 def load_submission(run_dir: Path):

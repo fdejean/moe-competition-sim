@@ -1,0 +1,34 @@
+{
+  "run": "019_band_swap_refine",
+  "started_at": 1780090260.236563,
+  "cases": [
+    {
+      "model": "Qwen3",
+      "dataset": "LmSys",
+      "ep": 32,
+      "mean_par": 1.8625231679145136,
+      "transmit_amount": 14935,
+      "transmission_time_seconds": 1.4616450389333333,
+      "total_time_seconds": 113.21303511380414,
+      "runtime_seconds": 0.8226611614227295,
+      "score": 100.02094475704439,
+      "error": null
+    },
+    {
+      "model": "DS-R1",
+      "dataset": "LmSys",
+      "ep": 32,
+      "mean_par": 1.5591885727891757,
+      "transmit_amount": 16652,
+      "transmission_time_seconds": 1.6296828381866666,
+      "total_time_seconds": 95.18099720553721,
+      "runtime_seconds": 0.6871480941772461,
+      "score": 100.0958343921098,
+      "error": null
+    }
+  ],
+  "mean_score": 100.05838957457709,
+  "error": null,
+  "finished_at": 1780090261.9852512,
+  "elapsed_seconds": 1.7486882209777832
+}

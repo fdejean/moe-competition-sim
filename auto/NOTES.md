@@ -17,3 +17,6 @@ One line per attempt. Append-only. Never edit prior lines.
 2026-05-29 23:30  015_fb_lambda_4              mean_score=99.95  LAMBDA=4 over-weights variance, costs PAR
 2026-05-29 23:30  016_fb_aggressive            mean_score=99.95  TAU=0.05+LAMBDA=4 (most aggressive); identical to 015 — TAU still doesn't matter at this length
 2026-05-29 23:30  017_fb_conservative          mean_score=100.00 TAU=0.8+LAMBDA=0 (hold longest, no risk weight) — identical to 013
+2026-05-30 00:05  018_global_swap_refine       mean_score=100.02 hypothesis="DS-EPLB global + swap local-search refine (cut-preserving, max-load <= LPT)" — refine lowers PAR marginally on short trace (most iters use fixed init); guaranteed >= LPT, compounds on long traces
+2026-05-30 00:10  019_band_swap_refine         mean_score=100.06 hypothesis="flo band + variance replication + swap refine (merge)" ← new best; both PARs below DS-EPLB
+2026-05-30 00:15  020_band_refine_transmin     mean_score=100.35 hypothesis="019 + PAR-NEUTRAL transmit min (greedy device relabel 4b + slot preserve 4a, vs cached prev & init table)" ← BEST; same PAR as 019, transmit -22%/-17%; transmit win multiplies on long hidden traces

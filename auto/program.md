@@ -19,7 +19,7 @@ and never throw a variant away. Every attempt is kept on disk forever.
 ## Repository layout you will use
 
 ```
-experiments/auto/
+auto/
   program.md          ← this file (do not modify)
   eval.py             ← evaluates one run folder, writes score.json + stdout.txt
   leaderboard.py      ← regenerates LEADERBOARD.md from every score.json
@@ -45,20 +45,20 @@ experiments/auto/
      by max-PAR not by index."
    - "DS-EPLB is too slow at EP64 — throttle recompute and cache deployment."
    - "Smoothed EMA over hotness window is more stable than raw sum."
-3. **Create a new folder** `experiments/auto/runs/NNN_<short_slug>/` where `NNN`
+3. **Create a new folder** `auto/runs/NNN_<short_slug>/` where `NNN`
    is one greater than the highest existing index. Keep the slug ≤30 chars.
 4. **Write `submission.py`** (+ any helper modules) into that folder. The agent
    may copy `eplb_algorithms/deepseek.py` next to it if needed — the evaluator
    adds the run folder to `sys.path` first.
 5. **Run the evaluator:**
    ```
-   python experiments/auto/eval.py experiments/auto/runs/NNN_<slug>
+   python auto/eval.py auto/runs/NNN_<slug>
    ```
-6. **Append** a one-line note to `experiments/auto/NOTES.md` describing the
+6. **Append** a one-line note to `auto/NOTES.md` describing the
    hypothesis and the outcome.
 7. **Regenerate the leaderboard:**
    ```
-   python experiments/auto/leaderboard.py
+   python auto/leaderboard.py
    ```
 8. Go to step 1.
 
@@ -84,7 +84,7 @@ experiments/auto/
 
 ## What to write down
 
-In `experiments/auto/NOTES.md` keep one line per attempt:
+In `auto/NOTES.md` keep one line per attempt:
 
 ```
 2026-05-30 02:14  005_layer_priority_par   mean_score=104.31  hypothesis="sort priority by per-layer PAR descending"
