@@ -133,3 +133,28 @@ There can be more than one Claude Code instance running in this repo at once
 - When you create a new variant, write to both `codes/<name>/` AND
   `auto/runs/NNN_<name>/`.
 - Coordinate big restructures via `send_message` before committing.
+
+## Overnight loop operating rules (READ EVERY ITERATION)
+
+1. **Commit AND push continuously.** After every new variant, eval result, server
+   score, or doc update, `git add -A && git commit && git push fdejean vero-flo`.
+   Never let work sit uncommitted. (Never sign commits as Claude.)
+2. **Always read the tried-log before proposing anything**, so you never repeat a
+   dead end. The log lives in:
+   - `auto/NOTES.md` — append-only, one line per attempt + every server score.
+   - `auto/loop_queue.md` — idea backlog with status ([x]/[!]/[S]).
+   - `auto/loop_state.json` — best proxy/server, submission ids, timing calibration.
+3. **Pivot hard when stuck.** If 2+ consecutive variants don't beat the best
+   *server* score, STOP refining that family and jump to a completely new,
+   crazy, literature/science/finance-rooted idea. Log the pivot in NOTES.md.
+4. **Hard constraints learned the hard way (do NOT relitigate):**
+   - Server tests {ShareGPT,WildChat,LmSys}×{Qwen3,DS-R1}×{EP32,EP64,EP128}.
+     Per-case time budget = **3× DS-EPLB time for THAT case** — tiny at EP128.
+   - **Only finance_band-speed (~0.1–0.15s/call, single build+band, NO iterative
+     refine/relabel/search) survives.** Every iterative method floored to −1e6.
+   - mean-load PAR≈1.05 but **realized PAR≈1.69**; the gap is **co-spiking**
+     (per-iteration variance), not mean packing or replication budget. Replication
+     /λ/τ/window tuning is TAPPED OUT (finance_band λ2/τ0.2/full-window is the peak).
+   - Smaller TAU and shorter WINDOW both HURT (transmit blow-up / drift-chasing).
+   - Always EP128-smoke (`auto/proxy_eval.sh`) before submitting; local LmSys
+     proxy CANNOT catch EP128/ShareGPT timeouts.

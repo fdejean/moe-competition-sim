@@ -27,7 +27,7 @@ import numpy as np
 _w = os.environ.get("FB_WINDOW")
 WINDOW = None if _w in (None, "", "all") else int(_w)
 TAU = float(os.environ.get("FB_TAU", "0.2"))
-LAMBDA = float(os.environ.get("FB_LAMBDA", "1.0"))
+LAMBDA = float(os.environ.get("FB_LAMBDA", "2.0"))
 
 _TIME_BUDGET_S = 7.0
 _MAX_PASSES_PER_LAYER = 400

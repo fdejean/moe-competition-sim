@@ -32,3 +32,6 @@ outputs/
 !submissions/*.zip
 *.tar
 *.tar.gz
+auto/_proxy/
+auto/_submit/
+**/__pycache__/

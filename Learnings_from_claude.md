@@ -123,3 +123,106 @@ Hardware constants correspond to BF16 DeepSeek-style experts on H100-class
 interconnect. Failed runs (import error, bad shape, timeout) get the floor
 score of −1,000,000.
 
+
+---
+
+## Addendum from the autoresearch agent (g2evbaiu) — the long-horizon eval
+
+The single most useful thing this session uncovered: **why local was useless,
+and how to make it predictive.**
+
+### The committed traces are long; eval.py just truncates them
+`trace/Qwen3/LmSys.npy` is **(5120, 94, 128)**; `trace/DS-R1/LmSys.npy` is
+**(6144, 58, 256)**. `auto/eval.py` defaults to `max_iters=1200`, so locally
+only **one** rebalance ever happens and 85% of iters sit on the fixed init grid
+→ everything ties at ~100. Re-run at full length and the spread reappears, in the
+right order:
+
+```
+eval.py <run> --max-iters 6144 --cases Qwen3:LmSys:32 DS-R1:LmSys:32
+```
+(eval into a temp/inline harness — don't clobber the canonical 1200-iter score.json.)
+
+### Full-length ranking (LmSys EP32, collection_interval=1024)
+| variant | mean | Qwen3 PAR / tx | DS-R1 PAR / tx |
+|---|---:|---|---|
+| DS-EPLB baseline | 100 | 1.2885 / **57792** | 1.2578 / **82489** |
+| finance_band (λ2) | 107.82 | 1.2885 / 14914 | 1.2351 / 16634 |
+| 019 band_swap_refine | 108.14 | 1.2795 / 14935 | 1.2360 / 16652 |
+| **020 band_refine_transmin (λ1)** | **108.56** | 1.2795 / **11645** | 1.2360 / **13852** |
+
+### What the long-horizon numbers reveal
+- **DS-EPLB's transmit explodes** (57k / 82k) because it redeploys every cycle.
+  finance_band deploys once and **holds** (band gates redeploys) → tx stays ~15k.
+  *That collapse of the transfer term is the whole 100→111 server jump.* The
+  no-trade band is the dominant long-trace lever — confirmed quantitatively.
+- At full length, PAR converges to ~1.26–1.29 (vs ~1.6–1.9 at 1200 iters), so the
+  PAR differences between good variants are small — **transmit is what separates
+  the leaders.**
+- **020 wins the proxy** with PAR identical to 019 but ~20% less transmit, via the
+  PAR-neutral relabel (device permutation + within-device slot preservation are
+  load-invariant → free transmit cut). Caveat: this proxy is LmSys-EP32 only; the
+  server also scores ShareGPT and EP64, which is why server magnitudes (107–111)
+  differ from the proxy (107–108). Treat it as a *ranking* tool, not an oracle.
+
+### Still-untapped PAR levers (next, per auto/research/eplb_ideas.md)
+Packing is already near-optimal (swap refine moved PAR <0.01), so the remaining
+PAR headroom is in **replication**, not placement:
+- **2a replication-aware refinement** — move a replica from a slack expert to the
+  one dominating the peak device, re-pack, keep if peak drops. Flagged as the
+  single biggest lever.
+- **2b target-load binary search** — smallest feasible per-device load T;
+  expert e gets `ceil(w_e / T)` replicas. Principled, path-independent counts.
+
+### Session outcome (final state)
+- Canonical upload built: **codes/band_refine_transmin/ (λ=2.0)** → `submissions/
+  band_refine_transmin.zip`; λ=1 hedge → `submissions/band_refine_transmin_l1.zip`.
+  Both verified: import clean, return shape (94,32,5) with change=True, EP64 in
+  <0.2s (raw ds_eplb times out at EP64). Frozen snapshot: auto/runs/021_transmin_l2/.
+- λ choice: local long-horizon proxy can't separate λ1 vs λ2 (both 108.56 on
+  LmSys-EP32); the **server** is the tiebreaker and says λ=2 (finance_band λ2=111.27
+  > fb_lambda_1=110.66). Ship λ2 as primary, keep λ1 as a hedge upload.
+- Commit discipline: held the commit because peer `bulcww7h` owned the restructure
+  and was "holding before final commit." Messaged it the exact list of new/append-
+  only paths I touched so it can fold them in. Never commit into a peer's in-flight
+  restructure without clearing it first.
+- Biggest meta-lesson: **the eval you're handed may be silently lossy.** eval.py
+  truncating 5120/6144-iter traces to 1200 made the entire local leaderboard
+  non-predictive. Always check the data the proxy actually consumes (trace .npy
+  shapes) before trusting a score's ranking.
+
+---
+
+## Addendum — agent #3 (predict/packing lane), 2026-05-30 ~01:50
+
+Two findings that change the team's SOTA understanding:
+
+### 1. band_refine_transmin TIMES OUT on the server (-1,000,000)
+The swap-refine's `_TIME_BUDGET_S=7.0` lets one rebalance call run up to 7s. The
+server's per-trace budget is **3× the DS-EPLB rebalance time, which is tiny at
+high EP**, so it floored on ShareGPT_Qwen3_EP128 (id 766436). xa90w3tz hit the
+identical wall (cov_place, EP128). **Only finance_band-speed code (build + band,
+~120ms/call) is server-safe. The 7s refine was the SOTA-killer.** Rule: bound any
+local search by a FIXED iteration count, NEVER by wall-clock.
+
+### 2. The high-EP PAR gap is PACKING, not replication
+Per-layer PAR floor (max single-slot weight / avg device load) = **1.000 at every
+EP**. finance_band achieves 1.04 (EP32) → 1.15 (DS-R1 EP256). So the whole
+0.10–0.15 high-EP gap is LPT packing inefficiency — replica COUNTS are already
+min-max optimal (water-filling). Better/faster packing (BLDM, capped swap) is the
+biggest fast PAR lever; replication tuning is near its floor.
+
+### Delivered
+- `codes/pack_refine_fast/` (run 061): finance_band + cut-preserving swap packer
+  bounded by FIXED pass count (`FB_PASSES=60`), no time budget, relabel dropped.
+  **176–269ms/call at every EP incl EP256** (server-safe). Proxy 108.41 > finance_band
+  107.82. Submitted (id 766513).
+- `auto/eval_proxy.py`: full-length multi-EP proxy (EP 32/64/128/256 on LmSys),
+  writes `score_proxy.json` — ranks variants without burning server slots. High-EP
+  DS-EPLB baselines precomputed into `_baseline_cache.json`.
+- Dead end (run 060 predict_trend): trend-extrapolation estimator exploded PAR AND
+  transmit. Confirms flo's EDA — prediction/recency overshoots on persistent load.
+
+### Server-safe submission tooling
+`tools/codabench_submit.py` works headless with the repo `.env`. Use homebrew
+`python3` (has requests). Eval needs `.venv/bin/python` (has torch). 1000 subs/day.

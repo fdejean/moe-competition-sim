@@ -1,0 +1,34 @@
+{
+  "run": "finance_band",
+  "started_at": 1780096041.230201,
+  "cases": [
+    {
+      "model": "Qwen3",
+      "dataset": "LmSys",
+      "ep": 32,
+      "mean_par": 1.2885384152945993,
+      "transmit_amount": 14914,
+      "transmission_time_seconds": 1.4595898299733334,
+      "total_time_seconds": 78.7718947476493,
+      "runtime_seconds": 2.9094760417938232,
+      "score": 105.32648922221327,
+      "error": null
+    },
+    {
+      "model": "DS-R1",
+      "dataset": "LmSys",
+      "ep": 32,
+      "mean_par": 1.235070438537565,
+      "transmit_amount": 16634,
+      "transmission_time_seconds": 1.6279212305066666,
+      "total_time_seconds": 75.73214754276057,
+      "runtime_seconds": 2.3240981101989746,
+      "score": 110.31026677061966,
+      "error": null
+    }
+  ],
+  "mean_score": 107.81837799641647,
+  "error": null,
+  "finished_at": 1780096047.663979,
+  "elapsed_seconds": 6.4337780475616455
+}
