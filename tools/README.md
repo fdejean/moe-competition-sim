@@ -76,13 +76,16 @@ just to test plumbing; use `--list-phases` for that.
 
 Artifacts land in `results/<timestamp>/` (or `--out`):
 - `submission.zip` — the bundle that was uploaded (`submission.py` at the zip root)
-- `scoring_result_result.zip` + extracted `scoring_result/scores.json`
-  (`score`, `mean_par`, `transmit_amount`, …)
-- `prediction_result_result.zip` + extracted `prediction_result/metrics.json`
-  (per-case `mean_par` / `transmit_amount` for all 24 hidden cases)
+- `scoring_result.zip` + extracted `scoring_result/` (`scores.json`, `scores.txt`, `metadata`) —
+  `score`, `mean_par`, `transmit_amount`, …
+- `prediction_result.zip` + extracted `prediction_result/` (`metrics.json`, `metadata`) —
+  per-case `mean_par` / `transmit_amount` for all 24 hidden cases
+- `logs/` — per-step program + ingestion stdout/stderr
+  (`prediction_stdout.txt`, `prediction_ingestion_stdout.txt`, `scoring_stdout.txt`, …).
+  The ingestion stdout has a handy `completed <dataset>_<model>_EP<n>: PAR=.. transmit=..` line per case.
 - `submission_scores.json` — the leaderboard scores straight from the API
 
-and prints a summary table to stdout.
+and prints a summary table to stdout. (This competition has no `detailed_result`, so none is saved.)
 
 ### Long runs / background
 

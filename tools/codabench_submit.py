@@ -331,6 +331,37 @@ def download_and_extract(url: str, label: str, out_dir: Path, verbose: bool) -> 
     return parsed
 
 
+def download_logs(details: dict, out_dir: Path, verbose: bool) -> list:
+    """Download the per-step program/ingestion stdout+stderr logs.
+
+    `details['logs']` is a list of {name, data_file(url)} (e.g. prediction_stdout,
+    scoring_stderr, ...). Saves each to out_dir/logs/<name>.txt. Returns the names
+    saved.
+    """
+    logs = details.get("logs") or []
+    if not logs:
+        return []
+    log_dir = out_dir / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    if verbose:
+        print(f"Downloading {len(logs)} step log(s)...")
+    saved = []
+    for entry in logs:
+        name = entry.get("name")
+        url = entry.get("data_file")
+        if not name or not url:
+            continue
+        try:
+            resp = requests.get(url)
+            resp.raise_for_status()
+            (log_dir / f"{name}.txt").write_bytes(resp.content)
+            saved.append(name)
+        except requests.RequestException as exc:
+            if verbose:
+                print(f"  warning: could not fetch log {name}: {exc}")
+    return saved
+
+
 def print_scores(scoring: dict, prediction: dict) -> None:
     print("\n" + "=" * 60)
     print("RESULTS")
@@ -497,6 +528,7 @@ def main(argv=None) -> int:
         prediction = download_and_extract(
             details.get("prediction_result"), "prediction", out_dir, verbose
         )
+        download_logs(details, out_dir, verbose)
 
         # Also dump the raw submission scores from the API for convenience.
         (out_dir / "submission_scores.json").write_text(
