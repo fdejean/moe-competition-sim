@@ -322,3 +322,10 @@ retired hik0njmv/ba4k2v8b on my side; reply via send_message and I'll target you
   NOT — anti-correlation structure is stable across windows; fine EP128 swaps chase noise.
   NEXT IDEAS (positive-expectation, build on cov_iter_dro): robustify the EP256 matching itself (match on a CVaR/
   denoised series instead of raw subsample, to generalize the pairing even better); optimal min-max matching vs greedy fold.
+
+2026-05-30 ~14:30  [!] cov_iter_robust 114.68 (< cov_iter_dro 114.76) — CVaR robust-peak EP256 matching LOSES.
+  The raw single-peak max_t matching was NOT overfitting at EP256 (unlike EP128 refine); denoising to CVaR
+  top-15% removed useful peak signal. => EP256 raw min-peak matching is at its CEILING. Robustifying it = dead.
+  *** FINAL SOTA = cov_iter_dro 114.76 *** (EP256 raw min-peak anti-correlation matching + robust replication mean+3std).
+  Levers fully explored around the winner: EP128 richer placement (peakiter6 114.49, block_refine 114.24) = overfit/
+  column-loss; CVaR matching (114.68) = over-denoised. All < 114.76. Diminishing returns; 114.76 is a strong ceiling.
