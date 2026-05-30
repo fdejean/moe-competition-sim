@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1940155,
+    "index": 0,
+    "score": "114.0498591943",
+    "column_key": "score",
+    "precision": 2,
+    "is_primary": true
+  },
+  {
+    "id": 1940154,
+    "index": 1,
+    "score": "1.6603975874",
+    "column_key": "mean_par",
+    "precision": 2,
+    "is_primary": false
+  },
+  {
+    "id": 1940158,
+    "index": 2,
+    "score": "650369.0000000000",
+    "column_key": "transmit_amount",
+    "precision": 2,
+    "is_primary": false
+  },
+  {
+    "id": 1940157,
+    "index": 3,
+    "score": "63.6497236241",
+    "column_key": "transmission_time_seconds",
+    "precision": 2,
+    "is_primary": false
+  },
+  {
+    "id": 1940156,
+    "index": 4,
+    "score": "2554.2461047867",
+    "column_key": "total_time_seconds",
+    "precision": 2,
+    "is_primary": false
+  }
+]

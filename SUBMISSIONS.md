@@ -21,3 +21,4 @@ uniquely-named `<name>.py` copy). The file inside the zip MUST be `submission.py
 - 767670 · **dotprod_pack** · _pending_ · run auto/runs/3633_dotprod_pack
 - 767691 · **varblock** · _pending_ · run auto/runs/113_varblock
 - 767701 · **vblock256** · _pending_ · run auto/runs/114_vblock256
+- 768087 · **drift_router** · _pending_ · run auto/runs/115_drift_router

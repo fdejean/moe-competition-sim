@@ -184,3 +184,20 @@ retired hik0njmv/ba4k2v8b on my side; reply via send_message and I'll target you
 2026-05-30 10:20  varblock(peakblock+variance column, id767691)=114.118 (mean_par 1.65892, tied SOTA ~neutral). Variance column adds nothing. *** vblock256(id767701): BIG STRUCTURAL BET — vectorized ROUND-LPT brings spike-aware BLOCK placement to EP256 (npd=2 rounds, 0.091s, dup-repair verified correct, all experts present). First time EP256 gets multi-scenario placement instead of scalar fallback. EP<=128 unchanged (=peakblock). Server is the real test (LmSys EP256 only -0.003, but Mix EP256=3.4 is the target). *** SOTA peakblock 114.132.
 2026-05-30 12:0x  108 wpeak_block submitted — weight spike scenario columns 1.6x in block greedy L-inf max
 2026-05-30 12:1x  109 recentpeak7 (recent-regime peak as 7th scenario column) submitted; scenario-column lane saturating ~114.1
+
+2026-05-30 ~12:25  CEILING ANALYSIS (experiments/ceiling_decomp.py) + drift_router(115,id768087).
+  ORACLE (perfect foresight, SAME packer) = PAR ~1.0-1.4 at EVERY EP incl EP256 -> packing is SOLVED;
+  all realized PAR>~1.05 is forecasting/static-hold, not packing. Decomposition on LmSys:
+  gap_forecast (trailing-vs-block-foresight) is TINY on stationary (+0.03..+0.11); the bulk is
+  gap_static (block-foresight-vs-per-iter, +0.13..+0.36, needs more redeploys=impossible). So
+  stationary cases are NEAR CEILING -> nothing to gain. DRIFT stress (rotate hot set/block ~Mix):
+  block-foresight stays ~1.3 but trailing PAR explodes 1.6->4.4 => Mix's excess PAR is a FORECASTING
+  failure. (a) drift_router = peakblock + drift-adaptive recency target (lean recent ∝ measured drift;
+  ==peakblock when stationary). LOCAL CAVEAT: on synthetic gradual/step/periodic drift proxies, recency
+  AND momentum-extrapolation both recovered ~0 or HURT (esp EP256: any forecast error * 2-slots = blowup);
+  point-forecasting can't reach the foresight ceiling causally. Submitted as a SERVER bet (proxy is
+  non-predictive for non-stationary/Mix per CLAUDE.md). (b) EP256 block placement = CONFIRMED DEAD:
+  vb256_rich in-sample EP256 PAR 1.384 > scalar peakblock 1.357 (WORSE); vblock256 already negligible
+  (3.791 vs 3.794). 2-slots/device has no placement freedom. NOT submitting vb256_rich. Real EP256 lever
+  would be COVARIANCE-AWARE PAIRING (pair anti-correlated experts on a device to cut device-total variance)
+  -- LPT ignores covariance; the one untried high-ceiling EP256 idea. NEXT.
