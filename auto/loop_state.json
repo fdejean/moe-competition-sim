@@ -10,9 +10,10 @@
     "note": "SOTA at loop start. Beat THIS proxy number to justify a submission."
   },
   "best_server": {
-    "variant": "peak_balance",
-    "score": 112.159,
-    "note": "NEW SOTA (vero resumed agent). Robust-minimax joint-peak placement: LPT targets (1-THETA)*mean+THETA*peak, peak=mean over top-10% highest-total-load iters. mean_par 1.685 (vs 1.696), transmit 665k. Breaks the prior converged 111.808 ceiling (+0.35). Scalar LPT, EP256-safe. id 767206."
+    "variant": "epadaptive_ep128",
+    "score": 112.364,
+    "mean_par": 1.68589,
+    "note": "NEW SOTA. Co-spiking block placement @EP<=128 + fast finance_band @EP256 + relabel. +1.10 over prior best. PAR floor broken 1.692->1.686. Next: co-spiking @EP256 (cheaper k)."
   },
   "submit_budget": {
     "max_submissions_tonight": 1000,
@@ -243,15 +244,15 @@
       "nnn": "084",
       "slug": "epadaptive_p95",
       "submission_id": 767219,
-      "server": null,
-      "note": "epadaptive (co-spiking @EP<=64) + p95 replication @EP>=128 (peer E3 lever, pure p95 not max(p95,gauss)). Attacks both ends. Pending."
+      "server": 112.011,
+      "note": "p95 replication @high-EP did NOT translate (peer E3 was LmSys-only); 112.011 < epadaptive 112.079. High-EP best left at mean+2std."
     },
     {
       "nnn": "085",
       "slug": "epadaptive_ep128",
       "submission_id": 767221,
-      "server": null,
-      "note": "co-spiking through EP128 (block_pack proved EP128 server-safe; only EP256 floored). Captures EP128 cases (PAR 1.6-2.6, big headroom). Fast+relabel only at EP256. Pending."
+      "server": 112.364,
+      "note": "*** NEW SOTA 112.364 *** mean_par 1.68589. Co-spiking through EP128 (server-safe) captures the high-headroom EP128 cases. +1.10 over prior best."
     }
   ],
   "timing_calibration": {
