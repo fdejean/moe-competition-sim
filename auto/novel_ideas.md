@@ -4,7 +4,7 @@ Base to beat: peak_cospike_k4 = 113.995. Must stay finance_band-speed, EP256-saf
 
 - [!] strata_pack — DONE 113.69 < combo; load-strata loses to temporal blocks.
 - [ ] ot_sinkhorn — replace greedy LPT with entropic optimal-transport (Sinkhorn) soft expert->device assignment, rounded. Global vs greedy-local optimizer.
-- [ ] regime_track — change-point-gated redeployment: redeploy when window load DISTRIBUTION shifts (KL/L1), not just when PAR gain>TAU. Track non-stationary Mix instead of holding.
+- [!] regime_track — DONE 113.906 < combo; drift-redeploy churn outweighs gain.
 - [!] scenario_robust — DONE 111.786; worst-iter min-max too conservative.
 - [ ] match_ep256 — at EP256 (2 slots/dev) it's a PAIRING problem: optimal anti-correlated b-matching (heaviest+lightest fold + correlation-aware), vectorized. Attacks the 2-slot regime E2 flagged.
 - [ ] spectral_cut — proper balanced min-cut on the expert co-spiking correlation graph (recursive Fiedler), not the weak snake. 
