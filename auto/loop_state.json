@@ -196,6 +196,13 @@
       "submission_id": 766685,
       "server": 110.453,
       "note": "high-EP lambda=0.0: 110.453. High-EP lambda curve peaks at ~1.5."
+    },
+    {
+      "nnn": "078",
+      "slug": "shrink_predict",
+      "submission_id": null,
+      "server": null,
+      "note": "NEW class: cross-call long-run shrinkage of load estimate (James-Stein-style var reduction for non-stationary Mix). SHRINK=0.3. Pending."
     }
   ],
   "timing_calibration": {
