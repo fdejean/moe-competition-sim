@@ -307,8 +307,8 @@
       "nnn": "093",
       "slug": "epadaptive_p95ep256",
       "submission_id": 767275,
-      "server": null,
-      "note": "SOTA base (co-spiking<=EP128 k4) + p95 replication ONLY at EP256 (isolate E2 replication lever on the 2-slot cases)."
+      "server": 112.479,
+      "note": "p95@EP256-only slightly worse (1.683). Replication-tuning at EP256 dead; finance_band mean+2std best there."
     }
   ],
   "timing_calibration": {
