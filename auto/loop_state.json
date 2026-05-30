@@ -10,9 +10,10 @@
     "note": "SOTA at loop start. Beat THIS proxy number to justify a submission."
   },
   "best_server": {
-    "variant": "shrink_predict",
-    "score": 111.808,
-    "note": "marginal SOTA, within noise of sticky_eplo(111.805)/sticky_relabel(111.802). The transmit-relabel family + finance_band PAR is the converged ceiling ~111.8. Genuinely-new shrinkage class tried, ~neutral."
+    "variant": "epadaptive_algo",
+    "score": 112.079,
+    "mean_par": 1.68845,
+    "note": "NEW SOTA. EP-adaptive: co-spiking block-balance @EP<=64 + fast finance_band @EP>=128 + O(nd) relabel. BROKE the PAR floor (1.69->1.688). Next: add p95 replication @EP>=128 (peer E3 lever)."
   },
   "submit_budget": {
     "max_submissions_tonight": 1000,
@@ -235,9 +236,9 @@
     {
       "nnn": "083",
       "slug": "epadaptive_algo",
-      "submission_id": null,
-      "server": null,
-      "note": "NEW: EP-adaptive ALGORITHM dispatch \u2014 co-spiking block-balanced placement at EP<=64 (affordable, proxy DS-R1 1.235->1.210), fast finance_band at EP>=128, + O(nd) relabel. Tests co-spiking on server safely (block_pack floored). Pending."
+      "submission_id": 767202,
+      "server": 112.079,
+      "note": "*** NEW SOTA 112.079 *** mean_par 1.68845 \u2014 FIRST time PAR < 1.692! Co-spiking block placement at EP<=64 (affordable per-case budget) + fast finance_band at EP>=128 + relabel. PAR was NOT saturated \u2014 only unexploitable where I couldn't afford co-spiking. EP-adaptive algorithm dispatch breaks the floor."
     }
   ],
   "timing_calibration": {
