@@ -48,7 +48,7 @@
       "slug": "fb_tau005_l2",
       "submission_id": 766506,
       "ts": "2026-05-30T02:00:00+02:00",
-      "server": null,
+      "server": 106.626,
       "note": "finance_band TAU=0.05 (redeploy aggressively, lower PAR, transmit~free). finance_band-speed."
     },
     {
@@ -56,7 +56,7 @@
       "slug": "fb_tau01_l2",
       "submission_id": 766507,
       "ts": "2026-05-30T02:00:00+02:00",
-      "server": null,
+      "server": 109.281,
       "note": "finance_band TAU=0.1."
     },
     {
@@ -64,7 +64,7 @@
       "slug": "fb_window512_l2",
       "submission_id": 766508,
       "ts": "2026-05-30T02:00:00+02:00",
-      "server": null,
+      "server": 105.282,
       "note": "finance_band trailing WINDOW=512 (track ShareGPT drift)."
     },
     {
@@ -170,6 +170,13 @@
       "submission_id": 766635,
       "server": 111.563,
       "note": "STAY=0.60: 111.563. STAY sweep -> peak at 0.25 (111.802)."
+    },
+    {
+      "nnn": "074",
+      "slug": "sticky_epadapt",
+      "submission_id": null,
+      "server": null,
+      "note": "sticky_relabel + EP-adaptive lambda (3.0 at EP>=128, targets high-EP realized PAR 2-3.4). Pending."
     }
   ],
   "timing_calibration": {
