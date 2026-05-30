@@ -253,6 +253,27 @@
       "submission_id": 767221,
       "server": 112.364,
       "note": "*** NEW SOTA 112.364 *** mean_par 1.68589. Co-spiking through EP128 (server-safe) captures the high-headroom EP128 cases. +1.10 over prior best."
+    },
+    {
+      "nnn": "086",
+      "slug": "epadaptive_k4",
+      "submission_id": 767238,
+      "server": null,
+      "note": "co-spiking <=EP128, k=4 blocks (coarser)"
+    },
+    {
+      "nnn": "087",
+      "slug": "epadaptive_k16",
+      "submission_id": 767240,
+      "server": null,
+      "note": "co-spiking <=EP128, k=16 blocks (finer)"
+    },
+    {
+      "nnn": "088",
+      "slug": "epadaptive_k32",
+      "submission_id": 767241,
+      "server": null,
+      "note": "co-spiking <=EP128, k=32 blocks (densest, 0.21s EP128, safe)"
     }
   ],
   "timing_calibration": {

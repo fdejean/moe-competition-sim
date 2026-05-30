@@ -415,3 +415,4 @@ iterations (which experts are hot together) — that's the co-spiking structure 
 scalar weight. Next: THETA/PEAKFRAC sweep + combine joint-peak weight WITH the EP-gated
 block placement (cospike_hybrid) for compounding.
 2026-05-30 ~07:40  epadaptive_ep128 = 112.364 NEW SOTA (co-spiking <=EP128). p95@high-EP (084)=112.011 worse. Next: co-spiking @EP256 cheaper-k.
+2026-05-30 ~07:50  EP256 co-spiking dropped (0.29s floors). k-sweep on ep128 base (k=4/16/32) submitted.
