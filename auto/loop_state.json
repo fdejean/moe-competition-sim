@@ -229,8 +229,8 @@
       "nnn": "082",
       "slug": "fold_pack",
       "submission_id": 767177,
-      "server": null,
-      "note": "ENTIRELY NEW architecture: largest-remainder proportional replicas + vectorized boustrophedon FOLDING placement (no water-fill/greedy-LPT/relabel). 0.03s/call (5x faster than finance_band). Proxy 103 (folding packs cruder than LPT)."
+      "server": 106.473,
+      "note": "NEW folding architecture: WORSE on both (mean_par 1.76>1.69, transmit 978k>842k). Folding packs cruder than greedy LPT AND global-sort reshuffles more (higher transmit). Vectorized speed doesn't buy a PAR/transmit win."
     }
   ],
   "timing_calibration": {
