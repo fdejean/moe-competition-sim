@@ -1,0 +1,120 @@
+{
+  "cases": [
+    {
+      "dataset": "ShareGPT",
+      "ep": 32,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.2929697099733417,
+      "model": "Qwen3",
+      "transmit_amount": 13360
+    },
+    {
+      "dataset": "ShareGPT",
+      "ep": 64,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.521439418285544,
+      "model": "Qwen3",
+      "transmit_amount": 15477
+    },
+    {
+      "dataset": "ShareGPT",
+      "ep": 128,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.8693033094216878,
+      "model": "Qwen3",
+      "transmit_amount": 19702
+    },
+    {
+      "dataset": "WildChat",
+      "ep": 32,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.2823839647986568,
+      "model": "Qwen3",
+      "transmit_amount": 13354
+    },
+    {
+      "dataset": "WildChat",
+      "ep": 64,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.5032390279725187,
+      "model": "Qwen3",
+      "transmit_amount": 15488
+    },
+    {
+      "dataset": "WildChat",
+      "ep": 128,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.8251646071287497,
+      "model": "Qwen3",
+      "transmit_amount": 19657
+    },
+    {
+      "dataset": "LmSys",
+      "ep": 32,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.281053871572093,
+      "model": "Qwen3",
+      "transmit_amount": 13338
+    },
+    {
+      "dataset": "LmSys",
+      "ep": 64,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.507430867023232,
+      "model": "Qwen3",
+      "transmit_amount": 15467
+    },
+    {
+      "dataset": "LmSys",
+      "ep": 128,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.8407221434853536,
+      "model": "Qwen3",
+      "transmit_amount": 19533
+    },
+    {
+      "dataset": "ShareGPT",
+      "ep": 32,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 1.1999565394477623,
+      "model": "DS-R1",
+      "transmit_amount": 15407
+    },
+    {
+      "dataset": "ShareGPT",
+      "ep": 64,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 1.3422716818354123,
+      "model": "DS-R1",
+      "transmit_amount": 16697
+    },
+    {
+      "dataset": "ShareGPT",
+      "ep": 128,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 1.5831538614200982,
+      "model": "DS-R1",
+      "transmit_amount": 19347
+    }
+  ],
+  "errors": [
+    {
+      "case": "ShareGPT_DS-R1_EP256",
+      "error": "rebalance exceeded the per-trace time budget",
+      "traceback": "Traceback (most recent call last):\n  File \"/app/program/ingestion.py\", line 257, in main\n    case_metrics = run_case(rebalance_fn, dataset, model, ep)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/program/ingestion.py\", line 220, in run_case\n    result = call_rebalance_with_timeout(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/program/ingestion.py\", line 164, in call_rebalance_with_timeout\n    return rebalance_fn(train_window, n_devices, n_red_experts)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/ingested_program/submission.py\", line 302, in rebalance\n    candidate[l] = _build_powerd(risk[l], n_device, n_exp_per_dev, prev)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/ingested_program/submission.py\", line 177, in _build_powerd\n    cands = rng.choice(np.asarray(avail), size=k, replace=False) if k > 1 \\\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"numpy/random/_generator.pyx\", line 899, in numpy.random._generator.Generator.choice\n  File \"/usr/local/lib/python3.11/site-packages/numpy/_core/fromnumeric.py\", line 3404, in prod\n    return _wrapreduction(a, np.multiply, 'prod', axis, dtype, out,\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/numpy/_core/fromnumeric.py\", line 66, in _wrapreduction\n    def _wrapreduction(obj, ufunc, method, axis, dtype, out, **kwargs):\n    \n  File \"/app/program/ingestion.py\", line 154, in _timeout_handler\n    raise RebalanceTimeoutError(\"rebalance exceeded the per-trace time budget\")\nRebalanceTimeoutError: rebalance exceeded the per-trace time budget\n"
+    }
+  ],
+  "status": "failed"
+}

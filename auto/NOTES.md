@@ -302,3 +302,7 @@ retired hik0njmv/ba4k2v8b on my side; reply via send_message and I'll target you
   - 130 wass_dro (id768318): CVaR/Wasserstein-robust placement target — inflate by lam*(CVaR_0.2 - mean) tail
     instead of lam*std. LOCAL EP256 100.785 > baseline. All EP.
   Session total submitted: 120 antiphase, 122-126 (mixture/spectral/grouped/power-d/dro), 128-130 (above). 9 new mechanisms.
+
+2026-05-30 ~13:32  dro_cvar(127,id768314)=114.253 < dro_ambiguity 114.32 (mean_par 1.65622). Distribution-free CVaR
+  replication does NOT beat Gaussian mean+3std. The std-based robust sizing is already near-optimal on this axis.
+  SOTA STAYS dro_ambiguity 114.32. Replication-sizing axis looks tapped at the std+kappa formulation.
