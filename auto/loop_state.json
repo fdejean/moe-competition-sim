@@ -300,8 +300,8 @@
       "nnn": "092",
       "slug": "epadaptive_sticky",
       "submission_id": 767254,
-      "server": null,
-      "note": "FULL STACK: co-spiking k=4 placement (EP<=128) + relabel + stay-bias (STAY=0.25). Combines the PAR win (co-spiking) with the transmit win (sticky), previously in separate variants. Pending."
+      "server": 111.845,
+      "note": "stay-bias CONFLICTS with co-spiking (mean_par 1.702): stay pulls experts back to old device, undoing the co-spiking spread. Relabel (PAR-neutral) is fine; stay-bias (placement-changing) is not. Drop stay for co-spiking variants."
     }
   ],
   "timing_calibration": {

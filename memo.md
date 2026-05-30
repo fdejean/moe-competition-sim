@@ -418,3 +418,4 @@ block placement (cospike_hybrid) for compounding.
 2026-05-30 ~07:50  EP256 co-spiking dropped (0.29s floors). k-sweep on ep128 base (k=4/16/32) submitted.
 2026-05-30 ~08:00  k-sweep: k=4=112.522 SOTA (coarse blocks win). PAR 1.682. Fine-sweep k=2/3/6 next.
 2026-05-30 ~08:10  epadaptive_sticky: co-spiking k4 + relabel + stay-bias (full stack). id 767254.
+2026-05-30 ~08:20  epadaptive_sticky=111.845 (stay-bias conflicts w/ co-spiking). Next: p95@EP256-only.
