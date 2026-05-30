@@ -13,7 +13,7 @@
     "variant": "epadaptive_k4",
     "score": 112.522,
     "mean_par": 1.68178,
-    "note": "NEW SOTA. Co-spiking <=EP128 with k=4 temporal blocks (coarse generalizes best) + fast finance_band @EP256 + relabel. +1.26 over prior best. PAR 1.692->1.682."
+    "note": "FINAL SOTA. Co-spiking block-balanced placement (k=4) @EP<=128 + fast finance_band @EP256 + O(nd) PAR-neutral relabel. +1.258 over prior best 111.264. Co-spiking lever fully tuned (k/refine/lambda/p95/stay all explored). EP256 cases (PAR 3.4) remain the wall."
   },
   "submit_budget": {
     "max_submissions_tonight": 1000,
@@ -320,9 +320,9 @@
     {
       "nnn": "095",
       "slug": "epadaptive_refine",
-      "submission_id": null,
-      "server": null,
-      "note": "co-spiking k4 + fixed-30-pass VECTORIZED block-swap refine @EP<=128 (EP128 0.28s, under budget). Tests if refining the co-spiking placement lowers realized PAR further."
+      "submission_id": 767306,
+      "server": 112.513,
+      "note": "refine OVERFITS the coarse block proxy (mean_par 1.685>1.682). Single-pass greedy is better. Co-spiking lever fully tuned; SOTA stays k4 112.522."
     }
   ],
   "timing_calibration": {
@@ -340,10 +340,10 @@
     "rule": "Submit ONLY variants whose per-call time ~= finance_band (<=~0.2s local). Anything doing per-call search/repack/relabel will 3x-timeout on the server's ShareGPT/EP128 traces. The only safe levers are cheap window statistics (replication weight) + band/window/lambda tuning + a SINGLE vectorized pack."
   },
   "summary": {
-    "submissions": 22,
-    "sota": "peak_balance 112.159",
+    "submissions": 40,
+    "sota": "epadaptive_k4 112.522",
     "prior_best": "finance_band 111.264",
-    "gain": "+0.541",
-    "status": "converged - ceiling for finance_band-speed methods"
+    "gain": "+1.258",
+    "key_lever": "EP-adaptive co-spiking (block-balance placement @EP<=128, fast @EP256)"
   }
 }

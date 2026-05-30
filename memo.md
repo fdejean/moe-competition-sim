@@ -456,3 +456,4 @@ PAR-neutral relabel. **Meta-lesson: "saturated" was an affordability artifact â€
 EP-adaptive framework (use the expensive-but-better method exactly where the per-case
 budget allows) is the key unlock.** Open: a fixed-pass co-spiking *refine* at EPâ‰¤128
 (budget there is generous; fixed-pass is server-safe per pack_refine_fast).
+2026-05-30 ~08:55  refine overfits (112.513). FINAL SOTA epadaptive_k4 = 112.522 (+1.258). EP256 is the wall.
