@@ -10,11 +10,10 @@
     "note": "SOTA at loop start. Beat THIS proxy number to justify a submission."
   },
   "best_server": {
-    "variant": "peakblock",
-    "score": 114.132,
-    "mean_par": 1.65874,
-    "id": 767621,
-    "note": "NOVEL placement-level spike-awareness: joint-peak per-expert load appended as an EXTRA BLOCK COLUMN so the greedy balances devices across temporal blocks AND the co-spike scenario. +0.088 over k6 114.044. Direction: make PLACEMENT spike-aware, not just the target weight."
+    "variant": "dro_ambiguity",
+    "score": 114.32,
+    "id": 768258,
+    "note": "drift_router + DECOUPLED distributionally-robust replication: copies sized by mean+3*std (tail insurance), placement still on mean+2*std. +0.14 over drift_router 114.181. High-variance experts get more copies BEFORE spikes land."
   },
   "submit_budget": {
     "max_submissions_tonight": 1000,

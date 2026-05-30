@@ -1,0 +1,120 @@
+{
+  "cases": [
+    {
+      "dataset": "ShareGPT",
+      "ep": 32,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.2929697099733417,
+      "model": "Qwen3",
+      "transmit_amount": 13360
+    },
+    {
+      "dataset": "ShareGPT",
+      "ep": 64,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.5222572522822093,
+      "model": "Qwen3",
+      "transmit_amount": 15426
+    },
+    {
+      "dataset": "ShareGPT",
+      "ep": 128,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.8628165615932983,
+      "model": "Qwen3",
+      "transmit_amount": 19461
+    },
+    {
+      "dataset": "WildChat",
+      "ep": 32,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.2823839647986568,
+      "model": "Qwen3",
+      "transmit_amount": 13354
+    },
+    {
+      "dataset": "WildChat",
+      "ep": 64,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.5035939553016238,
+      "model": "Qwen3",
+      "transmit_amount": 15458
+    },
+    {
+      "dataset": "WildChat",
+      "ep": 128,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.816664439064134,
+      "model": "Qwen3",
+      "transmit_amount": 19337
+    },
+    {
+      "dataset": "LmSys",
+      "ep": 32,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.281053871572093,
+      "model": "Qwen3",
+      "transmit_amount": 13338
+    },
+    {
+      "dataset": "LmSys",
+      "ep": 64,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.5099504351060837,
+      "model": "Qwen3",
+      "transmit_amount": 15365
+    },
+    {
+      "dataset": "LmSys",
+      "ep": 128,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.8390463491868922,
+      "model": "Qwen3",
+      "transmit_amount": 19236
+    },
+    {
+      "dataset": "ShareGPT",
+      "ep": 32,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 1.1999565394477623,
+      "model": "DS-R1",
+      "transmit_amount": 15407
+    },
+    {
+      "dataset": "ShareGPT",
+      "ep": 64,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 1.345460976497024,
+      "model": "DS-R1",
+      "transmit_amount": 16709
+    },
+    {
+      "dataset": "ShareGPT",
+      "ep": 128,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 1.585851524776289,
+      "model": "DS-R1",
+      "transmit_amount": 18829
+    }
+  ],
+  "errors": [
+    {
+      "case": "ShareGPT_DS-R1_EP256",
+      "error": "rebalance exceeded the per-trace time budget",
+      "traceback": "Traceback (most recent call last):\n  File \"/app/program/ingestion.py\", line 257, in main\n    case_metrics = run_case(rebalance_fn, dataset, model, ep)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/program/ingestion.py\", line 220, in run_case\n    result = call_rebalance_with_timeout(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/program/ingestion.py\", line 164, in call_rebalance_with_timeout\n    return rebalance_fn(train_window, n_devices, n_red_experts)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/ingested_program/submission.py\", line 312, in rebalance\n    candidate[l] = _build_peakiter(risk[l], series[:, l, :], n_device, n_exp_per_dev, prev)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/ingested_program/submission.py\", line 206, in _build_peakiter\n    score = (dev_series + slot_series[idx]).max(axis=1)   # device peak if added here\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/numpy/_core/_methods.py\", line 39, in _amax\n    def _amax(a, axis=None, out=None, keepdims=False,\n    \n  File \"/app/program/ingestion.py\", line 154, in _timeout_handler\n    raise RebalanceTimeoutError(\"rebalance exceeded the per-trace time budget\")\nRebalanceTimeoutError: rebalance exceeded the per-trace time budget\n"
+    }
+  ],
+  "status": "failed"
+}

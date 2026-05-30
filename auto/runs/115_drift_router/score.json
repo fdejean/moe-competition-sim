@@ -1,0 +1,8 @@
+{
+  "variant": "drift_router",
+  "id": "768087",
+  "server": 114.181,
+  "mean_par": 1.65705,
+  "transmit_amount": 658573,
+  "note": "NEW SOTA +0.049 over peakblock. Drift-adaptive recency target: lean recent target \u221d measured drift; ==peakblock when stationary. Recency helps real Mix non-stationarity (local synthetic-drift proxies were neutral; server is the oracle)."
+}

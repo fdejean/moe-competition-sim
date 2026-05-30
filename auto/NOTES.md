@@ -182,3 +182,127 @@ retired hik0njmv/ba4k2v8b on my side; reply via send_message and I'll target you
 2026-05-30 09:55  spikebands(id767642)=114.065 (<peakblock 114.132; trimming temporal blocks to fit 3 bands hurt). lstsq_pack(L2 sum-of-squares placement objective, id767663)=113.109 (WORSE — the L-infinity worst-block greedy is already the right objective; L2 over-balances magnitude). KEY META-PATTERN: wins come from ADDING scenario INFORMATION to the block columns (peakblock), NOT from changing the placement objective. dotprod_pack(min dot-product VBP, id767670) in flight. SOTA stays peakblock 114.132.
 2026-05-30 10:05  dotprod_pack(min dot-product VBP, id767670)=112.678 (WORSE). Both alt placement objectives (L2=113.1, dot=112.7) LOSE to L-inf worst-block. CONFIRMED: only ADDING scenario columns helps. varblock (peakblock + per-expert std/variance column, 8 cols, EP128 build 0.26s) submitted — balances volatility across devices too. SOTA peakblock 114.132.
 2026-05-30 10:20  varblock(peakblock+variance column, id767691)=114.118 (mean_par 1.65892, tied SOTA ~neutral). Variance column adds nothing. *** vblock256(id767701): BIG STRUCTURAL BET — vectorized ROUND-LPT brings spike-aware BLOCK placement to EP256 (npd=2 rounds, 0.091s, dup-repair verified correct, all experts present). First time EP256 gets multi-scenario placement instead of scalar fallback. EP<=128 unchanged (=peakblock). Server is the real test (LmSys EP256 only -0.003, but Mix EP256=3.4 is the target). *** SOTA peakblock 114.132.
+2026-05-30 12:0x  108 wpeak_block submitted — weight spike scenario columns 1.6x in block greedy L-inf max
+2026-05-30 12:1x  109 recentpeak7 (recent-regime peak as 7th scenario column) submitted; scenario-column lane saturating ~114.1
+
+2026-05-30 ~12:25  CEILING ANALYSIS (experiments/ceiling_decomp.py) + drift_router(115,id768087).
+  ORACLE (perfect foresight, SAME packer) = PAR ~1.0-1.4 at EVERY EP incl EP256 -> packing is SOLVED;
+  all realized PAR>~1.05 is forecasting/static-hold, not packing. Decomposition on LmSys:
+  gap_forecast (trailing-vs-block-foresight) is TINY on stationary (+0.03..+0.11); the bulk is
+  gap_static (block-foresight-vs-per-iter, +0.13..+0.36, needs more redeploys=impossible). So
+  stationary cases are NEAR CEILING -> nothing to gain. DRIFT stress (rotate hot set/block ~Mix):
+  block-foresight stays ~1.3 but trailing PAR explodes 1.6->4.4 => Mix's excess PAR is a FORECASTING
+  failure. (a) drift_router = peakblock + drift-adaptive recency target (lean recent ∝ measured drift;
+  ==peakblock when stationary). LOCAL CAVEAT: on synthetic gradual/step/periodic drift proxies, recency
+  AND momentum-extrapolation both recovered ~0 or HURT (esp EP256: any forecast error * 2-slots = blowup);
+  point-forecasting can't reach the foresight ceiling causally. Submitted as a SERVER bet (proxy is
+  non-predictive for non-stationary/Mix per CLAUDE.md). (b) EP256 block placement = CONFIRMED DEAD:
+  vb256_rich in-sample EP256 PAR 1.384 > scalar peakblock 1.357 (WORSE); vblock256 already negligible
+  (3.791 vs 3.794). 2-slots/device has no placement freedom. NOT submitting vb256_rich. Real EP256 lever
+  would be COVARIANCE-AWARE PAIRING (pair anti-correlated experts on a device to cut device-total variance)
+  -- LPT ignores covariance; the one untried high-ceiling EP256 idea. NEXT.
+
+2026-05-30 ~12:35  *** drift_router(115,id768087)=114.181 NEW SOTA (+0.049 over peakblock 114.132, mean_par 1.65705<1.65874) ***
+  The drift-adaptive recency target HELPS on real Mix non-stationarity even though my synthetic-drift
+  proxies (gradual/step/periodic) showed it neutral-to-negative -> SERVER IS THE ORACLE, vindicated.
+  vblock256(EP256 block, id767701)=114.099 < peakblock -> EP256 block placement confirmed DEAD on server too.
+  NOT tuning GAMMA (forbidden). NEXT real lever: covariance-aware EP256 pairing (anti-correlated experts share a device).
+
+2026-05-30 ~12:42  *** BUDGET FINDING: real per-call budget = 3x DS-EPLB wall time = DS-EPLB itself is 1.2s@EP128 / 2.4s@EP256 (measured), so budget ~3.6s/7s, we used 0.2s -> 15-35x HEADROOM. Prior "0.15s or floor" lore was WRONG (confused a python O(n^2) loop timeout w/ compute budget). ***
+  NEW LEVER peakiter(116,id768125): place by minimizing each device PEAK summed load over the subsampled
+  window (S=128) at EP>=64 -> TRUE co-spiking placement at full temporal resolution (subsumes coarse blocks
+  AND covariance-pairing). FIRST method to move EP256 PAR: in-sample LmSys scalar 1.357->1.310 @EP256,
+  1.289->1.214 @EP128. Build 0.3-0.8s << budget. Swap-refine on top = negligible (+0.000..0.003; greedy already
+  locally optimal, EP256 2-slots nothing to swap). Variants: peakiter_cvar(117,id768141, robust top-5% peak vs
+  single max, EP256 1st-call 3.5s=1.5x DS still safe, in-sample 1.3064) + peakiter_full(118,id768143, peak-iter
+  at ALL EP incl 32). All EP256-smoke clean, correct (no dup experts). Server pending.
+
+2026-05-30 ~12:45  peakiter family(116/117/118) ALL FLOORED -1e6: per-trace TIMEOUT on ShareGPT_DS-R1_EP256.
+  REAL BUDGET = ABSOLUTE per-call wall-clock (server signal alarm), NOT 3x DS-EPLB. Threshold sits between
+  scalar peakblock (0.2s Mac, PASSES EP256) and peakiter (0.83s Mac, FLOORS EP256). peakiter python loop over
+  512 slots is too slow on server CPU at EP256 only. FIX peakiter_safe(119,id768157): gate peak-iteration to
+  EP 64-128 (build ~0.35s, like peakblock), scalar at EP256 (=drift_router SOTA). Keeps the big EP128 in-sample
+  win (1.29->1.21). cvar abandoned (1.85s @EP128 too slow). LESSON: server CPU << Mac; keep EP256 to scalar/
+  vectorized only, no python slot-loop at 512 slots.
+
+2026-05-30 ~12:50  120 antiphase_block (id768172) SUBMITTED — NEW MECHANISM: anti-phase/covariance
+  lever in SAFE column form. From moe_literature.pdf (Expert Choice routing paper): its transferable
+  nugget is balance-by-construction, but our ceiling analysis already shows packing is solved (greedy≈
+  oracle). The untried high-ceiling lever is the COVARIANCE term: var(dev)=var(e1)+var(e2)+2cov(e1,e2);
+  every method ignores cov. Explicit O(E^2) pairing is floor-unsafe; instead ADD a VALLEY scenario column
+  (mean load over LOWEST-total-load iters) alongside peakblock's PEAK column. L-inf block greedy then
+  balances devices across temporal blocks + peak + valley -> co-locates anti-phase experts -> cuts realized
+  cov WITHOUT pairwise compute or refine. Fits proven meta-pattern (info>objective; peakblock +0.088).
+  TIMING-SAFE: BLOCKS=5 so cols=5+peak+valley=7 == SOTA's 6+peak=7 (EP128 first-call 0.187s ~ SOTA 0.158s,
+  steady 0.178s; all experts present; EP128/EP256 smoke no floor). Base SOTA=drift_router 114.181. Server-judged.
+  (peakiter id768125 = the IMPLICIT full-resolution version, still pending; antiphase = explicit cheap column form.)
+
+2026-05-30 ~12:55  peakiter_safe(119,id768157) FLOORED -1e6 on Mix_DS-R1_EP128 (CLAUDE.md tight-budget case).
+  CLOSES peak-iteration: full-S(128) too slow for the Mix budget on slow server CPU; low-S collapses to the
+  block placement already in peakblock (k-sweep showed high-k loses). The "15-35x headroom" was a Mac/LmSys
+  artifact; the BINDING budget is Mix_DS-R1_EP128 ~ peakblock-speed. Only ~finance_band/peakblock-speed survives.
+  *** STANDING SOTA = drift_router 114.181 (the real session win: scalar-speed drift-adaptive recency target). ***
+  Placement is fully maxed (block/peak too slow; scalar is the tight-budget ceiling). Remaining lever = scalar-
+  speed forecasting (drift recency already +0.049; further gains marginal). EP256 = structural wall (2 slots).
+
+2026-05-30 ~12:55  [!] sinkhorn_pack (from moe_literature.pdf §3.3, Expert Choice paper) — NOT SUBMITTED, dead end.
+  The paper's load-balance-by-construction is entropy-regularized assignment via Sinkhorn/Dykstra projections,
+  BUT it targets equal CARDINALITY (fixed token-bucket size k) — the easy case. Our problem is equal LOAD
+  (weighted min-max device packing). With homogeneous devices and no slot×device cost, the Sinkhorn potential
+  has only a device term -> every slot gets an IDENTICAL device preference -> it collapses to greedy LPT (no
+  extra signal). Consistent with the ceiling analysis (oracle ≈ greedy: packing is SOLVED). A global balancer
+  cannot beat greedy where greedy already hits the oracle. CONFIRMS: alt packers (L2 113.1, dotprod 112.7,
+  now sinkhorn≈greedy) all fail; the only packing-side win is ADDING scenario information (peakblock/antiphase).
+  The PDF's real lesson for us is just "balance is the objective" — which we already do; no transferable algo.
+
+2026-05-30 ~13:05  drift_gate(121,id768207) THROWAWAY (user-approved floor-risk bet): peak-iteration @EP64-128
+  ONLY when window is stationary (max-layer L1 drift <= 0.30); scalar otherwise. Measured stationary LmSys
+  drift: DS-R1 0.21, Qwen3 0.04 (ON); synthetic Mix-like regime-shift window 0.61 (OFF->scalar 0.23s). Goal:
+  bank the EP128 peak-iteration win on stationary single-source cases while dodging the Mix_DS-R1_EP128 cumulative
+  timeout. RISK: a low-drift Mix sub-segment window could still trigger peakiter and floor. Server is the test.
+
+2026-05-30 ~13:05  WAVE of 5 NEW MECHANISMS submitted (runs 122-126), all passed EP32/64/128/256
+  proxy+floor gate (no error, no -1e6 floor, valid shape, within SOTA timing envelope). Base=drift_router 114.181.
+  - 122 mixture_deploy (id768253): 2 data-driven REGIME-CENTROID columns (2-means along top PC, 6 power iters on
+    96-row subsample) appended to block cols. Targets Mix forecasting (mixture of regimes). BLOCKS=4 -> 7 cols.
+  - 123 spectral_cut (id768255): SPECTRAL PHASE column = per-expert coord on co-spiking principal axis (power iter),
+    shifted +/rescaled to mean-mass; greedy spreads correlated, pairs anti-correlated. BLOCKS=5 -> 7 cols.
+  - 124 grouped_place (id768256): NODE-AWARE hierarchical placement @EP256 (GROUP=8): L1 slots->nodes, L2 nodes->devs.
+  - 125 power_d_choices (id768257): POWER-OF-D-CHOICES (d=2) randomized placement @EP256 (Mitzenmacher).
+  - 126 dro_ambiguity (id768258): robust replication sizing — copies sized by mean+3*std (worst-case ambiguity),
+    decoupled from placement risk (mean+2*std). All EP.
+  Plus 120 antiphase_block (id768172) earlier = VALLEY column (anti-phase/cov lever). [!] sinkhorn_pack = dead end (degenerates to greedy).
+
+2026-05-30 ~13:10  drift_gate(121,id768207) FLOORED -1e6 on Mix_DS-R1_EP128. Stationarity gate (L1-drift<=0.30)
+  failed to block low-drift Mix sub-segment windows -> peak-iteration still fired -> cumulative timeout. *** PEAK-
+  ITERATION CONCLUSIVELY CLOSED on the server (too slow for the tight Mix budget at any EP that includes Mix). ***
+  FINAL STANDING SOTA = drift_router 114.181 (scalar-speed drift-adaptive recency target, +0.049 over peakblock).
+  Placement fully maxed; only ~peakblock-speed survives Mix_DS-R1_EP128.
+
+2026-05-30 ~13:25  WAVE 120-126 RESULTS: dro_ambiguity(126)=114.32 *** NEW SOTA *** (decoupled robust replication,
+  copies=mean+3std > placement mean+2std). mixture_deploy=114.176, antiphase_block=114.138, spectral_cut=114.123,
+  grouped_place=113.926. KEY: REPLICATION SIZING is the winning axis; ALL placement-structure ideas lost.
+  dro_cvar(127,id768314): distribution-free extension -> size copies by per-expert empirical CVaR (mean of worst
+  10% iters, subsampled to 128 for ~scalar speed 0.26s) instead of Gaussian mean+3std. Floored at place_w. Server pending.
+
+2026-05-30 ~13:25  metaanalysis.pdf = "Comprehensive Survey of MoE" (Mu&Lin 2026). VERDICT: nothing new
+  actionable for our inference-time min-max placement. It's a training/applications survey; its only
+  deployment-relevant content (ref[180]: dynamic gating, expert caching, load balancing; "dynamic expert
+  capacity adjustment") is generic & already embodied (sticky=caching, replication=dynamic capacity). No
+  transferable placement algorithm. (Logged so no re-read.)
+
+2026-05-30 ~13:25  3 MORE new mechanisms submitted (runs 128-130), all passed EP32/64/128/256 floor gate
+  (no error/floor, valid shape, within proven-safe <=0.26s timing envelope). Base=drift_router 114.181.
+  - 128 changepoint_window (id768316): Page CUSUM hard regime-switch target (argmax_t||cumsum(x-mean)||,
+    subsampled 256); post-changepoint mean replaces full mean when drift>0.30. Hard cut vs drift_router's
+    soft blend. Targets Mix forecasting. Local LmSys ~SOTA (guard keeps stationary==peakblock).
+  - 129 cov_match (id768317): EXPLICIT anti-correlation pairing @EP256 (2 slots/dev). Vectorized O(n log n)
+    phase-fold: split heavy/light by load, pair opposite-phase within fold (phase = proj on dominant co-spike
+    temporal mode via 5 power iters). LOCAL EP256 100.749 > baseline 100.716 (faint + signal). EP<=128 == SOTA.
+  - 130 wass_dro (id768318): CVaR/Wasserstein-robust placement target — inflate by lam*(CVaR_0.2 - mean) tail
+    instead of lam*std. LOCAL EP256 100.785 > baseline. All EP.
+  Session total submitted: 120 antiphase, 122-126 (mixture/spectral/grouped/power-d/dro), 128-130 (above). 9 new mechanisms.
+
+2026-05-30 ~13:32  dro_cvar(127,id768314)=114.253 < dro_ambiguity 114.32 (mean_par 1.65622). Distribution-free CVaR
+  replication does NOT beat Gaussian mean+3std. The std-based robust sizing is already near-optimal on this axis.
+  SOTA STAYS dro_ambiguity 114.32. Replication-sizing axis looks tapped at the std+kappa formulation.

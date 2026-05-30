@@ -1,0 +1,7 @@
+{
+  "variant": "dro_cvar",
+  "id": "768314",
+  "server": 114.253,
+  "mean_par": 1.65622,
+  "note": "Distribution-free CVaR replication (worst-10%% mean) = 114.253 < dro_ambiguity 114.32. Empirical tail does NOT beat the Gaussian mean+3std proxy; std-based sizing is slightly better. SOTA stays dro_ambiguity."
+}

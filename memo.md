@@ -640,3 +640,66 @@ Aggressive builder cron be574349 DELETED. State at pause:
   NOT submitted (paused before submit). Mechanism: recency-weighted (EWMA, HL=0.25·window) base to
   track non-stationary Mix regimes while smoothing noise. → submit FIRST on restart.
 - Hard constraints intact: Mix_DS-R1_EP128 budget edge → BLOCK_MAXDEV≤64; finance_band-speed only.
+
+### ▶ RESTART 12:00 — cron 18648036 re-established. SOTA at restart = peakblock 114.132.
+Meta-pattern (from peer's overnight run): wins come from ADDING informative SCENARIO COLUMNS
+to the block-balancing greedy (peakblock = joint-peak column, +0.09). Changing the placement
+OBJECTIVE (L2/dot) LOSES; location estimators (median/trim/ewma) ~NEUTRAL; EP256 block (vblock256)
+~neutral. The lever is WHICH scenarios the greedy balances against.
+
+### 106 ewma_base — submitted (recency-weighted EWMA base, HL=0.25·window). Likely ~neutral
+(location tweak), but targets non-stationary Mix specifically (EDA killed EWMA only on stationary).
+### 107 recentpeak_block — NEW, aligned with the winning pattern. Appends the joint-peak of the
+RECENT half-window as an extra block column = the most-recent regime's co-spike scenario, so
+PLACEMENT balances {2 temporal blocks, full-window peak, RECENT-regime peak}. Hardens placement
+to regime shifts (Mix) via the proven scenario-column mechanism, not a target tweak. BLOCKS=2 →
+4 columns = peakblock-safe EP128 timing (0.26s). EP256-safe. Submitted.
+
+### 108 wpeak_block — weighted-scenario greedy (structural, on the winning mechanism)
+The block greedy balances all scenario columns EQUALLY in its L-inf max. But realized PAR is
+driven by the SPIKE scenarios, so this up-weights the spike columns (full-window peak + recent
+peak) by WPEAK=1.6 in the max → placement prioritizes balancing the scenarios that set PAR over
+temporal averages. New structural knob on peakblock's winning "scenario column" mechanism (not a
+target/objective change, not hyperparam noise). 4 cols, EP128 0.276s (peakblock-safe). Submitted.
+
+### RESULTS: 106 ewma_base=113.08, 107 recentpeak(BLOCKS=2)=113.82, 108 wpeak=113.01 — ALL < SOTA 114.132.
+Diagnosis: 107/108 used only 2 temporal blocks (traded away to add columns); peakblock's 6 temporal
+blocks matter. Weighting spike columns (108) HURT. → fair test needs recent-peak ADDED, not replacing.
+### 109 recentpeak7 — 5 temporal + full-peak + recent-peak = 7 cols (peakblock-safe 0.26s). Fair test:
+does the recent-regime co-spike scenario beat a 6th temporal block? Submitted.
+### ⚠️ LANE STATUS: scenario-column variants are SATURATING at ~114.0–114.13 (peakblock 114.132,
+varblock 114.118, vblock256 114.10, spikebands 114.07; all alt objectives lose). Mechanism near
+converged. If 109 doesn't break out, PIVOT off scenario-columns next cycle: the only remaining PAR
+headroom is high-EP DS-R1 Mix (PAR 2-3.4, non-stationary) — needs either node-hierarchical EP256
+multi-scenario placement or a genuinely different formulation. ~114 may be near the fast-method ceiling.
+
+## 9k. CEILING ANALYSIS + drift_router SOTA + peak-iteration lever (2026-05-30 ~12:45, vero)
+
+**Analysis (experiments/ceiling_decomp.py, oracle_gap.py):** perfect-foresight oracle w/ the SAME
+packer = PAR ~1.0–1.4 at EVERY EP incl 256 → packing is SOLVED; all realized PAR>~1.05 is
+forecasting/static-hold. Decomp on LmSys: stationary forecast-gap tiny (+0.03..0.11), bulk is
+structural static-hold. DRIFT stress: trailing PAR explodes 1.6→4.4 while foresight stays ~1.3 →
+Mix's excess PAR is a FORECASTING failure, recoverable. Per-case scores: we WIN all LmSys (105–115),
+win GROWS with EP (transmit advantage vs DS-EPLB churn). Mix DS-R1 is the worst benchmark (PAR
+1.63→3.42, transmit 4× LmSys).
+
+**BUDGET RECALIBRATION (big):** measured DS-EPLB per-call = 1.2s@EP128 / 2.4s@EP256 on Mac; our
+methods 0.2s. BUT real server budget is an ABSOLUTE per-call wall-clock (signal alarm,
+"per-trace time budget"), server CPU ≪ Mac. Empirical floor threshold: scalar peakblock (0.2s Mac)
+PASSES EP256; peak-iteration (0.83s Mac, python loop over 512 slots) FLOORS EP256.
+
+**Submissions this session:**
+- 115 drift_router id768087 = **114.181 NEW SOTA** (+0.049 over peakblock). peakblock + drift-adaptive
+  recency target (lean recent ∝ measured drift; ==peakblock when stationary). Recency helps real Mix
+  even though local synthetic-drift proxies were neutral → server is the oracle.
+- 114 vblock256 id767701 = 114.099 (EP256 block placement: DEAD, no 2-slot freedom).
+- 116 peakiter id768125 / 117 peakiter_cvar id768141 / 118 peakiter_full id768143 = ALL FLOORED -1e6
+  (EP256 per-trace TIMEOUT, ShareGPT_DS-R1_EP256). Peak-iteration placement (minimize device peak load
+  over subsampled window) wins big IN-SAMPLE (scalar 1.357→1.310 @EP256, 1.289→1.214 @EP128) but the
+  python slot-loop is too slow on server CPU at EP256.
+- 119 peakiter_safe id768157 = PENDING. Fix: peak-iteration gated to EP64–128 (build 0.35s, like
+  peakblock), scalar @EP256. Keeps the EP128 win, no timeout.
+
+**Dead ends:** swap-refine on peakiter (+0.000..0.003, greedy already optimal); momentum/trend
+extrapolation (catastrophic @EP256); cvar objective (1.85s @EP128, too slow on server).
+**Lesson:** EP256 must stay scalar or fully-vectorized — NO python loop over 512 slots on the slow server.
