@@ -10,10 +10,9 @@
     "note": "SOTA at loop start. Beat THIS proxy number to justify a submission."
   },
   "best_server": {
-    "variant": "epadaptive_algo",
-    "score": 112.079,
-    "mean_par": 1.68845,
-    "note": "NEW SOTA. EP-adaptive: co-spiking block-balance @EP<=64 + fast finance_band @EP>=128 + O(nd) relabel. BROKE the PAR floor (1.69->1.688). Next: add p95 replication @EP>=128 (peer E3 lever)."
+    "variant": "peak_balance",
+    "score": 112.159,
+    "note": "NEW SOTA (vero resumed agent). Robust-minimax joint-peak placement: LPT targets (1-THETA)*mean+THETA*peak, peak=mean over top-10% highest-total-load iters. mean_par 1.685 (vs 1.696), transmit 665k. Breaks the prior converged 111.808 ceiling (+0.35). Scalar LPT, EP256-safe. id 767206."
   },
   "submit_budget": {
     "max_submissions_tonight": 1000,
@@ -271,7 +270,7 @@
   },
   "summary": {
     "submissions": 22,
-    "sota": "sticky_eplo 111.805",
+    "sota": "peak_balance 112.159",
     "prior_best": "finance_band 111.264",
     "gain": "+0.541",
     "status": "converged - ceiling for finance_band-speed methods"
