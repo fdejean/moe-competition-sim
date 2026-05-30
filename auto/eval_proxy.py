@@ -4,7 +4,7 @@
 Why this exists: the canonical `auto/eval.py` defaults to max_iters=1200, so
 only ~one rebalance happens and ~85% of iters sit on the shared fixed-init
 deployment -> every variant ties near 100 and the local leaderboard is useless
-for ranking (see Learnings_from_claude.md). This harness instead runs each case
+for ranking (see docs/Learnings_from_claude.md). This harness instead runs each case
 at the trace's FULL length (5120 Qwen3 / 6144 DS-R1) across EP {32,64,128,256},
 which is where PAR diverges and where placement/replication quality actually
 shows up. Server cases also include EP64/128/256, so this tracks the real
