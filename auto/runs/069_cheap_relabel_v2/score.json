@@ -1,0 +1,34 @@
+{
+  "run": "069_cheap_relabel_v2",
+  "started_at": 1780101163.627019,
+  "cases": [
+    {
+      "model": "Qwen3",
+      "dataset": "LmSys",
+      "ep": 32,
+      "mean_par": 1.2885384152945993,
+      "transmit_amount": 13351,
+      "transmission_time_seconds": 1.3066235630933334,
+      "total_time_seconds": 78.6189284807693,
+      "runtime_seconds": 2.8336238861083984,
+      "score": 105.53141951280912,
+      "error": null
+    },
+    {
+      "model": "DS-R1",
+      "dataset": "LmSys",
+      "ep": 32,
+      "mean_par": 1.235070438537565,
+      "transmit_amount": 15453,
+      "transmission_time_seconds": 1.51234019328,
+      "total_time_seconds": 75.6165665055339,
+      "runtime_seconds": 2.29549503326416,
+      "score": 110.47887764042379,
+      "error": null
+    }
+  ],
+  "mean_score": 108.00514857661645,
+  "error": null,
+  "finished_at": 1780101169.670929,
+  "elapsed_seconds": 6.043910026550293
+}

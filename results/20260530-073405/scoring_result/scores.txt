@@ -1,0 +1,6 @@
+score: 112.16806714015667
+composite_score: 112.16806714015667
+mean_par: 1.690109250785124
+transmit_amount: 682149.0
+transmission_time_seconds: 66.75993985024
+total_time_seconds: 2601.923816027926

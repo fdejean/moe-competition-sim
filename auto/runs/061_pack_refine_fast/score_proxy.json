@@ -1,0 +1,93 @@
+{
+  "run": "pack_refine_fast",
+  "cases": [
+    {
+      "model": "Qwen3",
+      "dataset": "LmSys",
+      "ep": 32,
+      "mean_par": 1.2797423080834531,
+      "transmit_amount": 14904,
+      "transmission_time_seconds": 1.45861115904,
+      "total_time_seconds": 78.2431496440472,
+      "runtime_seconds": 3.024852991104126,
+      "score": 106.03825588433257,
+      "error": null
+    },
+    {
+      "model": "Qwen3",
+      "dataset": "LmSys",
+      "ep": 64,
+      "mean_par": 1.483097676644613,
+      "transmit_amount": 17916,
+      "transmission_time_seconds": 1.75338684416,
+      "total_time_seconds": 90.73924744283678,
+      "runtime_seconds": 3.3806729316711426,
+      "score": 108.83472386661549,
+      "error": null
+    },
+    {
+      "model": "Qwen3",
+      "dataset": "LmSys",
+      "ep": 128,
+      "mean_par": 1.835447845298506,
+      "transmit_amount": 23886,
+      "transmission_time_seconds": 2.33765339136,
+      "total_time_seconds": 112.46452410927034,
+      "runtime_seconds": 3.4476871490478516,
+      "score": 106.9262627999596,
+      "error": null
+    },
+    {
+      "model": "DS-R1",
+      "dataset": "LmSys",
+      "ep": 32,
+      "mean_par": 1.2354563525897153,
+      "transmit_amount": 16915,
+      "transmission_time_seconds": 1.6554218837333334,
+      "total_time_seconds": 75.78280303911626,
+      "runtime_seconds": 2.9002909660339355,
+      "score": 110.23653208290285,
+      "error": null
+    },
+    {
+      "model": "DS-R1",
+      "dataset": "LmSys",
+      "ep": 64,
+      "mean_par": 1.3796613444578785,
+      "transmit_amount": 19755,
+      "transmission_time_seconds": 1.9333644288,
+      "total_time_seconds": 84.71304509627271,
+      "runtime_seconds": 2.875310182571411,
+      "score": 111.54662381014123,
+      "error": null
+    },
+    {
+      "model": "DS-R1",
+      "dataset": "LmSys",
+      "ep": 128,
+      "mean_par": 1.622608909056609,
+      "transmit_amount": 51786,
+      "transmission_time_seconds": 5.06814529536,
+      "total_time_seconds": 102.42467983875653,
+      "runtime_seconds": 3.4771721363067627,
+      "score": 109.60640116548679,
+      "error": null
+    },
+    {
+      "model": "DS-R1",
+      "dataset": "LmSys",
+      "ep": 256,
+      "mean_par": 2.0391217372062114,
+      "transmit_amount": 118351,
+      "transmission_time_seconds": 11.582668363093333,
+      "total_time_seconds": 133.929972595466,
+      "runtime_seconds": 4.052968978881836,
+      "score": 105.69678992641441,
+      "error": null
+    }
+  ],
+  "mean_score": 108.41222707655041,
+  "error": null,
+  "kind": "proxy_full_multi_ep",
+  "elapsed_seconds": 24.337156057357788
+}

@@ -1,0 +1,13 @@
+completed ShareGPT_Qwen3_EP32: PAR=1.293128 transmit=13365
+completed ShareGPT_Qwen3_EP64: PAR=1.524606 transmit=15442
+completed ShareGPT_Qwen3_EP128: PAR=1.868719 transmit=19670
+completed WildChat_Qwen3_EP32: PAR=1.284097 transmit=13335
+completed WildChat_Qwen3_EP64: PAR=1.505761 transmit=15480
+completed WildChat_Qwen3_EP128: PAR=1.824888 transmit=19637
+completed LmSys_Qwen3_EP32: PAR=1.279998 transmit=13332
+completed LmSys_Qwen3_EP64: PAR=1.507983 transmit=15423
+completed LmSys_Qwen3_EP128: PAR=1.839217 transmit=19529
+completed ShareGPT_DS-R1_EP32: PAR=1.201853 transmit=15461
+completed ShareGPT_DS-R1_EP64: PAR=1.345227 transmit=16725
+completed ShareGPT_DS-R1_EP128: PAR=1.587449 transmit=20418
+failed ShareGPT_DS-R1_EP256: rebalance exceeded the per-trace time budget

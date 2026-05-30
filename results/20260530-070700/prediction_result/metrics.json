@@ -1,0 +1,120 @@
+{
+  "cases": [
+    {
+      "dataset": "ShareGPT",
+      "ep": 32,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.293127660530219,
+      "model": "Qwen3",
+      "transmit_amount": 13365
+    },
+    {
+      "dataset": "ShareGPT",
+      "ep": 64,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.5246059746209666,
+      "model": "Qwen3",
+      "transmit_amount": 15442
+    },
+    {
+      "dataset": "ShareGPT",
+      "ep": 128,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.8687193169204919,
+      "model": "Qwen3",
+      "transmit_amount": 19670
+    },
+    {
+      "dataset": "WildChat",
+      "ep": 32,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.2840973797613084,
+      "model": "Qwen3",
+      "transmit_amount": 13335
+    },
+    {
+      "dataset": "WildChat",
+      "ep": 64,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.5057611293634516,
+      "model": "Qwen3",
+      "transmit_amount": 15480
+    },
+    {
+      "dataset": "WildChat",
+      "ep": 128,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.824887904866091,
+      "model": "Qwen3",
+      "transmit_amount": 19637
+    },
+    {
+      "dataset": "LmSys",
+      "ep": 32,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.2799980301255378,
+      "model": "Qwen3",
+      "transmit_amount": 13332
+    },
+    {
+      "dataset": "LmSys",
+      "ep": 64,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.5079834770758975,
+      "model": "Qwen3",
+      "transmit_amount": 15423
+    },
+    {
+      "dataset": "LmSys",
+      "ep": 128,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.839216721891151,
+      "model": "Qwen3",
+      "transmit_amount": 19529
+    },
+    {
+      "dataset": "ShareGPT",
+      "ep": 32,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 1.2018529388851524,
+      "model": "DS-R1",
+      "transmit_amount": 15461
+    },
+    {
+      "dataset": "ShareGPT",
+      "ep": 64,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 1.3452273709980305,
+      "model": "DS-R1",
+      "transmit_amount": 16725
+    },
+    {
+      "dataset": "ShareGPT",
+      "ep": 128,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 1.587449048503972,
+      "model": "DS-R1",
+      "transmit_amount": 20418
+    }
+  ],
+  "errors": [
+    {
+      "case": "ShareGPT_DS-R1_EP256",
+      "error": "rebalance exceeded the per-trace time budget",
+      "traceback": "Traceback (most recent call last):\n  File \"/app/program/ingestion.py\", line 257, in main\n    case_metrics = run_case(rebalance_fn, dataset, model, ep)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/program/ingestion.py\", line 220, in run_case\n    result = call_rebalance_with_timeout(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/program/ingestion.py\", line 164, in call_rebalance_with_timeout\n    return rebalance_fn(train_window, n_devices, n_red_experts)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/ingested_program/submission.py\", line 185, in rebalance\n    candidate[l] = _build_layer(risk[l], block_w[l], n_device, n_exp_per_dev,\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/ingested_program/submission.py\", line 110, in _build_layer\n    d = int(np.argmin(score))\n            ^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/numpy/_core/fromnumeric.py\", line 1317, in _argmin_dispatcher\n    def _argmin_dispatcher(a, axis=None, out=None, *, keepdims=np._NoValue):\n    \n  File \"/app/program/ingestion.py\", line 154, in _timeout_handler\n    raise RebalanceTimeoutError(\"rebalance exceeded the per-trace time budget\")\nRebalanceTimeoutError: rebalance exceeded the per-trace time budget\n"
+    }
+  ],
+  "status": "failed"
+}

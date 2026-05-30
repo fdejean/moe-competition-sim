@@ -1,0 +1,350 @@
+{
+  "owner": "vero-overnight-agent",
+  "started_at": "2026-05-30T01:10:00+02:00",
+  "nnn_range": "050-099 (mine; peers own <=049)",
+  "best_proxy": {
+    "variant": "band_refine_transmin",
+    "mean_score": 108.557,
+    "qwen3_par": 1.2797,
+    "dsr1_par": 1.2355,
+    "note": "SOTA at loop start. Beat THIS proxy number to justify a submission."
+  },
+  "best_server": {
+    "variant": "peakblock",
+    "score": 114.132,
+    "mean_par": 1.65874,
+    "id": 767621,
+    "note": "NOVEL placement-level spike-awareness: joint-peak per-expert load appended as an EXTRA BLOCK COLUMN so the greedy balances devices across temporal blocks AND the co-spike scenario. +0.088 over k6 114.044. Direction: make PLACEMENT spike-aware, not just the target weight."
+  },
+  "submit_budget": {
+    "max_submissions_tonight": 1000,
+    "used": 1,
+    "min_minutes_between": 0,
+    "last_submit_ts": "2026-05-30T01:14:00+02:00",
+    "rule": "Budget effectively unlimited (user: ~1000, will raise). SUBMIT EVERY variant that passes local EP128-safe validation (EP128 smoke: no error/timeout, correct shape; proxy: no error). Server is the oracle; proxy is weak. Still gate on EP128 smoke to avoid -1e6."
+  },
+  "next_nnn": 50,
+  "submissions": [
+    {
+      "nnn": "021",
+      "slug": "band_refine_transmin",
+      "submission_id": 766436,
+      "ts": "2026-05-30T01:14:00+02:00",
+      "proxy": 108.557,
+      "server": -1000000,
+      "note": "FAILED: ShareGPT_Qwen3_EP128 timeout in _relabel_to_old (O(n_device^2) python loop). EP128 trap. Do not reuse relabel."
+    },
+    {
+      "nnn": "050",
+      "slug": "rep_aware_refine",
+      "submission_id": 766495,
+      "ts": "2026-05-30T01:44:00+02:00",
+      "proxy": 107.86,
+      "server": -1000000,
+      "note": "FAILED: timed out at ShareGPT_Qwen3_EP64. rep-aware loop (0.6-1.0s/call, ~1.5x local baseline) blows the server's 3x-baseline budget. Lesson: only finance_band-speed (~0.1s/call) is submittable. 2a too slow; 2b == finance_band water-fill."
+    },
+    {
+      "nnn": "051",
+      "slug": "fb_tau005_l2",
+      "submission_id": 766506,
+      "ts": "2026-05-30T02:00:00+02:00",
+      "server": 106.626,
+      "note": "finance_band TAU=0.05 (redeploy aggressively, lower PAR, transmit~free). finance_band-speed."
+    },
+    {
+      "nnn": "052",
+      "slug": "fb_tau01_l2",
+      "submission_id": 766507,
+      "ts": "2026-05-30T02:00:00+02:00",
+      "server": 109.281,
+      "note": "finance_band TAU=0.1."
+    },
+    {
+      "nnn": "053",
+      "slug": "fb_window512_l2",
+      "submission_id": 766508,
+      "ts": "2026-05-30T02:00:00+02:00",
+      "server": 105.282,
+      "note": "finance_band trailing WINDOW=512 (track ShareGPT drift)."
+    },
+    {
+      "nnn": "054",
+      "slug": "fb_lambda25",
+      "submission_id": 766509,
+      "ts": "2026-05-30T02:00:00+02:00",
+      "server": 111.115,
+      "note": "LAMBDA=2.5 ~= finance_band. Replication tuning tapped out."
+    },
+    {
+      "nnn": "056",
+      "slug": "block_pack",
+      "submission_id": 766542,
+      "ts": "2026-05-30T02:25:00+02:00",
+      "proxy": 109.11,
+      "server": -1000000,
+      "note": "FAILED: ShareGPT_DS-R1_EP256 timeout. k=8 block-vector inner loop ~2x finance_band -> too slow at EP256 (server tests up to EP256!). Co-spiking idea is good (proxy 109.11) but needs finance_band-speed."
+    },
+    {
+      "nnn": "062",
+      "slug": "cospike_weight",
+      "submission_id": 766557,
+      "ts": "2026-05-30T02:40:00+02:00",
+      "proxy": 108.0,
+      "server": 108.857,
+      "note": "Scalar co-spiking premium HURTS: mean_par 1.717 > finance_band 1.692. Distorts load balance. Co-spiking lane dead within budget (strong version too slow, scalar version hurts)."
+    },
+    {
+      "nnn": "065",
+      "slug": "decouple_pack",
+      "submission_id": 766570,
+      "ts": "2026-05-30T03:00:00+02:00",
+      "proxy": 107.98,
+      "server": 109.443,
+      "note": "place-on-mean HURTS (mean_par 1.700>1.692). risk-packing is a FEATURE for the server."
+    },
+    {
+      "nnn": "055",
+      "slug": "fb_convex",
+      "submission_id": 766571,
+      "ts": "2026-05-30T03:00:00+02:00",
+      "server": 110.636,
+      "note": "over-replicate hottest HURTS (mean_par 1.706). replication budget already sufficient (floor 1.0)."
+    },
+    {
+      "nnn": "066",
+      "slug": "quantile_pack",
+      "submission_id": 766575,
+      "ts": "2026-05-30T03:05:00+02:00",
+      "server": 111.133,
+      "note": "heavy-tail p95 (max with gauss). 111.13, closest to finance_band but still < it. ~= mean+2std (gauss dominates). aggression axis tapped."
+    },
+    {
+      "nnn": "067",
+      "slug": "maxsubwin",
+      "submission_id": 766589,
+      "ts": "2026-05-30T03:15:00+02:00",
+      "server": 111.244,
+      "note": "worst-subwindow robust replication ~= finance_band (tied)."
+    },
+    {
+      "nnn": "068",
+      "slug": "cheap_relabel",
+      "submission_id": 766594,
+      "ts": "2026-05-30T03:25:00+02:00",
+      "server": 111.751,
+      "note": "*** BEATS finance_band! 111.751 vs 111.264. PAR-neutral (1.6929) + transmit -18.5% (686k vs 842k) via O(n_device) heaviest-expert device-align + slot-preserve. EP256-safe. NEW SOTA. ***"
+    },
+    {
+      "nnn": "069",
+      "slug": "cheap_relabel_v2",
+      "submission_id": 766601,
+      "ts": "2026-05-30T03:35:00+02:00",
+      "server": 111.746,
+      "note": "exact-set+heaviest align. transmit 680k (< v1 686k) but mean_par 1.6937 (> v1 1.6929) -> 111.746 ~= v1 111.751. Relabel timing couples to PAR; alignment maxed at ~111.75. cheap_relabel(v1) stays SOTA."
+    },
+    {
+      "nnn": "070",
+      "slug": "sticky_relabel",
+      "submission_id": 766625,
+      "ts": "2026-05-30T03:45:00+02:00",
+      "server": 111.802,
+      "note": "*** NEW SOTA 111.802! *** cheap_relabel + stay-biased LPT (STAY=0.25). transmit 625k (<686k) at tiny PAR cost (1.6968) -> net +0.05. source-side transmit cut pays. Sweeping STAY."
+    },
+    {
+      "nnn": "071",
+      "slug": "sticky_stay015",
+      "submission_id": 766633,
+      "server": 111.743,
+      "note": "STAY=0.15: 111.743. STAY sweep -> peak at 0.25 (111.802)."
+    },
+    {
+      "nnn": "072",
+      "slug": "sticky_stay040",
+      "submission_id": 766634,
+      "server": 111.71,
+      "note": "STAY=0.40: 111.71. STAY sweep -> peak at 0.25 (111.802)."
+    },
+    {
+      "nnn": "073",
+      "slug": "sticky_stay060",
+      "submission_id": 766635,
+      "server": 111.563,
+      "note": "STAY=0.60: 111.563. STAY sweep -> peak at 0.25 (111.802)."
+    },
+    {
+      "nnn": "074",
+      "slug": "sticky_epadapt",
+      "submission_id": 766668,
+      "server": 111.538,
+      "note": "EP-adaptive lambda=3 at high EP HURT (mean_par 1.7037). Replication tapped even EP-adaptively."
+    },
+    {
+      "nnn": "075",
+      "slug": "sticky_eplo",
+      "submission_id": 766676,
+      "server": 111.805,
+      "note": "*** marginal SOTA 111.805 *** lambda=1.5 at high EP (less variance repl). High-EP scarce slots want LESS repl (opposite of epadapt). Within noise of sticky_relabel."
+    },
+    {
+      "nnn": "076",
+      "slug": "sticky_eplo10",
+      "submission_id": 766683,
+      "server": 111.666,
+      "note": "high-EP lambda=1.0: 111.666. High-EP lambda curve peaks at ~1.5."
+    },
+    {
+      "nnn": "077",
+      "slug": "sticky_eplo00",
+      "submission_id": 766685,
+      "server": 110.453,
+      "note": "high-EP lambda=0.0: 110.453. High-EP lambda curve peaks at ~1.5."
+    },
+    {
+      "nnn": "078",
+      "slug": "shrink_predict",
+      "submission_id": 766932,
+      "server": 111.808,
+      "note": "cross-call shrinkage. 111.808 = marginal high but WITHIN NOISE of sticky_eplo 111.805 (mean_par 1.69631 vs 1.69633). The new class is ~NEUTRAL (persistence holds; single window already good). Not sweeping (would be noise-tuning)."
+    },
+    {
+      "nnn": "079",
+      "slug": "sticky_tau010",
+      "submission_id": 767164,
+      "server": 111.24,
+      "note": "lower TAU HURTS even with relabel (just costs transmit; placement not staleness-limited). TAU=0.2 optimal."
+    },
+    {
+      "nnn": "080",
+      "slug": "sticky_tau005",
+      "submission_id": 767165,
+      "server": 109.842,
+      "note": "lower TAU HURTS even with relabel (just costs transmit; placement not staleness-limited). TAU=0.2 optimal."
+    },
+    {
+      "nnn": "081",
+      "slug": "sticky_tau002",
+      "submission_id": 767167,
+      "server": 108.679,
+      "note": "lower TAU HURTS even with relabel (just costs transmit; placement not staleness-limited). TAU=0.2 optimal."
+    },
+    {
+      "nnn": "082",
+      "slug": "fold_pack",
+      "submission_id": 767177,
+      "server": 106.473,
+      "note": "NEW folding architecture: WORSE on both (mean_par 1.76>1.69, transmit 978k>842k). Folding packs cruder than greedy LPT AND global-sort reshuffles more (higher transmit). Vectorized speed doesn't buy a PAR/transmit win."
+    },
+    {
+      "nnn": "083",
+      "slug": "epadaptive_algo",
+      "submission_id": 767202,
+      "server": 112.079,
+      "note": "*** NEW SOTA 112.079 *** mean_par 1.68845 \u2014 FIRST time PAR < 1.692! Co-spiking block placement at EP<=64 (affordable per-case budget) + fast finance_band at EP>=128 + relabel. PAR was NOT saturated \u2014 only unexploitable where I couldn't afford co-spiking. EP-adaptive algorithm dispatch breaks the floor."
+    },
+    {
+      "nnn": "084",
+      "slug": "epadaptive_p95",
+      "submission_id": 767219,
+      "server": 112.011,
+      "note": "p95 replication @high-EP did NOT translate (peer E3 was LmSys-only); 112.011 < epadaptive 112.079. High-EP best left at mean+2std."
+    },
+    {
+      "nnn": "085",
+      "slug": "epadaptive_ep128",
+      "submission_id": 767221,
+      "server": 112.364,
+      "note": "*** NEW SOTA 112.364 *** mean_par 1.68589. Co-spiking through EP128 (server-safe) captures the high-headroom EP128 cases. +1.10 over prior best."
+    },
+    {
+      "nnn": "086",
+      "slug": "epadaptive_k4",
+      "submission_id": 767238,
+      "server": 112.522,
+      "note": "k=4 BEST: 112.522. coarse blocks generalize; dense overfits."
+    },
+    {
+      "nnn": "087",
+      "slug": "epadaptive_k16",
+      "submission_id": 767240,
+      "server": 112.375,
+      "note": "k=16: 112.375. coarse blocks generalize; dense overfits."
+    },
+    {
+      "nnn": "088",
+      "slug": "epadaptive_k32",
+      "submission_id": 767241,
+      "server": 111.764,
+      "note": "k=32 overfits: 111.764. coarse blocks generalize; dense overfits."
+    },
+    {
+      "nnn": "089",
+      "slug": "epadaptive_k2",
+      "submission_id": 767248,
+      "server": 112.093,
+      "note": "k-sweep; k=4 (112.522) remains best. k=6 close (112.471)."
+    },
+    {
+      "nnn": "090",
+      "slug": "epadaptive_k3",
+      "submission_id": 767249,
+      "server": 112.168,
+      "note": "k-sweep; k=4 (112.522) remains best. k=6 close (112.471)."
+    },
+    {
+      "nnn": "091",
+      "slug": "epadaptive_k6",
+      "submission_id": 767250,
+      "server": 112.471,
+      "note": "k-sweep; k=4 (112.522) remains best. k=6 close (112.471)."
+    },
+    {
+      "nnn": "092",
+      "slug": "epadaptive_sticky",
+      "submission_id": 767254,
+      "server": 111.845,
+      "note": "stay-bias CONFLICTS with co-spiking (mean_par 1.702): stay pulls experts back to old device, undoing the co-spiking spread. Relabel (PAR-neutral) is fine; stay-bias (placement-changing) is not. Drop stay for co-spiking variants."
+    },
+    {
+      "nnn": "093",
+      "slug": "epadaptive_p95ep256",
+      "submission_id": 767275,
+      "server": 112.479,
+      "note": "p95@EP256-only slightly worse (1.683). Replication-tuning at EP256 dead; finance_band mean+2std best there."
+    },
+    {
+      "nnn": "094",
+      "slug": "epadaptive_k4_lamhi",
+      "submission_id": 767284,
+      "server": 112.474,
+      "note": "high-EP lambda=1.5: PAR 1.6808 (hair lower) but composite slightly worse (transmit). ~tied, drop. lambda=2 stays."
+    },
+    {
+      "nnn": "095",
+      "slug": "epadaptive_refine",
+      "submission_id": 767306,
+      "server": 112.513,
+      "note": "refine OVERFITS the coarse block proxy (mean_par 1.685>1.682). Single-pass greedy is better. Co-spiking lever fully tuned; SOTA stays k4 112.522."
+    }
+  ],
+  "timing_calibration": {
+    "ds_eplb_baseline_per_call_local_s": {
+      "Qwen3_EP128": 0.98,
+      "DSR1_EP128": 1.13,
+      "Qwen3_EP32": 0.28
+    },
+    "finance_band_per_call_local_s": {
+      "all_EP": "0.09-0.13"
+    },
+    "rep_aware_per_call_local_s": {
+      "all_EP": "0.57-1.06 -> FAILED server"
+    },
+    "rule": "Submit ONLY variants whose per-call time ~= finance_band (<=~0.2s local). Anything doing per-call search/repack/relabel will 3x-timeout on the server's ShareGPT/EP128 traces. The only safe levers are cheap window statistics (replication weight) + band/window/lambda tuning + a SINGLE vectorized pack."
+  },
+  "summary": {
+    "submissions": 40,
+    "sota": "114.044 (peak_cospike_k6, tuning) / mechanism 113.995",
+    "prior_best": "finance_band 111.264",
+    "gain": "+1.258",
+    "key_lever": "EP-adaptive co-spiking (block-balance placement @EP<=128, fast @EP256)"
+  }
+}

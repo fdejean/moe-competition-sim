@@ -1,0 +1,34 @@
+{
+  "run": "095_epadaptive_refine",
+  "started_at": 1780120062.987699,
+  "cases": [
+    {
+      "model": "Qwen3",
+      "dataset": "LmSys",
+      "ep": 32,
+      "mean_par": 1.2808989811553508,
+      "transmit_amount": 14910,
+      "transmission_time_seconds": 1.4591983616,
+      "total_time_seconds": 78.31313723092106,
+      "runtime_seconds": 9.301453828811646,
+      "score": 105.94349066475294,
+      "error": null
+    },
+    {
+      "model": "DS-R1",
+      "dataset": "LmSys",
+      "ep": 32,
+      "mean_par": 1.2077456284241643,
+      "transmit_amount": 16641,
+      "transmission_time_seconds": 1.62860630016,
+      "total_time_seconds": 74.09334400560986,
+      "runtime_seconds": 18.309341192245483,
+      "score": 112.75011960482354,
+      "error": null
+    }
+  ],
+  "mean_score": 109.34680513478824,
+  "error": null,
+  "finished_at": 1780120091.675028,
+  "elapsed_seconds": 28.687329053878784
+}

@@ -1,0 +1,34 @@
+{
+  "run": "040_cvar_repl",
+  "started_at": 1780096078.79182,
+  "cases": [
+    {
+      "model": "Qwen3",
+      "dataset": "LmSys",
+      "ep": 32,
+      "mean_par": 1.279436599824738,
+      "transmit_amount": 11671,
+      "transmission_time_seconds": 1.1422068462933332,
+      "total_time_seconds": 77.90840283577761,
+      "runtime_seconds": 3.323641777038574,
+      "score": 106.49386742839896,
+      "error": null
+    },
+    {
+      "model": "DS-R1",
+      "dataset": "LmSys",
+      "ep": 32,
+      "mean_par": 1.2341278093990753,
+      "transmit_amount": 14061,
+      "transmission_time_seconds": 1.37610919936,
+      "total_time_seconds": 75.42377776330451,
+      "runtime_seconds": 3.646552085876465,
+      "score": 110.76126980500155,
+      "error": null
+    }
+  ],
+  "mean_score": 108.62756861670024,
+  "error": null,
+  "finished_at": 1780096086.514632,
+  "elapsed_seconds": 7.722811937332153
+}

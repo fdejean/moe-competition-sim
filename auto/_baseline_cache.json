@@ -1,0 +1,98 @@
+{
+  "Qwen3|LmSys|32|1200|1024": {
+    "default_par": 1.95456907005997,
+    "ds_par": 1.8629526246496328,
+    "ds_transmit": 14914,
+    "ds_modeled_time": 113.23674730895131
+  },
+  "DS-R1|LmSys|32|1200|1024": {
+    "default_par": 1.6158598712863321,
+    "ds_par": 1.5607316772788864,
+    "ds_transmit": 16638,
+    "ds_modeled_time": 95.27221333561317
+  },
+  "Qwen3|LmSys|32|6144|1024": {
+    "default_par": 1.9822250309261265,
+    "ds_par": 1.2885289362266004,
+    "ds_transmit": 57792,
+    "ds_modeled_time": 82.96767123151602
+  },
+  "DS-R1|LmSys|32|6144|1024": {
+    "default_par": 1.6302342939586727,
+    "ds_par": 1.257789588726086,
+    "ds_transmit": 82489,
+    "ds_modeled_time": 83.54033398553848
+  },
+  "Qwen3|LmSys|32|5120|1024": {
+    "default_par": 1.9822250309261265,
+    "ds_par": 1.2885289362266004,
+    "ds_transmit": 57792,
+    "ds_modeled_time": 82.96767123151602
+  },
+  "Qwen3|LmSys|64|5120|1024": {
+    "default_par": 2.8049602749943614,
+    "ds_par": 1.531795921187384,
+    "ds_transmit": 69973,
+    "ds_modeled_time": 98.75580939305637
+  },
+  "Qwen3|LmSys|128|5120|1024": {
+    "default_par": 4.237607794175124,
+    "ds_par": 1.8527141139615946,
+    "ds_transmit": 92894,
+    "ds_modeled_time": 120.25411260580233
+  },
+  "DS-R1|LmSys|64|6144|1024": {
+    "default_par": 2.120291748439436,
+    "ds_par": 1.4250223131844657,
+    "ds_transmit": 91892,
+    "ds_modeled_time": 94.4945417316546
+  },
+  "DS-R1|LmSys|128|6144|1024": {
+    "default_par": 3.0539074165725886,
+    "ds_par": 1.6915687220595492,
+    "ds_transmit": 110046,
+    "ds_modeled_time": 112.26400547653294
+  },
+  "DS-R1|LmSys|256|6144|1024": {
+    "default_par": 4.902940459335534,
+    "ds_par": 2.1199320704731237,
+    "ds_transmit": 146768,
+    "ds_modeled_time": 141.5596817827341
+  },
+  "Qwen3|LmSys|64|1500|1024": {
+    "default_par": 2.7682609389836723,
+    "ds_par": 2.304733829281759,
+    "ds_transmit": 17912,
+    "ds_modeled_time": 140.0370251326922
+  },
+  "DS-R1|LmSys|64|1500|1024": {
+    "default_par": 2.0843637881942456,
+    "ds_par": 1.8341646447275222,
+    "ds_transmit": 18489,
+    "ds_modeled_time": 111.85934337229133
+  },
+  "Qwen3|LmSys|128|1500|1024": {
+    "default_par": 4.173183901379467,
+    "ds_par": 3.307525442606401,
+    "ds_transmit": 23855,
+    "ds_modeled_time": 200.78614606785072
+  },
+  "DS-R1|LmSys|128|1500|1024": {
+    "default_par": 2.995691376492799,
+    "ds_par": 2.5033795106438617,
+    "ds_transmit": 22197,
+    "ds_modeled_time": 152.3751265093517
+  },
+  "DS-R1|LmSys|32|1500|1024": {
+    "default_par": 1.614545176963903,
+    "ds_par": 1.4783806886731192,
+    "ds_transmit": 16638,
+    "ds_modeled_time": 90.33115401926715
+  },
+  "DS-R1|LmSys|256|1500|1024": {
+    "default_par": 4.793084952836589,
+    "ds_par": 3.806639509720881,
+    "ds_transmit": 29570,
+    "ds_modeled_time": 231.29230053311954
+  }
+}

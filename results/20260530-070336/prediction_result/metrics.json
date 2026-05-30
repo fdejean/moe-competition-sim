@@ -1,0 +1,231 @@
+{
+  "cases": [
+    {
+      "dataset": "ShareGPT",
+      "ep": 32,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.305607550315545,
+      "model": "Qwen3",
+      "transmit_amount": 17295
+    },
+    {
+      "dataset": "ShareGPT",
+      "ep": 64,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.5455668996711007,
+      "model": "Qwen3",
+      "transmit_amount": 34732
+    },
+    {
+      "dataset": "ShareGPT",
+      "ep": 128,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.8846781135103041,
+      "model": "Qwen3",
+      "transmit_amount": 40104
+    },
+    {
+      "dataset": "WildChat",
+      "ep": 32,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.288469556554268,
+      "model": "Qwen3",
+      "transmit_amount": 15638
+    },
+    {
+      "dataset": "WildChat",
+      "ep": 64,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.511699893489885,
+      "model": "Qwen3",
+      "transmit_amount": 31259
+    },
+    {
+      "dataset": "WildChat",
+      "ep": 128,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.8188392272833402,
+      "model": "Qwen3",
+      "transmit_amount": 33557
+    },
+    {
+      "dataset": "LmSys",
+      "ep": 32,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.2904401313500813,
+      "model": "Qwen3",
+      "transmit_amount": 14635
+    },
+    {
+      "dataset": "LmSys",
+      "ep": 64,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.529581455340881,
+      "model": "Qwen3",
+      "transmit_amount": 27253
+    },
+    {
+      "dataset": "LmSys",
+      "ep": 128,
+      "iterations": 5120,
+      "layers": 94,
+      "mean_par": 1.846927002865044,
+      "model": "Qwen3",
+      "transmit_amount": 29256
+    },
+    {
+      "dataset": "ShareGPT",
+      "ep": 32,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 1.245901395969111,
+      "model": "DS-R1",
+      "transmit_amount": 32326
+    },
+    {
+      "dataset": "ShareGPT",
+      "ep": 64,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 1.4101501966317231,
+      "model": "DS-R1",
+      "transmit_amount": 54012
+    },
+    {
+      "dataset": "ShareGPT",
+      "ep": 128,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 1.6667975214850854,
+      "model": "DS-R1",
+      "transmit_amount": 72985
+    },
+    {
+      "dataset": "ShareGPT",
+      "ep": 256,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 2.100159161040789,
+      "model": "DS-R1",
+      "transmit_amount": 77804
+    },
+    {
+      "dataset": "WildChat",
+      "ep": 32,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 1.2288683036742438,
+      "model": "DS-R1",
+      "transmit_amount": 28267
+    },
+    {
+      "dataset": "WildChat",
+      "ep": 64,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 1.3784329079840696,
+      "model": "DS-R1",
+      "transmit_amount": 48618
+    },
+    {
+      "dataset": "WildChat",
+      "ep": 128,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 1.6222293996631285,
+      "model": "DS-R1",
+      "transmit_amount": 72257
+    },
+    {
+      "dataset": "WildChat",
+      "ep": 256,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 2.018135591448036,
+      "model": "DS-R1",
+      "transmit_amount": 71052
+    },
+    {
+      "dataset": "LmSys",
+      "ep": 32,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 1.239657541246668,
+      "model": "DS-R1",
+      "transmit_amount": 26450
+    },
+    {
+      "dataset": "LmSys",
+      "ep": 64,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 1.3997997799190023,
+      "model": "DS-R1",
+      "transmit_amount": 47648
+    },
+    {
+      "dataset": "LmSys",
+      "ep": 128,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 1.6521908230214415,
+      "model": "DS-R1",
+      "transmit_amount": 70666
+    },
+    {
+      "dataset": "LmSys",
+      "ep": 256,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 2.0655594542145708,
+      "model": "DS-R1",
+      "transmit_amount": 72921
+    },
+    {
+      "dataset": "Mix",
+      "ep": 32,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 1.5944853797730845,
+      "model": "DS-R1",
+      "transmit_amount": 57673
+    },
+    {
+      "dataset": "Mix",
+      "ep": 64,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 1.979805332262361,
+      "model": "DS-R1",
+      "transmit_amount": 70353
+    },
+    {
+      "dataset": "Mix",
+      "ep": 128,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 2.536084936561475,
+      "model": "DS-R1",
+      "transmit_amount": 82629
+    },
+    {
+      "dataset": "Mix",
+      "ep": 256,
+      "iterations": 6144,
+      "layers": 58,
+      "mean_par": 3.441721872356219,
+      "model": "DS-R1",
+      "transmit_amount": 96588
+    }
+  ],
+  "errors": [],
+  "status": "success"
+}

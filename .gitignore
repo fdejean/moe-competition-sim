@@ -27,6 +27,11 @@ outputs/
 *.jpeg
 *.pdf
 
+# keep submission zips tracked (one per codes/ entry)
 *.zip
+!submissions/*.zip
 *.tar
 *.tar.gz
+auto/_proxy/
+auto/_submit/
+**/__pycache__/
