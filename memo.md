@@ -640,3 +640,17 @@ Aggressive builder cron be574349 DELETED. State at pause:
   NOT submitted (paused before submit). Mechanism: recency-weighted (EWMA, HL=0.25·window) base to
   track non-stationary Mix regimes while smoothing noise. → submit FIRST on restart.
 - Hard constraints intact: Mix_DS-R1_EP128 budget edge → BLOCK_MAXDEV≤64; finance_band-speed only.
+
+### ▶ RESTART 12:00 — cron 18648036 re-established. SOTA at restart = peakblock 114.132.
+Meta-pattern (from peer's overnight run): wins come from ADDING informative SCENARIO COLUMNS
+to the block-balancing greedy (peakblock = joint-peak column, +0.09). Changing the placement
+OBJECTIVE (L2/dot) LOSES; location estimators (median/trim/ewma) ~NEUTRAL; EP256 block (vblock256)
+~neutral. The lever is WHICH scenarios the greedy balances against.
+
+### 106 ewma_base — submitted (recency-weighted EWMA base, HL=0.25·window). Likely ~neutral
+(location tweak), but targets non-stationary Mix specifically (EDA killed EWMA only on stationary).
+### 107 recentpeak_block — NEW, aligned with the winning pattern. Appends the joint-peak of the
+RECENT half-window as an extra block column = the most-recent regime's co-spike scenario, so
+PLACEMENT balances {2 temporal blocks, full-window peak, RECENT-regime peak}. Hardens placement
+to regime shifts (Mix) via the proven scenario-column mechanism, not a target tweak. BLOCKS=2 →
+4 columns = peakblock-safe EP128 timing (0.26s). EP256-safe. Submitted.
