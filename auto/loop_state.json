@@ -25,18 +25,78 @@
   },
   "next_nnn": 50,
   "submissions": [
-    {"nnn": "021", "slug": "band_refine_transmin", "submission_id": 766436, "ts": "2026-05-30T01:14:00+02:00", "proxy": 108.557, "server": -1000000, "note": "FAILED: ShareGPT_Qwen3_EP128 timeout in _relabel_to_old (O(n_device^2) python loop). EP128 trap. Do not reuse relabel."},
-    {"nnn": "050", "slug": "rep_aware_refine", "submission_id": 766495, "ts": "2026-05-30T01:44:00+02:00", "proxy": 107.86, "server": -1000000, "note": "FAILED: timed out at ShareGPT_Qwen3_EP64. rep-aware loop (0.6-1.0s/call, ~1.5x local baseline) blows the server's 3x-baseline budget. Lesson: only finance_band-speed (~0.1s/call) is submittable. 2a too slow; 2b == finance_band water-fill."},
-    {"nnn": "051", "slug": "fb_tau005_l2", "submission_id": 766506, "ts": "2026-05-30T02:00:00+02:00", "server": null, "note": "finance_band TAU=0.05 (redeploy aggressively, lower PAR, transmit~free). finance_band-speed."},
-    {"nnn": "052", "slug": "fb_tau01_l2", "submission_id": 766507, "ts": "2026-05-30T02:00:00+02:00", "server": null, "note": "finance_band TAU=0.1."},
-    {"nnn": "053", "slug": "fb_window512_l2", "submission_id": 766508, "ts": "2026-05-30T02:00:00+02:00", "server": null, "note": "finance_band trailing WINDOW=512 (track ShareGPT drift)."},
-    {"nnn": "054", "slug": "fb_lambda25", "submission_id": 766509, "ts": "2026-05-30T02:00:00+02:00", "server": 111.115, "note": "LAMBDA=2.5 ~= finance_band. Replication tuning tapped out."},
-    {"nnn": "056", "slug": "block_pack", "submission_id": 766542, "ts": "2026-05-30T02:25:00+02:00", "proxy": 109.11, "server": null, "note": "CO-SPIKING block balancing (k=8). Best proxy yet (109.11); DS-R1 PAR 1.235->1.210 at same transmit, EP128-safe 0.19s/call. The promising lane."}
+    {
+      "nnn": "021",
+      "slug": "band_refine_transmin",
+      "submission_id": 766436,
+      "ts": "2026-05-30T01:14:00+02:00",
+      "proxy": 108.557,
+      "server": -1000000,
+      "note": "FAILED: ShareGPT_Qwen3_EP128 timeout in _relabel_to_old (O(n_device^2) python loop). EP128 trap. Do not reuse relabel."
+    },
+    {
+      "nnn": "050",
+      "slug": "rep_aware_refine",
+      "submission_id": 766495,
+      "ts": "2026-05-30T01:44:00+02:00",
+      "proxy": 107.86,
+      "server": -1000000,
+      "note": "FAILED: timed out at ShareGPT_Qwen3_EP64. rep-aware loop (0.6-1.0s/call, ~1.5x local baseline) blows the server's 3x-baseline budget. Lesson: only finance_band-speed (~0.1s/call) is submittable. 2a too slow; 2b == finance_band water-fill."
+    },
+    {
+      "nnn": "051",
+      "slug": "fb_tau005_l2",
+      "submission_id": 766506,
+      "ts": "2026-05-30T02:00:00+02:00",
+      "server": null,
+      "note": "finance_band TAU=0.05 (redeploy aggressively, lower PAR, transmit~free). finance_band-speed."
+    },
+    {
+      "nnn": "052",
+      "slug": "fb_tau01_l2",
+      "submission_id": 766507,
+      "ts": "2026-05-30T02:00:00+02:00",
+      "server": null,
+      "note": "finance_band TAU=0.1."
+    },
+    {
+      "nnn": "053",
+      "slug": "fb_window512_l2",
+      "submission_id": 766508,
+      "ts": "2026-05-30T02:00:00+02:00",
+      "server": null,
+      "note": "finance_band trailing WINDOW=512 (track ShareGPT drift)."
+    },
+    {
+      "nnn": "054",
+      "slug": "fb_lambda25",
+      "submission_id": 766509,
+      "ts": "2026-05-30T02:00:00+02:00",
+      "server": 111.115,
+      "note": "LAMBDA=2.5 ~= finance_band. Replication tuning tapped out."
+    },
+    {
+      "nnn": "056",
+      "slug": "block_pack",
+      "submission_id": 766542,
+      "ts": "2026-05-30T02:25:00+02:00",
+      "proxy": 109.11,
+      "server": -1000000,
+      "note": "FAILED: ShareGPT_DS-R1_EP256 timeout. k=8 block-vector inner loop ~2x finance_band -> too slow at EP256 (server tests up to EP256!). Co-spiking idea is good (proxy 109.11) but needs finance_band-speed."
+    }
   ],
   "timing_calibration": {
-    "ds_eplb_baseline_per_call_local_s": {"Qwen3_EP128": 0.98, "DSR1_EP128": 1.13, "Qwen3_EP32": 0.28},
-    "finance_band_per_call_local_s": {"all_EP": "0.09-0.13"},
-    "rep_aware_per_call_local_s": {"all_EP": "0.57-1.06 -> FAILED server"},
+    "ds_eplb_baseline_per_call_local_s": {
+      "Qwen3_EP128": 0.98,
+      "DSR1_EP128": 1.13,
+      "Qwen3_EP32": 0.28
+    },
+    "finance_band_per_call_local_s": {
+      "all_EP": "0.09-0.13"
+    },
+    "rep_aware_per_call_local_s": {
+      "all_EP": "0.57-1.06 -> FAILED server"
+    },
     "rule": "Submit ONLY variants whose per-call time ~= finance_band (<=~0.2s local). Anything doing per-call search/repack/relabel will 3x-timeout on the server's ShareGPT/EP128 traces. The only safe levers are cheap window statistics (replication weight) + band/window/lambda tuning + a SINGLE vectorized pack."
   }
 }

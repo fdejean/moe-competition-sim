@@ -22,3 +22,7 @@ $PY auto/eval.py "$SCRATCH" --max-iters 1500 --cases Qwen3:LmSys:64 DS-R1:LmSys:
 echo "### EP128 smoke (1500 iters) — THE SERVER TESTS EP128. n_device=128 must NOT"
 echo "### timeout. Time each rebalance call; --per-call-budget mirrors the server. ###"
 $PY auto/eval.py "$SCRATCH" --max-iters 1500 --cases Qwen3:LmSys:128 DS-R1:LmSys:128 --per-call-budget 10 2>&1 | tail -25
+
+echo "### EP256 smoke (1500 iters) — SERVER TESTS DS-R1 EP256 (n_device=256). This is"
+echo "### where block-vector packers FLOOR. Per-call time MUST be ~finance_band. ###"
+$PY auto/eval.py "$SCRATCH" --max-iters 1500 --cases DS-R1:LmSys:256 --per-call-budget 10 2>&1 | tail -15
