@@ -284,3 +284,21 @@ retired hik0njmv/ba4k2v8b on my side; reply via send_message and I'll target you
   grouped_place=113.926. KEY: REPLICATION SIZING is the winning axis; ALL placement-structure ideas lost.
   dro_cvar(127,id768314): distribution-free extension -> size copies by per-expert empirical CVaR (mean of worst
   10% iters, subsampled to 128 for ~scalar speed 0.26s) instead of Gaussian mean+3std. Floored at place_w. Server pending.
+
+2026-05-30 ~13:25  metaanalysis.pdf = "Comprehensive Survey of MoE" (Mu&Lin 2026). VERDICT: nothing new
+  actionable for our inference-time min-max placement. It's a training/applications survey; its only
+  deployment-relevant content (ref[180]: dynamic gating, expert caching, load balancing; "dynamic expert
+  capacity adjustment") is generic & already embodied (sticky=caching, replication=dynamic capacity). No
+  transferable placement algorithm. (Logged so no re-read.)
+
+2026-05-30 ~13:25  3 MORE new mechanisms submitted (runs 128-130), all passed EP32/64/128/256 floor gate
+  (no error/floor, valid shape, within proven-safe <=0.26s timing envelope). Base=drift_router 114.181.
+  - 128 changepoint_window (id768316): Page CUSUM hard regime-switch target (argmax_t||cumsum(x-mean)||,
+    subsampled 256); post-changepoint mean replaces full mean when drift>0.30. Hard cut vs drift_router's
+    soft blend. Targets Mix forecasting. Local LmSys ~SOTA (guard keeps stationary==peakblock).
+  - 129 cov_match (id768317): EXPLICIT anti-correlation pairing @EP256 (2 slots/dev). Vectorized O(n log n)
+    phase-fold: split heavy/light by load, pair opposite-phase within fold (phase = proj on dominant co-spike
+    temporal mode via 5 power iters). LOCAL EP256 100.749 > baseline 100.716 (faint + signal). EP<=128 == SOTA.
+  - 130 wass_dro (id768318): CVaR/Wasserstein-robust placement target — inflate by lam*(CVaR_0.2 - mean) tail
+    instead of lam*std. LOCAL EP256 100.785 > baseline. All EP.
+  Session total submitted: 120 antiphase, 122-126 (mixture/spectral/grouped/power-d/dro), 128-130 (above). 9 new mechanisms.

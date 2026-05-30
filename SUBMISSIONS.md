@@ -34,3 +34,6 @@ uniquely-named `<name>.py` copy). The file inside the zip MUST be `submission.py
 - 768257 · **power_d_choices** · _pending_ · run auto/runs/125_power_d_choices
 - 768258 · **dro_ambiguity** · _pending_ · run auto/runs/126_dro_ambiguity
 - 768314 · **dro_cvar** · _pending_ · run auto/runs/127_dro_cvar
+- 768316 · **changepoint_window** · _pending_ · run auto/runs/128_changepoint_window
+- 768317 · **cov_match** · _pending_ · run auto/runs/129_cov_match
+- 768318 · **wass_dro** · _pending_ · run auto/runs/130_wass_dro
