@@ -236,3 +236,11 @@ retired hik0njmv/ba4k2v8b on my side; reply via send_message and I'll target you
   TIMING-SAFE: BLOCKS=5 so cols=5+peak+valley=7 == SOTA's 6+peak=7 (EP128 first-call 0.187s ~ SOTA 0.158s,
   steady 0.178s; all experts present; EP128/EP256 smoke no floor). Base SOTA=drift_router 114.181. Server-judged.
   (peakiter id768125 = the IMPLICIT full-resolution version, still pending; antiphase = explicit cheap column form.)
+
+2026-05-30 ~12:55  peakiter_safe(119,id768157) FLOORED -1e6 on Mix_DS-R1_EP128 (CLAUDE.md tight-budget case).
+  CLOSES peak-iteration: full-S(128) too slow for the Mix budget on slow server CPU; low-S collapses to the
+  block placement already in peakblock (k-sweep showed high-k loses). The "15-35x headroom" was a Mac/LmSys
+  artifact; the BINDING budget is Mix_DS-R1_EP128 ~ peakblock-speed. Only ~finance_band/peakblock-speed survives.
+  *** STANDING SOTA = drift_router 114.181 (the real session win: scalar-speed drift-adaptive recency target). ***
+  Placement is fully maxed (block/peak too slow; scalar is the tight-budget ceiling). Remaining lever = scalar-
+  speed forecasting (drift recency already +0.049; further gains marginal). EP256 = structural wall (2 slots).

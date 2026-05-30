@@ -1,1 +1,6 @@
-{"variant":"peakiter_safe","id":"768157","server":"pending"}
+{
+  "variant": "peakiter_safe",
+  "id": "768157",
+  "server": -1000000.0,
+  "note": "FLOORED -1e6: per-trace TIMEOUT on Mix_DS-R1_EP128 (the CLAUDE.md tight-budget case). Peak-iteration python slot-loop ~1.6x peakblock cost -> too slow for Mix even gated to EP64-128. Peak-iteration is a server DEAD END: full-S too slow for Mix budget; low-S collapses to existing block placement. SOTA stays drift_router 114.181."
+}
