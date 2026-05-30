@@ -98,16 +98,24 @@
       "submission_id": 766570,
       "ts": "2026-05-30T03:00:00+02:00",
       "proxy": 107.98,
-      "server": null,
-      "note": "replicate on risk, PLACE on mean. Tests whether finance_band's risk-packing helps or hurts the server."
+      "server": 109.443,
+      "note": "place-on-mean HURTS (mean_par 1.700>1.692). risk-packing is a FEATURE for the server."
     },
     {
       "nnn": "055",
       "slug": "fb_convex",
       "submission_id": 766571,
       "ts": "2026-05-30T03:00:00+02:00",
-      "server": null,
-      "note": "over-replicate hottest (water-fill on risk^1.5). Targets high-EP PAR floor. EP256-safe 0.22s."
+      "server": 110.636,
+      "note": "over-replicate hottest HURTS (mean_par 1.706). replication budget already sufficient (floor 1.0)."
+    },
+    {
+      "nnn": "066",
+      "slug": "quantile_pack",
+      "submission_id": 766575,
+      "ts": "2026-05-30T03:05:00+02:00",
+      "server": 111.133,
+      "note": "heavy-tail p95 (max with gauss). 111.13, closest to finance_band but still < it. ~= mean+2std (gauss dominates). aggression axis tapped."
     }
   ],
   "timing_calibration": {

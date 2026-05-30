@@ -84,3 +84,13 @@ transmit is NOT free to spend). The ONLY remaining lever is BETTER PACKING (mean
 2026-05-30 02:50  062_cospike_weight        server=108.86 (mean_par 1.717 > finance_band 1.692) — scalar co-spiking HURTS load balance. Co-spiking lane DEAD within budget. PIVOT.
 2026-05-30 02:55  064_cov_weight            NOT submitted (same scalar-co-spiking family as 062 which hurt).
 2026-05-30 02:55  PIVOT → decouple_pack: replicate on risk=mean+λstd, but PLACE/LPT on MEAN load (finance_band packs on risk, which isolates high-var/low-mean experts and under-loads their device -> raises realized mean_par). Scalar, finance_band-speed.
+
+## PER-CASE OPPORTUNITY MAP (finance_band server, 2026-05-30 ~03:10)
+25 cases = {LmSys,ShareGPT,WildChat,Mix} x {Qwen3,DS-R1} x {EP32,64,128,256(DS-R1)}.
+Worst PAR (= biggest opportunity): DS-R1_Mix_EP256=3.42, DS-R1_Mix_EP128=2.59,
+DS-R1_ShareGPT_EP256=2.04, DS-R1_Mix_EP64=2.02, DS-R1_LmSys_EP256=2.00,
+DS-R1_WildChat_EP256=1.96, Qwen3_*_EP128~1.81-1.86. ALL EP32 already ~1.2-1.3.
+=> Points are in DS-R1 EP128/256 (esp. the "Mix" dataset). My LmSys-EP32 proxy tests
+the EASIEST cases -> doubly non-predictive. Target high-EP realized PAR (co-spiking +
+non-stationarity). Co-spiking too slow at EP256; remaining safe shots = aggressive
+replication of hottest (fb_convex) + heavy-tail quantile (quantile_pack).
