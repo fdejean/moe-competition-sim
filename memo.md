@@ -631,3 +631,12 @@ EP≥128) for all submissions unless EP128 build verified <0.15s. Smoke the FIRS
 ### 105 recent_band_safe — recent_band (noise-robust adaptive band) + BLOCK_MAXDEV=64 (safe).
 EP128 now scalar 0.16–0.19s, EP256 0.26s. Tests the adaptive-band big-swing WITHOUT floor
 risk. Submitted. The +0.566-PAR-under-drift mechanism, made safe.
+
+### ⏸ PAUSED 2026-05-30 ~09:58 (user request; restart scheduled 12:00)
+Aggressive builder cron be574349 DELETED. State at pause:
+- SOTA ~114.03–114.04 (trim_base / peak_cospike_k6); my 100–105 landed 113.0–113.9 (none beat SOTA;
+  adaptive-band recent_band ~neutral, joint_peak_replicate hurt, regime/median ~tied).
+- 106 ewma_base: BUILT + validated (EP256 0.25s, EP128 0.17s, BLOCK_MAXDEV=64 floor-safe) but
+  NOT submitted (paused before submit). Mechanism: recency-weighted (EWMA, HL=0.25·window) base to
+  track non-stationary Mix regimes while smoothing noise. → submit FIRST on restart.
+- Hard constraints intact: Mix_DS-R1_EP128 budget edge → BLOCK_MAXDEV≤64; finance_band-speed only.
