@@ -57,3 +57,4 @@ Score of 100 = matches DS-EPLB baseline. Failed runs sink to the bottom.
 | 50 | `075_sticky_eplo` | — | — | no score.json (not evaluated) |
 | 51 | `076_sticky_eplo00` | — | — | no score.json (not evaluated) |
 | 52 | `076_sticky_eplo10` | — | — | no score.json (not evaluated) |
+| 53 | `078_shrink_predict` | — | — | no score.json (not evaluated) |

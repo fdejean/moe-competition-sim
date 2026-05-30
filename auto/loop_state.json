@@ -10,9 +10,9 @@
     "note": "SOTA at loop start. Beat THIS proxy number to justify a submission."
   },
   "best_server": {
-    "variant": "sticky_eplo",
-    "score": 111.805,
-    "note": "FINAL SOTA (converged). finance_band PAR + O(nd) PAR-neutral relabel + stay-biased build (STAY=0.25) + high-EP lambda=1.5. +0.54 over prior best finance_band 111.264. All idea classes exhausted."
+    "variant": "shrink_predict",
+    "score": 111.808,
+    "note": "marginal SOTA, within noise of sticky_eplo(111.805)/sticky_relabel(111.802). The transmit-relabel family + finance_band PAR is the converged ceiling ~111.8. Genuinely-new shrinkage class tried, ~neutral."
   },
   "submit_budget": {
     "max_submissions_tonight": 1000,
@@ -200,9 +200,9 @@
     {
       "nnn": "078",
       "slug": "shrink_predict",
-      "submission_id": null,
-      "server": null,
-      "note": "NEW class: cross-call long-run shrinkage of load estimate (James-Stein-style var reduction for non-stationary Mix). SHRINK=0.3. Pending."
+      "submission_id": 766932,
+      "server": 111.808,
+      "note": "cross-call shrinkage. 111.808 = marginal high but WITHIN NOISE of sticky_eplo 111.805 (mean_par 1.69631 vs 1.69633). The new class is ~NEUTRAL (persistence holds; single window already good). Not sweeping (would be noise-tuning)."
     }
   ],
   "timing_calibration": {
