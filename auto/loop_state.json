@@ -10,10 +10,11 @@
     "note": "SOTA at loop start. Beat THIS proxy number to justify a submission."
   },
   "best_server": {
-    "variant": "peak_cospike_k6(tuning) / peak_cospike_k4(mechanism)",
-    "score": 114.044,
-    "mechanism_sota": 113.995,
-    "note": "k6=114.044 is best raw server but a forbidden k-sweep; the MECHANISM SOTA is peak_cospike (joint-peak+block). Novel mechanisms strata/scenario/spike all < combo. Pivoting to orthogonal levers (redeploy policy etc)."
+    "variant": "peakblock",
+    "score": 114.132,
+    "mean_par": 1.65874,
+    "id": 767621,
+    "note": "NOVEL placement-level spike-awareness: joint-peak per-expert load appended as an EXTRA BLOCK COLUMN so the greedy balances devices across temporal blocks AND the co-spike scenario. +0.088 over k6 114.044. Direction: make PLACEMENT spike-aware, not just the target weight."
   },
   "submit_budget": {
     "max_submissions_tonight": 1000,
