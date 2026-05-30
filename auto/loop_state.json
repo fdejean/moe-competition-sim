@@ -239,6 +239,13 @@
       "submission_id": 767202,
       "server": 112.079,
       "note": "*** NEW SOTA 112.079 *** mean_par 1.68845 \u2014 FIRST time PAR < 1.692! Co-spiking block placement at EP<=64 (affordable per-case budget) + fast finance_band at EP>=128 + relabel. PAR was NOT saturated \u2014 only unexploitable where I couldn't afford co-spiking. EP-adaptive algorithm dispatch breaks the floor."
+    },
+    {
+      "nnn": "084",
+      "slug": "epadaptive_p95",
+      "submission_id": 767219,
+      "server": null,
+      "note": "epadaptive (co-spiking @EP<=64) + p95 replication @EP>=128 (peer E3 lever, pure p95 not max(p95,gauss)). Attacks both ends. Pending."
     }
   ],
   "timing_calibration": {
