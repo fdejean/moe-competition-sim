@@ -10,11 +10,9 @@
     "note": "SOTA at loop start. Beat THIS proxy number to justify a submission."
   },
   "best_server": {
-    "variant": "sticky_relabel",
-    "score": 111.802,
-    "mean_par": 1.6968,
-    "transmit": 625212,
-    "note": "NEW SOTA. finance_band PAR + O(nd) relabel + stay-biased build. Transmit 842k->625k. Sweep STAY for more."
+    "variant": "sticky_eplo",
+    "score": 111.805,
+    "note": "marginal SOTA (within noise of sticky_relabel 111.802). high-EP lambda=1.5. sweeping high-EP lambda."
   },
   "submit_budget": {
     "max_submissions_tonight": 1000,
@@ -182,8 +180,8 @@
       "nnn": "075",
       "slug": "sticky_eplo",
       "submission_id": 766676,
-      "server": null,
-      "note": "LESS variance replication at high EP (lambda=1.5 at EP>=128). Tests if scarce high-EP slots want less variance repl."
+      "server": 111.805,
+      "note": "*** marginal SOTA 111.805 *** lambda=1.5 at high EP (less variance repl). High-EP scarce slots want LESS repl (opposite of epadapt). Within noise of sticky_relabel."
     }
   ],
   "timing_calibration": {
