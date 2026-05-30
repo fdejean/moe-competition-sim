@@ -274,6 +274,27 @@
       "submission_id": 767241,
       "server": 111.764,
       "note": "k=32 overfits: 111.764. coarse blocks generalize; dense overfits."
+    },
+    {
+      "nnn": "089",
+      "slug": "epadaptive_k2",
+      "submission_id": 767248,
+      "server": null,
+      "note": "co-spiking <=EP128, k=2 (coarsest: 1st vs 2nd half load)"
+    },
+    {
+      "nnn": "090",
+      "slug": "epadaptive_k3",
+      "submission_id": 767249,
+      "server": null,
+      "note": "co-spiking <=EP128, k=3"
+    },
+    {
+      "nnn": "091",
+      "slug": "epadaptive_k6",
+      "submission_id": 767250,
+      "server": null,
+      "note": "co-spiking <=EP128, k=6"
     }
   ],
   "timing_calibration": {
