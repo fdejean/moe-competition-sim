@@ -661,3 +661,14 @@ driven by the SPIKE scenarios, so this up-weights the spike columns (full-window
 peak) by WPEAK=1.6 in the max → placement prioritizes balancing the scenarios that set PAR over
 temporal averages. New structural knob on peakblock's winning "scenario column" mechanism (not a
 target/objective change, not hyperparam noise). 4 cols, EP128 0.276s (peakblock-safe). Submitted.
+
+### RESULTS: 106 ewma_base=113.08, 107 recentpeak(BLOCKS=2)=113.82, 108 wpeak=113.01 — ALL < SOTA 114.132.
+Diagnosis: 107/108 used only 2 temporal blocks (traded away to add columns); peakblock's 6 temporal
+blocks matter. Weighting spike columns (108) HURT. → fair test needs recent-peak ADDED, not replacing.
+### 109 recentpeak7 — 5 temporal + full-peak + recent-peak = 7 cols (peakblock-safe 0.26s). Fair test:
+does the recent-regime co-spike scenario beat a 6th temporal block? Submitted.
+### ⚠️ LANE STATUS: scenario-column variants are SATURATING at ~114.0–114.13 (peakblock 114.132,
+varblock 114.118, vblock256 114.10, spikebands 114.07; all alt objectives lose). Mechanism near
+converged. If 109 doesn't break out, PIVOT off scenario-columns next cycle: the only remaining PAR
+headroom is high-EP DS-R1 Mix (PAR 2-3.4, non-stationary) — needs either node-hierarchical EP256
+multi-scenario placement or a genuinely different formulation. ~114 may be near the fast-method ceiling.
