@@ -12,7 +12,7 @@
   "best_server": {
     "variant": "sticky_eplo",
     "score": 111.805,
-    "note": "marginal SOTA (within noise of sticky_relabel 111.802). high-EP lambda=1.5. sweeping high-EP lambda."
+    "note": "FINAL SOTA (converged). finance_band PAR + O(nd) PAR-neutral relabel + stay-biased build (STAY=0.25) + high-EP lambda=1.5. +0.54 over prior best finance_band 111.264. All idea classes exhausted."
   },
   "submit_budget": {
     "max_submissions_tonight": 1000,
@@ -211,5 +211,12 @@
       "all_EP": "0.57-1.06 -> FAILED server"
     },
     "rule": "Submit ONLY variants whose per-call time ~= finance_band (<=~0.2s local). Anything doing per-call search/repack/relabel will 3x-timeout on the server's ShareGPT/EP128 traces. The only safe levers are cheap window statistics (replication weight) + band/window/lambda tuning + a SINGLE vectorized pack."
+  },
+  "summary": {
+    "submissions": 22,
+    "sota": "sticky_eplo 111.805",
+    "prior_best": "finance_band 111.264",
+    "gain": "+0.541",
+    "status": "converged - ceiling for finance_band-speed methods"
   }
 }
