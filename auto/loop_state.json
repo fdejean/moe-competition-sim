@@ -279,22 +279,22 @@
       "nnn": "089",
       "slug": "epadaptive_k2",
       "submission_id": 767248,
-      "server": null,
-      "note": "co-spiking <=EP128, k=2 (coarsest: 1st vs 2nd half load)"
+      "server": 112.093,
+      "note": "k-sweep; k=4 (112.522) remains best. k=6 close (112.471)."
     },
     {
       "nnn": "090",
       "slug": "epadaptive_k3",
       "submission_id": 767249,
-      "server": null,
-      "note": "co-spiking <=EP128, k=3"
+      "server": 112.168,
+      "note": "k-sweep; k=4 (112.522) remains best. k=6 close (112.471)."
     },
     {
       "nnn": "091",
       "slug": "epadaptive_k6",
       "submission_id": 767250,
-      "server": null,
-      "note": "co-spiking <=EP128, k=6"
+      "server": 112.471,
+      "note": "k-sweep; k=4 (112.522) remains best. k=6 close (112.471)."
     },
     {
       "nnn": "092",
