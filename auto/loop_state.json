@@ -154,22 +154,22 @@
       "nnn": "071",
       "slug": "sticky_stay015",
       "submission_id": 766633,
-      "server": null,
-      "note": "STAY=0.15 (less aggressive stickiness)"
+      "server": 111.743,
+      "note": "STAY=0.15: 111.743. STAY sweep -> peak at 0.25 (111.802)."
     },
     {
       "nnn": "072",
       "slug": "sticky_stay040",
       "submission_id": 766634,
-      "server": null,
-      "note": "STAY=0.40"
+      "server": 111.71,
+      "note": "STAY=0.40: 111.71. STAY sweep -> peak at 0.25 (111.802)."
     },
     {
       "nnn": "073",
       "slug": "sticky_stay060",
       "submission_id": 766635,
-      "server": null,
-      "note": "STAY=0.60 (more transmit cut, more PAR risk)"
+      "server": 111.563,
+      "note": "STAY=0.60: 111.563. STAY sweep -> peak at 0.25 (111.802)."
     }
   ],
   "timing_calibration": {
