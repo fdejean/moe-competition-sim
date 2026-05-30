@@ -569,3 +569,15 @@ faithful co-spiking signal than temporal blocks, same cost.
 - scenario_robust (093, id 767434): distributionally-robust placement — min-max over the S worst INDIVIDUAL iterations (raw worst snapshots), not a mean. Robust-optimization paradigm.
 - spike_replicate (094): NEW LEVER (replication, not placement) — size replicas by each expert's MAX load over the worst-5% iters (spike-drivers get more copies), decoupled from joint-peak placement. Attacks E2's "EP256 = single spiky expert" finding.
 Both EP256-safe, submitted. Backlog continues: ot_sinkhorn, regime_track, match_ep256, spectral_cut, power_d_choices, grouped_place, dro_ambiguity, mixture_deploy.
+
+### 100 regime_blocks — server=113.765 (mean_par 1.66444) ~TIED SOTA (peak_cospike 113.895, −0.13)
+Regime (busyness-quantile) blocks ≈ temporal blocks. The block FLAVOR doesn't matter;
+co-spiking is already captured by temporal blocks. Neutral. Also confirmed: EP256 block
+build (even k=2) = 0.36s → too slow, floors. Block placement cannot reach EP256.
+
+### Per-case leverage analysis (from latest prediction_result)
+score ≈ 100·base/(60·par) per case (our transmit is only 1.6–5% of our time). Worst cases
+(biggest our_t → biggest leverage): DS-R1 **Mix** 256 (PAR 3.37, 211s), Mix 128 (2.48, 157s),
+DS-R1 {ShareGPT,LmSys,WildChat} 256 (~2.0), Mix 64 (1.94), Qwen3 *_128 (~1.83). "Mix" is
+worst at EVERY EP (3.37/2.48/1.94/1.59) → NON-STATIONARITY is the #1 lever. Cutting Mix-256
+PAR 3.37→2.5 ≈ +1.3 to the mean score. Placement saturated there; robust prediction is the shot.
