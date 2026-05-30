@@ -116,7 +116,11 @@ def main():
         fb = load_submission("finance_band")
         hot = load_submission("hot_expert_baseline")
         smoke = load_submission("smoke")
+        ema = load_submission("ema_trend")
+        md = load_submission("min_diff")
         fb.reset()
+        ema.reset()
+        md.reset()
 
         methods = [
             ("Default",       lambda w: None, True),
@@ -124,6 +128,8 @@ def main():
             ("smoke(static)", lambda w: smoke.rebalance(w, ep, n_red), False),
             ("hot_expert",    lambda w: hot.rebalance(w, ep, n_red), False),
             ("finance_band",  lambda w: fb.rebalance(w, ep, n_red), False),
+            ("ema_trend",     lambda w: ema.rebalance(w, ep, n_red), False),
+            ("min_diff", lambda w: md.rebalance(w, ep, n_red), False),
         ]
 
         results = {}

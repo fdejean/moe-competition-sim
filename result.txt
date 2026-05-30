@@ -1,0 +1,34 @@
+
+=== DS-R1 / LmSys / EP32  (interval=1024) ===
+  [  1.8s] Default        ran
+  [ 19.2s] DS-EPLB        ran
+  [  2.0s] smoke(static)  ran
+  [  2.1s] hot_expert     ran
+  [  3.6s] finance_band   ran
+  [  5.4s] ema_trend      ran
+  [  5.7s] seasonal       ran
+  method           meanPAR   transmit  tx_time_s    total_s    score
+  Default           1.6302          0      0.000     97.814    86.46
+  DS-EPLB           1.2749      82545      8.078     84.574   100.00
+  smoke(static)     1.6302          0      0.000     97.814    86.46
+  hot_expert        1.4145       8639      0.845     85.714    98.67
+  finance_band      1.2357      16634      1.628     75.773   111.62
+  ema_trend         1.3222      74864      7.327     86.657    97.60
+  seasonal          1.2366      16634      1.628     75.826   111.54
+
+=== Qwen3 / LmSys / EP32  (interval=1024) ===
+  [  1.7s] Default        ran
+  [ 13.7s] DS-EPLB        ran
+  [  1.9s] smoke(static)  ran
+  [  1.9s] hot_expert     ran
+  [  2.7s] finance_band   ran
+  [  3.7s] ema_trend      ran
+  [  4.1s] seasonal       ran
+  method           meanPAR   transmit  tx_time_s    total_s    score
+  Default           1.9822          0      0.000    118.934    70.09
+  DS-EPLB           1.2949      57897      5.666     83.359   100.00
+  smoke(static)     1.9822          0      0.000    118.934    70.09
+  hot_expert        1.6008       9691      0.948     96.995    85.94
+  finance_band      1.2894      14914      1.460     78.822   105.76
+  ema_trend         1.3971      51658      5.056     88.884    93.78
+  seasonal          1.2912      14914      1.460     78.932   105.61

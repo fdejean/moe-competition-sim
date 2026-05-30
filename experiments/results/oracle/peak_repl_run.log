@@ -1,0 +1,64 @@
+
+=== DS-R1 / LmSys  interval=1024 ===
+    EP method               meanPAR   transmit  total_s   score
+    32 DS-EPLB(base)         1.2578      82488    83.54  100.00
+    32 finance_band          1.2351      16632    75.73  110.31
+    32 peakrepl0(=fb)        1.2351      16634    75.73  110.31
+    32 peakrepl.3            1.2361      16626    75.79  110.22
+    32 peakrepl.5            1.2352      16632    75.74  110.30
+    32 peakrepl.7            1.2348      16635    75.71  110.34
+    32 peakboth.5            1.2352      16645    75.74  110.29
+    64 DS-EPLB(base)         1.4251      91888    94.50  100.00
+    64 finance_band          1.3828      18817    84.81  111.43
+    64 peakrepl0(=fb)        1.3828      18810    84.81  111.43
+    64 peakrepl.3            1.3831      18499    84.80  111.44
+    64 peakrepl.5            1.3829      18478    84.78  111.46
+    64 peakrepl.7            1.3849      18487    84.90  111.30
+    64 peakboth.5            1.3833      18480    84.81  111.43
+   128 DS-EPLB(base)         1.6915     110045   112.26  100.00
+   128 finance_band          1.6150      23330    99.18  113.19
+   128 peakrepl0(=fb)        1.6150      23330    99.18  113.19
+   128 peakrepl.3            1.6153      23322    99.20  113.16
+   128 peakrepl.5            1.6150      22956    99.15  113.23
+   128 peakrepl.7            1.6138      22562    99.04  113.35
+   128 peakboth.5            1.6138      22937    99.08  113.31
+   256 DS-EPLB(base)         2.1196     146767   141.54  100.00
+   256 finance_band          1.9940      34628   123.03  115.05
+   256 peakrepl0(=fb)        1.9940      34612   123.03  115.05
+   256 peakrepl.3            1.9953      38172   123.45  114.65
+   256 peakrepl.5            1.9959      40685   123.74  114.39
+   256 peakrepl.7            1.9938      37640   123.31  114.78
+   256 peakboth.5            1.9930      33099   122.82  115.25
+
+=== Qwen3 / LmSys  interval=1024 ===
+    EP method               meanPAR   transmit  total_s   score
+    32 DS-EPLB(base)         1.2885      57793    82.97  100.00
+    32 finance_band          1.2885      14912    78.77  105.33
+    32 peakrepl0(=fb)        1.2885      14914    78.77  105.33
+    32 peakrepl.3            1.2883      14909    78.76  105.35
+    32 peakrepl.5            1.2883      14903    78.76  105.35
+    32 peakrepl.7            1.2881      14905    78.74  105.37
+    32 peakboth.5            1.2896      14924    78.84  105.24
+    64 DS-EPLB(base)         1.5318      69973    98.76  100.00
+    64 finance_band          1.5240      17905    93.19  105.97
+    64 peakrepl0(=fb)        1.5240      17916    93.19  105.97
+    64 peakrepl.3            1.5240      17925    93.20  105.97
+    64 peakrepl.5            1.5237      17923    93.18  105.99
+    64 peakrepl.7            1.5234      17913    93.16  106.01
+    64 peakboth.5            1.5254      17906    93.27  105.88
+   128 DS-EPLB(base)         1.8527      92891   120.25  100.00
+   128 finance_band          1.8359      23874   112.49  106.90
+   128 peakrepl0(=fb)        1.8359      23874   112.49  106.90
+   128 peakrepl.3            1.8358      24351   112.53  106.86
+   128 peakrepl.5            1.8351      24129   112.46  106.93
+   128 peakrepl.7            1.8349      24115   112.45  106.94
+   128 peakboth.5            1.8381      23893   112.63  106.77
+
+--- best peakrepl vs finance_band (score delta) ---
+  DS-R1  EP32   fb=110.31  best=peakrepl.7=110.34  delta=+0.03
+  DS-R1  EP64   fb=111.43  best=peakrepl.5=111.46  delta=+0.04
+  DS-R1  EP128  fb=113.19  best=peakrepl.7=113.35  delta=+0.17
+  DS-R1  EP256  fb=115.05  best=peakboth.5=115.25  delta=+0.20
+  Qwen3  EP32   fb=105.33  best=peakrepl.7=105.37  delta=+0.04
+  Qwen3  EP64   fb=105.97  best=peakrepl.7=106.01  delta=+0.04
+  Qwen3  EP128  fb=106.90  best=peakrepl.7=106.94  delta=+0.03

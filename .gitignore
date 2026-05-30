@@ -30,3 +30,4 @@ outputs/
 *.zip
 *.tar
 *.tar.gz
+.claude/*
