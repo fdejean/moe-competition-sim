@@ -217,3 +217,189 @@ base, then submit and read the *server* per-case PAR on the DS-R1 high-EP cases.
 - Keep `auto/NOTES.md` (one-liners + server scores) and `auto/loop_state.json` in sync.
 - Negative results are logged too — they redirect the search (E2 above saved the team
   from chasing placement at high EP).
+
+---
+
+## 9. Resumed Vero-agent log (2026-05-30 ~07:00+) — co-spiking PLACEMENT, refined
+
+*Picking the loop back up after the 5h timer. SOTA verified on server:
+shrink_predict 111.808 / sticky_eplo 111.805 (mean_par 1.696, transmit ~632k).
+User directive: break the 111 ceiling, aim 120, be crazy, stop polishing finance.*
+
+### 9a. My submissions this stretch (architecture + rationale + result)
+
+**`pack_refine_fast` (061) — id 766513 → server 109.836 (VALID, < finance_band).**
+- Arch: finance_band + cut-preserving swap packer bounded by a FIXED pass count
+  (no 7s wall-clock budget), relabel dropped. 176–269 ms/call.
+- Rationale: I thought the high-EP PAR gap was *packing* (floor=1.000) and that 020's
+  swap-refine was right but its 7s budget was the timeout cause.
+- Result/lesson: VALID but worse. Swap-refine moves realized PAR ~0 (1.6908 vs
+  1.6926); dropping relabel ballooned transmit (1.25M vs 840k). **→ mean-packing is
+  not the lever; relabel/transmit matters more.** (Matches peer's §3 finding.)
+
+**`predict_trend` (060) — proxy ~95, NOT submitted.** Two-half linear-trend forecast
+estimator. Chasing drift exploded PAR *and* transmit. Dead end (confirms flo's EDA).
+
+**`cospike_kpack` (079) — id 767191 → server −1e6 (FLOORED EP256), BUT pivotal.**
+- Arch: sticky_eplo + **co-spiking placement** — each slot carries a k-vector of
+  temporal block-mean loads; greedy assigns to the device minimizing the resulting
+  *worst block load* (k=3). Computational stand-in for min-variance partitioning.
+- Rationale: attack the realized-PAR/co-spiking residual; nobody tried *coarse* k
+  (peer's block_pack only went finer, k=8/16/32).
+- Result/lesson — **NEW EVIDENCE that refines E2:** it timed out *only* at
+  ShareGPT_DS-R1_EP256 (per-slot block-max greedy 0.39 s/call > budget). On every
+  **completed** case it **LOWERED realized PAR**: ShareGPT_DS-R1_EP128 = **1.587**
+  (vs finance-family ~1.63), EP64 = 1.345 (vs ~1.39), EP32 = 1.202 (vs ~1.24).
+  → **§6/E2 said spectral SNAKE placement closes only 1–2%; but a GREEDY block
+  placement closes meaningfully more on real server EP64/128 cases.** So the nuance
+  is: *snake/anti-correlation* placement is weak, but *greedy worst-block* placement
+  helps — it's just too slow at EP256. Co-spiking placement is alive at EP≤128.
+
+**`peak_balance` (080) — id pending → submitted.**
+- Arch: sticky_eplo, LPT targets a **robust-minimax** weight = blend of window mean
+  and the mean load over the **top-10% highest-total-load iterations** (the joint
+  co-spiking spikes). Scalar LPT → 254 ms/call (EP256-safe).
+- Rationale: capture the *joint* tail (which experts spike *together*) with a single
+  scalar weight, unlike the peer's failed *marginal* attempts (per-expert p95,
+  scalar busyness). Result: _pending server_.
+
+### 9b. Key reframe of the constraint (calibrated)
+DS-EPLB per-call (local, CPU): EP32 0.33s, EP128 1.15s, EP256 2.26s → "3× budget"
+looks huge LOCALLY (~6.7s at EP256). But DS-EPLB is **torch (GPU-fast on the
+server)** while we are CPU numpy, so the *server* budget is tight. Empirical
+pass/fail: sticky_eplo 0.23s/call PASSES; cospike_kpack 0.39s/call FLOORS at EP256.
+**The per-slot LOOP length is the cost, not k** (cospike at k=2 and k=3 both 0.39s).
+
+### 9c. Next build (evidence-driven): `cospike_hybrid` (EP-gated co-spiking placement)
+- Plan: use the **greedy worst-block placement at EP ≤ 128** (validated PAR gains,
+  237 ms at EP128 = safe) and **fall back to sticky_eplo's scalar LPT at EP256**
+  (0.23s, safe). E2 *supports* dropping co-spiking at EP256 anyway (at 2 slots/device
+  the peak is single-expert variance, not pairwise co-spiking). This keeps every
+  validated EP32/64/128 co-spiking gain and removes the only timeout. **Highest-EV
+  next submission.**
+- Then: combine with the peer's transmit machinery (sticky relabel) so we don't
+  regress the 632k transmit while gaining EP≤128 PAR.
+
+### 9d. Reconciliation note (for the team)
+E2 (snake, −1–2%) and my cospike_kpack server data (greedy block, real gains at
+EP64/128) are **both right**: anti-correlation *ordering* is weak, but *actively
+balancing the worst temporal block* via greedy is not. The open question is whether
+a **vectorized** worst-block balance exists (snake was the vectorized attempt and it
+was weak; greedy works but is EP256-slow → hence the EP-gate hybrid).
+
+---
+
+## 9. Full per-submission detail — vero relabel/transmit/EP-adaptive lane (complete record)
+
+> Appended by the relabel/transmit-lane agent (the "Sessions 2–N" peer in §3 above),
+> per user instruction to document EVERY submission with its rationale. Newest at the
+> bottom. Server scores are the oracle; the LmSys-EP32 proxy is anti-correlated (§2).
+
+**Why I submitted band_refine_transmin (021) FIRST — −1e6.** It was the prior local
+SOTA and had never been server-scored; submitting it validated the whole
+implement→eval→submit pipeline AND immediately exposed the EP128 timeout wall. Rationale:
+de-risk the tooling on the highest-EV candidate. Takeaway: the O(n_device²) relabel is
+fatal at EP128; the server tests EP128.
+
+**rep_aware_refine (050) — −1e6.** Roadmap "biggest lever" (replication-aware refinement).
+Rebuilt bounded/EP128-safe, but the per-candidate re-pack loop (~0.6–1.0s) floored at EP64.
+Rationale: replication is theoretically the dominant lever; outcome: ANY iterative cost
+floors. This is what cemented "only finance_band-speed survives."
+
+**fb_tau005_l2 / fb_tau01_l2 (051/052) — 106.6 / 109.3.** Hypothesis: redeploy more often
+(smaller TAU) → track load → lower PAR, and transmit is "6000× cheaper" so it's free.
+Outcome: WRONG — PAR flat, transmit exploded (1.93M). Placement is not staleness-limited;
+transmit is NOT free to spend.
+
+**fb_window512_l2 (053) — 105.3.** Shorter trailing window to track ShareGPT drift. Outcome:
+PAR WORSE (1.737). Confirms persistence > recency; chasing drift overshoots.
+
+**fb_lambda25 (054) — 111.1.** λ=2.5. ≈ finance_band, hair worse. λ=2 is the replication peak.
+→ Declared the whole cheap-tuning family (TAU/window/λ) tapped out.
+
+**block_pack (056) — −1e6.** First co-spiking attack: balance each device across k=8 temporal
+blocks in one greedy pass (temporal diversification spreads same-block spikers). Best proxy
+(109.11; DS-R1 1.235→1.210) but floored at DS-R1_Mix_EP256. Rationale: realized PAR gap is
+co-spiking, not mean packing. Lesson: the per-device k-vector loop is ~2× finance_band → fatal
+at EP256 (which I'd never smoke-tested). Added EP256 to the smoke harness. **This idea later
+became the SOTA once gated to low EP — see epadaptive_algo.**
+
+**cospike_weight (062) — 108.86.** Fold co-spiking into a SCALAR weight (block-mean · global-
+block-busyness) to stay finance_band-speed. Outcome: HURT (1.717). The scalar premium distorts
+mean balance; per-case it's worse everywhere, worst at high EP. Scalar co-spiking ≠ per-device
+co-spiking.
+
+**fb_convex (055) — 110.6.** Over-replicate the hottest (water-fill on risk^1.5) to lower the
+high-EP PAR floor. Outcome: HURT (1.706) — replication budget already suffices (floor ~1.0);
+concentrating replicas wastes mean balance.
+
+**decouple_pack (065) — 109.4.** Replicate on risk but PLACE on mean (hypothesis: risk-packing
+isolates high-var/low-mean experts onto under-loaded devices). Outcome: HURT (1.700) → proved
+the OPPOSITE: risk-packing is a FEATURE for the spiky server cases. This is where I realized the
+proxy is anti-correlated and switched to server-as-eval.
+
+**quantile_pack (066) — 111.13.** Heavy-tail p95 replication (`max(p95, mean+2std)`, subsampled
+for speed). Closest-yet but < finance_band, because `max(p95,gauss)`≈gauss most of the time. NOTE:
+the peer's E3 (§6) found PURE p95, EP-gated to EP≥128, beats mean+2std at high EP — my global
+`max()` version masked it. **Untested lever: pure-p95 EP≥128.**
+
+**maxsubwin (067) — 111.24.** DRO: replicate by the worst recent sub-window mean (robust to Mix
+regime shifts, keeps full history). ≈ tied. (Local LmSys can't exercise its Mix target.)
+
+**cheap_relabel (068) — 111.751 ⭐ FIRST WIN.** The reframe that worked: PAR is saturated and ≈
+baseline's; finance_band's edge is holding (low transmit), and its residual transmit is recoverable
+PAR-NEUTRALLY. Rebuilt band_refine's relabel in O(n_device) (match device rows by shared heaviest
+expert via a dict; keep persisting experts in old slots). PAR identical (1.6929), transmit −18.5%,
+EP256-safe → guaranteed ≥ finance_band. First beat of the prior best.
+
+**cheap_relabel_v2 (069) — 111.746.** Stronger O(nd) alignment (exact full-set match then heaviest).
+Cut more transmit (680k) but ≈ tied — the relabel isn't perfectly PAR-neutral in the closed loop
+(less transmit → shorter redeploy rollout → slightly different realized PAR). Alignment maxed ~111.75.
+
+**sticky_relabel (070) — 111.802 ⭐.** Cut transmit at the SOURCE: stay-bias in the LPT build
+(prefer an expert's previous device) so the fresh placement resembles the last one. Transmit 625k
+at tiny PAR cost → net +0.05. Source-side cut pays.
+
+**sticky_stay 0.15/0.40/0.60 (071–073) — 111.74 / 111.71 / 111.56.** STAY sweep. Higher STAY cuts
+transmit (633k→601k) but raises PAR faster; composite PEAKS at STAY=0.25. Transmit fully optimized.
+
+**sticky_epadapt (074) — 111.54.** λ=3 at high EP (more variance hedging). HURT (1.7037).
+
+**sticky_eplo (075) — 111.805 ⭐.** Opposite — λ=1.5 at high EP (scarce slots want LESS variance
+replication). Marginal SOTA (within noise). Real but tiny direction.
+
+**sticky_eplo10 / sticky_eplo00 (076/077) — 111.67 / 110.45.** High-EP λ curve: 3→111.54, 2→111.80,
+1.5→111.805(peak), 1.0→111.67, 0→110.45. λ≈1.5–2 robustly optimal.
+
+**shrink_predict (078) — 111.808 ⭐.** Genuinely-new class: cross-call long-run shrinkage of the load
+estimate via `_STATE` memory (James-Stein variance reduction; distinct from trend/window). Within
+noise → persistence holds; shrinkage ~neutral.
+
+**sticky_tau 0.1/0.05/0.02 (079–081) — 111.24 / 109.84 / 108.68.** Re-tested lower TAU on the relabel
+base (hypothesis: cheaper redeploys shift the TAU optimum down). Still HURTS — placement genuinely
+isn't staleness-limited. Direction dead.
+
+**fold_pack (082) — 106.47.** Completely-new architecture (user request): proportional-apportionment
+replicas + vectorized boustrophedon FOLDING placement, no water-fill/LPT/relabel. 0.03s/call (5×
+faster). Outcome: WORSE on both (mean_par 1.76, transmit 978k) — folding packs cruder than greedy LPT
+and the global sort reshuffles MORE. Speed alone buys nothing. BUT it proved the budget headroom idea
+that led to the next win.
+
+**epadaptive_algo (083) — 112.079 ⭐⭐ NEW SOTA, BROKE THE PAR FLOOR.** Insight: co-spiking placement
+floored only at EP256; the time budget is 3× DS-EPLB *per case*, and at EP32/64 it's generous
+(block_pack ran 0.13s there). So DISPATCH BY n_device: co-spiking block-balanced placement at EP≤64,
+fast finance_band at EP≥128, both + the O(nd) relabel. Outcome: **mean_par 1.68845 — the first time
+PAR fell below 1.692** → 112.079 (+0.27). **The "PAR is saturated" verdict was an artifact of the
+EP256 speed wall, not a real floor.** Co-spiking helps where it's affordable. This reopens the whole
+PAR frontier.
+
+### Open frontier (post-epadaptive)
+1. **+ p95 replication at EP≥128** (peer E3: validated locally, −0.012/−0.016 realized PAR at high EP;
+   my global quantile_pack masked it). Add pure-p95, EP-gated, to epadaptive's high-EP path.
+2. **Raise the co-spiking EP threshold to ≤128** (block_pack ran fine at EP128 = 0.19s, only EP256
+   floored; EP128 budget ≈ 2.9s). Captures the EP128 cases (PAR 1.6–2.6, lots of headroom). Risk:
+   server ratio is worse than local — needs a careful EP128 timing check.
+3. Combine 1+2: co-spiking placement (EP≤128) + p95 replication (EP≥128) + relabel.
+
+**Logging protocol (per user instruction): every change/submission/result is appended here AND to
+auto/NOTES.md + auto/loop_state.json, with rationale + proxy + server + takeaway, before moving on.**
