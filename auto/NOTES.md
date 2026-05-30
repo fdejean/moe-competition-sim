@@ -94,3 +94,6 @@ DS-R1_WildChat_EP256=1.96, Qwen3_*_EP128~1.81-1.86. ALL EP32 already ~1.2-1.3.
 the EASIEST cases -> doubly non-predictive. Target high-EP realized PAR (co-spiking +
 non-stationarity). Co-spiking too slow at EP256; remaining safe shots = aggressive
 replication of hottest (fb_convex) + heavy-tail quantile (quantile_pack).
+2026-05-30 03:25  067_maxsubwin             server=111.244 (~tied finance_band).
+2026-05-30 03:25  068_cheap_relabel         server=111.751 *** BEATS finance_band 111.264! *** PAR-neutral (1.6929=finance_band) + transmit -18.5% (686k vs 842k) via O(n_device) heaviest-expert device relabel + slot preserve. The band_refine_transmin transmit idea finally made EP256-FAST (O(nd) not O(nd^2)). KEY: PAR is saturated; TRANSMIT is the recoverable lever (~3% of time, cuttable PAR-neutrally). NEW SOTA.
+2026-05-30 03:30  069_cheap_relabel_v2      hypothesis="stronger O(nd) alignment: exact full-set match first (fully-persistent devices) + heaviest for rest -> bigger transmit cut, same PAR" submitting.

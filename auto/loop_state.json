@@ -10,10 +10,11 @@
     "note": "SOTA at loop start. Beat THIS proxy number to justify a submission."
   },
   "best_server": {
-    "variant": "finance_band_lambda2",
-    "score": 111.264,
-    "mean_par": 1.692,
-    "note": "STILL the one to beat. Nothing has beaten it yet. cospike/block_pack/pack_refine/tuning all <= it or floored."
+    "variant": "cheap_relabel",
+    "score": 111.751,
+    "mean_par": 1.6929,
+    "transmit": 686766,
+    "note": "NEW SOTA. finance_band PAR + cheap PAR-neutral transmit cut. Beats finance_band 111.264. Transmit is the recoverable lever, not PAR."
   },
   "submit_budget": {
     "max_submissions_tonight": 1000,
@@ -116,6 +117,22 @@
       "ts": "2026-05-30T03:05:00+02:00",
       "server": 111.133,
       "note": "heavy-tail p95 (max with gauss). 111.13, closest to finance_band but still < it. ~= mean+2std (gauss dominates). aggression axis tapped."
+    },
+    {
+      "nnn": "067",
+      "slug": "maxsubwin",
+      "submission_id": 766589,
+      "ts": "2026-05-30T03:15:00+02:00",
+      "server": 111.244,
+      "note": "worst-subwindow robust replication ~= finance_band (tied)."
+    },
+    {
+      "nnn": "068",
+      "slug": "cheap_relabel",
+      "submission_id": 766594,
+      "ts": "2026-05-30T03:25:00+02:00",
+      "server": 111.751,
+      "note": "*** BEATS finance_band! 111.751 vs 111.264. PAR-neutral (1.6929) + transmit -18.5% (686k vs 842k) via O(n_device) heaviest-expert device-align + slot-preserve. EP256-safe. NEW SOTA. ***"
     }
   ],
   "timing_calibration": {
