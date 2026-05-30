@@ -295,6 +295,13 @@
       "submission_id": 767250,
       "server": null,
       "note": "co-spiking <=EP128, k=6"
+    },
+    {
+      "nnn": "092",
+      "slug": "epadaptive_sticky",
+      "submission_id": 767254,
+      "server": null,
+      "note": "FULL STACK: co-spiking k=4 placement (EP<=128) + relabel + stay-bias (STAY=0.25). Combines the PAR win (co-spiking) with the transmit win (sticky), previously in separate variants. Pending."
     }
   ],
   "timing_calibration": {
