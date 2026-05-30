@@ -10,10 +10,10 @@
     "note": "SOTA at loop start. Beat THIS proxy number to justify a submission."
   },
   "best_server": {
-    "variant": "epadaptive_k4",
-    "score": 112.522,
-    "mean_par": 1.68178,
-    "note": "FINAL SOTA. Co-spiking block-balanced placement (k=4) @EP<=128 + fast finance_band @EP256 + O(nd) PAR-neutral relabel. +1.258 over prior best 111.264. Co-spiking lever fully tuned (k/refine/lambda/p95/stay all explored). EP256 cases (PAR 3.4) remain the wall."
+    "variant": "peak_cospike",
+    "score": 113.895,
+    "mean_par": 1.66285,
+    "note": "COMBO of joint-peak placement target + EP-gated greedy block placement (block@EP<=128, scalar@EP256). Two PAR levers compound. id pending. Progression 111.808(shrink)->112.159(peak)->113.189(block hybrid)->113.895(combo). Sweeping k/theta/PEAKFRAC."
   },
   "submit_budget": {
     "max_submissions_tonight": 1000,
@@ -341,7 +341,7 @@
   },
   "summary": {
     "submissions": 40,
-    "sota": "epadaptive_k4 112.522",
+    "sota": "peak_cospike 113.895",
     "prior_best": "finance_band 111.264",
     "gain": "+1.258",
     "key_lever": "EP-adaptive co-spiking (block-balance placement @EP<=128, fast @EP256)"

@@ -457,3 +457,13 @@ EP-adaptive framework (use the expensive-but-better method exactly where the per
 budget allows) is the key unlock.** Open: a fixed-pass co-spiking *refine* at EP≤128
 (budget there is generous; fixed-pass is server-safe per pack_refine_fast).
 2026-05-30 ~08:55  refine overfits (112.513). FINAL SOTA epadaptive_k4 = 112.522 (+1.258). EP256 is the wall.
+
+### 9f. *** COMBO WINS: peak_cospike = 113.895 (mean_par 1.663) — +2.1 over 111.8 ***
+The two validated PAR levers COMPOUND, exactly as hoped:
+- cospike_hybrid (EP-gated greedy block placement) alone = **113.189** (mean_par 1.6816).
+- peak_balance (joint-peak target) alone = 112.159.
+- peak_cospike (BOTH) = **113.895** (mean_par 1.663). θ-sweep: θ=0.5/0.7 ~tie (112.16/112.18),
+  θ=1.0 overshoots (111.99) → keep θ≈0.5.
+Progression: 111.808 → 112.159 → 113.189 → **113.895**. The "PAR is saturated" claim is
+fully refuted; realized PAR went 1.696 → 1.663. Next: sweep the combo (BLOCKS k∈{2,4,5},
+PEAKFRAC∈{0.05,0.20}) and attack the worst case DS-R1 Mix EP256 (still scalar path).
