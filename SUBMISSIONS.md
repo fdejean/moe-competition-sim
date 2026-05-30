@@ -16,6 +16,8 @@ uniquely-named `<name>.py` copy). The file inside the zip MUST be `submission.py
 | 767642 | spikebands | 114.065 | multiscale spike bands (k4 temporal + 3 peak bands) |
 | 767663 | lstsq_pack | 113.109 | L2 sum-of-squares placement objective — WORSE (L-inf is right) |
 | 767670 | dotprod_pack | 112.678 | min dot-product VBP — WORSE |
-| (varblock) | varblock | pending | peakblock + per-expert variance column |
+| 767691 | varblock | 114.118 | peakblock + variance column (tied, ~neutral) |
+| 767701 | vblock256 | pending | **EP256 vectorized round-LPT** spike-aware placement (cracks the EP256 scalar wall) |
 - 767670 · **dotprod_pack** · _pending_ · run auto/runs/3633_dotprod_pack
 - 767691 · **varblock** · _pending_ · run auto/runs/113_varblock
+- 767701 · **vblock256** · _pending_ · run auto/runs/114_vblock256
