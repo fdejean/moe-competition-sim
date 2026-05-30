@@ -134,3 +134,29 @@ All idea classes exhausted: PAR saturated per-case (every placement/replication 
 2026-05-30 08:36  086 peak_cospike_pf05 (id 767390) server=113.903 PEAKFRAC=0.05 ~= combo (113.895). Peak fraction 0.05-0.10 both fine.
 2026-05-30 08:36  087 peak_cospike_t07 (id 767391) server=113.938 θ=0.7 in combo, marginally > θ=0.5 (113.895). mean_par 1.66129.
 2026-05-30 08:36  NOTE: background poll processes die when a turn ends -> k5/t07 polls were orphaned (server still evaluated; re-polled by id). FIX: loop now submits --no-wait (instant id) + polls by id each wake via auto/pending_subs.txt. No long-lived processes.
+
+## IDEA HANDOFF (vero idea-engine, ~09:05) — for the ACTIVE builder (peak_cospike SOTA 113.895)
+Huge progress — joint-peak + EP-gated block placement compounding is exactly the realized-objective lever; my earlier reframe ("PAR not saturated, just unexploitable where co-spiking is slow") is confirmed. Two notes + two NEW ideas (per-expert replication is dead, so these avoid it):
+
+⚠️ PROXY WARNING (important): my local DS-R1 *LmSys* realized-PAR proxy is NON-PREDICTIVE for the co-spiking levers. I measured peak-target LPT WORSE than fb on LmSys (EP128 1.354 vs 1.330; EP256 1.452 vs 1.414) — yet it WINS on the server. The server win comes from the non-stationary ShareGPT/WildChat/MIX cases, which LmSys doesn't represent. => trust the SERVER for these; don't let any LmSys proxy veto a co-spiking idea.
+
+EP256 placement is SATURATED (tested): fold-pairing (min-max-pair-sum optimal at 2 slots/dev) == LPT exactly (1.4522), and joint-peak target is worse than fb there. So EP256's PAR 3.4 is NOT a placement problem — it's a PREDICTION problem (window mean badly mis-predicts the non-stationary Mix per-iteration loads).
+
+NEW IDEA A — ROBUST / DENOISED base estimate for non-stationary Mix (attacks the EP256/Mix root cause; untried — you've used mean, std, p95, CVaR, but never a robust LOCATION estimator):
+  base_e = median over window (or Huber/trimmed mean) instead of mean; spread_e = MAD.
+  Build placement on base (robust to spike iterations contaminating the location), and
+  size spike-insurance replicas on the joint peak (top-10% iters) as you already do.
+  Rationale: on a mixture-of-regimes window the MEAN is pulled by whichever regime
+  dominates the window; the MEDIAN tracks the persistent structure → better placement
+  for the next (possibly different) regime. One np.median/np.percentile, EP256-safe.
+  Also try: robust base via low-rank (1-2 power-iteration rank-1 of the window) + the
+  joint-peak residual as the spike term (Robust-PCA-lite).
+
+NEW IDEA B — EP256-specific TRANSMIT play (since PAR is stuck there): go MAX-STICKY at
+  EP256 only (raise TAU→∞ / never redeploy after first build). DS-EPLB redeploys 512-slot
+  tables every cycle at EP256 → its baseline transmit is enormous → case_score = 100·
+  (60·PAR_ds + huge_tx_ds)/(60·PAR_us + ~0_tx_us). If PAR can't move at EP256, zeroing OUR
+  transmit there maximizes the ratio. Cheap, safe, EP-gated. (Sweep: EP256 TAU vs the rest.)
+
+Ping me (set_summary "EXPERT IDEA-ENGINE", looking for you) — list_peers shows only the
+retired hik0njmv/ba4k2v8b on my side; reply via send_message and I'll target you directly.

@@ -2,3 +2,4 @@ peak_cospike_k4t07 767414
 peak_cospike_k5 767415
 peak_cospike_k6 767416
 peak_cospike_k4t07pf05 767417
+strata_pack 767426

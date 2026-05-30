@@ -510,3 +510,42 @@ One np.quantile, EP-gated ≥64. Sent to hik0njmv; offered codes/evt_replicate/.
 **Loop robustness fix:** background poll processes are killed when a turn ends, orphaning results
 (server still evaluates). Switched to `--no-wait` submit (instant id) + poll-by-id each wake via
 `auto/pending_subs.txt`. Next wave: combine the wins — k4+θ0.7, plus k5/k6 (push block resolution).
+
+### Cycle 2 — 2026-05-30 ~09:05 (cadence → 15 min, cron e9dffa52)
+**State:** active peer cracked co-spiking. SOTA = **peak_cospike 113.895** (mean_par 1.663):
+joint-peak placement (LPT on (1−θ)·mean + θ·peak, peak=load over top-10% joint-spike iters,
+θ=0.5) + EP-gated block placement (block ≤EP128, scalar @EP256). Progression
+111.8→112.2(peak_balance)→113.2(cospike_hybrid)→113.9(combo). **My reframe vindicated**
+("PAR not saturated, just unexploitable where co-spiking is slow"). Peer findings to respect:
+per-expert replication tuning is DEAD (my cycle-1 EVT/p95: 093 p95@EP256=112.479 worse);
+the JOINT (peak-iteration) lever is what works; refine overfits; EP256 is the wall.
+
+**Independent tests this cycle (two negatives → redirect):**
+- Fold-pairing (min-max-pair-sum optimal at 2 slots/dev) vs LPT on the joint-peak target:
+  EP256 **identical** (1.4522 = 1.4522); EP128 fold worse (1.366 vs 1.354). → placement is
+  SATURATED at EP256; my fold idea is dead.
+- Joint-peak target is WORSE than fb mean+2·std on *LmSys* (EP128 1.354>1.330; EP256
+  1.452>1.414), yet it WINS on the server → **my LmSys proxy is NON-PREDICTIVE for the
+  co-spiking levers** (server win is from non-stationary ShareGPT/WildChat/Mix). Key meta-lesson:
+  stop trusting local LmSys to rank co-spiking ideas; hand to server.
+
+**Handed off (NOTES "IDEA HANDOFF ~09:05" + msg):**
+- IDEA A — robust/denoised base: build placement on the **median / trimmed-mean** (or
+  rank-1 low-rank) of the window instead of the mean (the mean is contaminated by whichever
+  regime dominates a Mix window; median tracks persistent structure → better next-regime
+  placement), keep joint-peak for spike-insurance replicas. Attacks EP256/Mix PAR 3.4 as a
+  PREDICTION problem (the real root cause), untried (no robust LOCATION estimator tried yet).
+- IDEA B — EP256-only MAX-STICKY (TAU→∞): DS-EPLB transmits enormously at EP256; if our PAR
+  can't move there, zero our transmit to maximize the case ratio. Cheap, EP-gated.
+
+**Channel issue:** active peer not visible in list_peers (only retired hik0njmv/ba4k2v8b,
+last_seen 06:35). Using NOTES.md as primary handoff + summary beacon + fallback msg.
+
+### 9h. PIVOT to novelty-over-tuning (user directive in CLAUDE.md)
+Stopping hyperparam sweeps. New rule: each cycle = a NEW MECHANISM from auto/novel_ideas.md.
+First novel mechanism: **strata_pack** — placement balances LOAD-STRATA (iterations grouped by
+TOTAL load = regime proxy, order-invariant) instead of temporal blocks. Temporal blocks assume
+regimes are contiguous in time; the worst case (DS-R1 Mix) interleaves them, so load-strata should
+capture regimes temporal blocks miss. Combined with joint-peak target, EP-gated. (submitted; server pending)
+Backlog of bold mechanisms queued: ot_sinkhorn, regime_track, scenario_robust, match_ep256,
+spectral_cut, power_d_choices, marg_peak_repl, grouped_place, dro_ambiguity, mixture_deploy.

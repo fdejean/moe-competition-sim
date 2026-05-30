@@ -158,3 +158,14 @@ There can be more than one Claude Code instance running in this repo at once
    - Smaller TAU and shorter WINDOW both HURT (transmit blow-up / drift-chasing).
    - Always EP128-smoke (`auto/proxy_eval.sh`) before submitting; local LmSys
      proxy CANNOT catch EP128/ShareGPT timeouts.
+
+## Research directive (2026-05-30, user) — NOVELTY OVER TUNING
+
+**Do NOT get stuck fine-tuning hyperparameters** (block-k, lambda, TAU, THETA,
+PEAKFRAC sweeps) of an existing architecture. Converging to an optimal hyperparam
+config for one architecture is LOW value. The strong score jumps come from
+**genuinely new MECHANISMS** (e.g. joint-peak placement +0.35, co-spiking block
+placement +1.0), not from sweeps. Every loop cycle should test a **completely new
+idea** drawn from literature / science / finance / OR — bold, divergent, high-ceiling
+— not a parameter variant of the last one. Sweep a winner only briefly to confirm,
+then move on to the next novel mechanism. Target strong jumps, not 0.05 increments.
