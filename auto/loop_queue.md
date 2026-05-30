@@ -65,6 +65,25 @@ Budget = 3× DS-EPLB per case → only finance_band-speed (single build+band) su
   per-layer permutation via cheap spectral/coloring; or model device load as a
   portfolio and solve a 1-pass risk-parity assignment).
 
+## ===== SOTA UPDATE (2026-05-30 ~03:35) =====
+**NEW SOTA: cheap_relabel = 111.751** (beats finance_band 111.264). The lever that
+worked: PAR is saturated (~1.692, every perturbation hurts), but TRANSMIT is
+recoverable PAR-neutrally via an O(n_device) device-relabel + slot-preserve
+(cuts transmit -18.5% at zero PAR cost; the prior O(nd^2) version floored on time).
+Alignment quality is MAXED at ~111.75 (cutting more transmit slightly perturbs PAR
+via redeploy-duration coupling). My variants hold the top server spots.
+
+### Remaining long-shots (low EV — PAR saturated, transmit maxed; pivot freely)
+- [ ] source-side stickiness: PAR-safe stay-bias in LPT so fresh build resembles
+  cur (cut transmit at the source, composes with relabel). PAR-risk — keep tiny.
+- [ ] per-layer adaptive lambda (worst layers get more variance replication). Likely
+  hurts (replication tapped) but untested.
+- [ ] EP-adaptive convex replication (concentrate replicas on hottest ONLY at high EP
+  where the floor bites; fb_convex hurt globally but maybe helps high-EP only).
+- [ ] genuinely new PAR idea TBD — co-spiking is the real residual but unexploitable
+  within the speed budget (per-device too slow, scalar hurts). Need a vectorized
+  co-spiking placement or a fundamentally different angle.
+
 ## Done / results (append as we go)
 - band_refine_transmin (021): server **-1e6** (EP128 timeout). ABANDONED.
 - rep_aware_refine (050): server **-1e6** (EP64 timeout). ABANDONED.
