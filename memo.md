@@ -581,3 +581,18 @@ score ≈ 100·base/(60·par) per case (our transmit is only 1.6–5% of our tim
 DS-R1 {ShareGPT,LmSys,WildChat} 256 (~2.0), Mix 64 (1.94), Qwen3 *_128 (~1.83). "Mix" is
 worst at EVERY EP (3.37/2.48/1.94/1.59) → NON-STATIONARITY is the #1 lever. Cutting Mix-256
 PAR 3.37→2.5 ≈ +1.3 to the mean score. Placement saturated there; robust prediction is the shot.
+
+### 101 median_base — server=113.855 (mean_par 1.66398) ~TIED SOTA (−0.04)
+Robust LOCATION (median base) is ~neutral on the server too. The Mix non-stationarity
+does NOT yield to a better location estimator — either median≈mean on these traces or the
+regimes are genuinely unpredictable from the window. Robust-prediction lane = ~dead.
+
+### 102 joint_peak_replicate — submitted (id pending)
+DECOUPLED replica target: replica COUNTS water-filled on the joint-PEAK load (RTHETA=1.0),
+placement still on blended place_w. Hypothesis: at EP64/128 only half the experts get a 2nd
+copy, so giving it to the joint-spike experts (not high-mean) should split the loads that
+make the realized peak. New structural DOF (replica-target ≠ placement-target). EP256-safe
+(0.14–0.22s). Server pending.
+
+**Meta:** 100 (113.765) & 101 (113.855) both land ~neutral vs the well-tuned SOTA 113.895.
+Architectural variants on the saturated base aren't enough — need bigger mechanism swings.

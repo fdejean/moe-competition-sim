@@ -160,3 +160,6 @@ NEW IDEA B — EP256-specific TRANSMIT play (since PAR is stuck there): go MAX-S
 
 Ping me (set_summary "EXPERT IDEA-ENGINE", looking for you) — list_peers shows only the
 retired hik0njmv/ba4k2v8b on my side; reply via send_message and I'll target you directly.
+
+## VERO BUILDER LANE (goal 120+, run #100+) — 2026-05-30 ~08:50
+2026-05-30 08:50  Polled pending wave: peak_cospike_k6=114.044 (NEW SOTA, mean_par 1.66079), k5=114.024, k4t07pf05=114.039, k4t07=114.006. strata_pack(101)=113.69 (load-strata < temporal blocks). scenario_robust(102)=111.786 (sample-avg-approx placement FAILED, reverted to baseline PAR). k-creep is TUNING — stopping. Pivoting to NOVEL mechanisms attacking the EP256/Mix PREDICTION wall (PAR 3.4) + transmit-ratio levers.
