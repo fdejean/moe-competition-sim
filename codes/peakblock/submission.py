@@ -212,6 +212,12 @@ def rebalance(hotness, n_device, n_red_expert):
 
     use_block = n_device <= BLOCK_MAXDEV
     block_w = _block_means_all(hotness, BLOCKS) if use_block else None
+    if use_block and THETA > 0:
+        # PEAK-AS-BLOCK (novel): append the joint-peak per-expert load as an extra
+        # block column so the greedy balances devices across temporal blocks AND the
+        # co-spike scenario simultaneously -> placement itself becomes spike-aware,
+        # not just the scalar target weight. block_w: (L,E,k) -> (L,E,k+1).
+        block_w = np.concatenate([block_w, peak[:, :, None]], axis=2)
 
     sig = (n_layers, n_experts, n_device, n_exp_per_dev)
     cur = _STATE.get("deploy") if _STATE.get("sig") == sig else None
