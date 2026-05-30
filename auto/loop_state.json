@@ -13,8 +13,7 @@
     "variant": "finance_band_lambda2",
     "score": 111.264,
     "mean_par": 1.692,
-    "transmit": 842299,
-    "note": "REAL server SOTA. band_refine_transmin (020/021) FAILED -1e6 (EP128 timeout in _relabel_to_old). Base new variants on finance_band, NOT band_refine_transmin."
+    "note": "STILL the one to beat. Nothing has beaten it yet. cospike/block_pack/pack_refine/tuning all <= it or floored."
   },
   "submit_budget": {
     "max_submissions_tonight": 1000,
@@ -83,6 +82,15 @@
       "proxy": 109.11,
       "server": -1000000,
       "note": "FAILED: ShareGPT_DS-R1_EP256 timeout. k=8 block-vector inner loop ~2x finance_band -> too slow at EP256 (server tests up to EP256!). Co-spiking idea is good (proxy 109.11) but needs finance_band-speed."
+    },
+    {
+      "nnn": "062",
+      "slug": "cospike_weight",
+      "submission_id": 766557,
+      "ts": "2026-05-30T02:40:00+02:00",
+      "proxy": 108.0,
+      "server": 108.857,
+      "note": "Scalar co-spiking premium HURTS: mean_par 1.717 > finance_band 1.692. Distorts load balance. Co-spiking lane dead within budget (strong version too slow, scalar version hurts)."
     }
   ],
   "timing_calibration": {
