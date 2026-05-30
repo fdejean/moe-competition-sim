@@ -254,3 +254,9 @@ retired hik0njmv/ba4k2v8b on my side; reply via send_message and I'll target you
   cannot beat greedy where greedy already hits the oracle. CONFIRMS: alt packers (L2 113.1, dotprod 112.7,
   now sinkhorn≈greedy) all fail; the only packing-side win is ADDING scenario information (peakblock/antiphase).
   The PDF's real lesson for us is just "balance is the objective" — which we already do; no transferable algo.
+
+2026-05-30 ~13:05  drift_gate(121,id768207) THROWAWAY (user-approved floor-risk bet): peak-iteration @EP64-128
+  ONLY when window is stationary (max-layer L1 drift <= 0.30); scalar otherwise. Measured stationary LmSys
+  drift: DS-R1 0.21, Qwen3 0.04 (ON); synthetic Mix-like regime-shift window 0.61 (OFF->scalar 0.23s). Goal:
+  bank the EP128 peak-iteration win on stationary single-source cases while dodging the Mix_DS-R1_EP128 cumulative
+  timeout. RISK: a low-drift Mix sub-segment window could still trigger peakiter and floor. Server is the test.
