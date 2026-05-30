@@ -182,6 +182,20 @@
       "submission_id": 766676,
       "server": 111.805,
       "note": "*** marginal SOTA 111.805 *** lambda=1.5 at high EP (less variance repl). High-EP scarce slots want LESS repl (opposite of epadapt). Within noise of sticky_relabel."
+    },
+    {
+      "nnn": "076",
+      "slug": "sticky_eplo10",
+      "submission_id": 766683,
+      "server": 111.666,
+      "note": "high-EP lambda=1.0: 111.666. High-EP lambda curve peaks at ~1.5."
+    },
+    {
+      "nnn": "077",
+      "slug": "sticky_eplo00",
+      "submission_id": 766685,
+      "server": 110.453,
+      "note": "high-EP lambda=0.0: 110.453. High-EP lambda curve peaks at ~1.5."
     }
   ],
   "timing_calibration": {
