@@ -231,6 +231,13 @@
       "submission_id": 767177,
       "server": 106.473,
       "note": "NEW folding architecture: WORSE on both (mean_par 1.76>1.69, transmit 978k>842k). Folding packs cruder than greedy LPT AND global-sort reshuffles more (higher transmit). Vectorized speed doesn't buy a PAR/transmit win."
+    },
+    {
+      "nnn": "083",
+      "slug": "epadaptive_algo",
+      "submission_id": null,
+      "server": null,
+      "note": "NEW: EP-adaptive ALGORITHM dispatch \u2014 co-spiking block-balanced placement at EP<=64 (affordable, proxy DS-R1 1.235->1.210), fast finance_band at EP>=128, + O(nd) relabel. Tests co-spiking on server safely (block_pack floored). Pending."
     }
   ],
   "timing_calibration": {

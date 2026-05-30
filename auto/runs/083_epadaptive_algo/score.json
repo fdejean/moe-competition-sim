@@ -1,0 +1,34 @@
+{
+  "run": "083_epadaptive_algo",
+  "started_at": 1780117866.174558,
+  "cases": [
+    {
+      "model": "Qwen3",
+      "dataset": "LmSys",
+      "ep": 32,
+      "mean_par": 1.2837414701786776,
+      "transmit_amount": 14936,
+      "transmission_time_seconds": 1.4617429060266667,
+      "total_time_seconds": 78.48623111674732,
+      "runtime_seconds": 2.904741048812866,
+      "score": 105.70984241567493,
+      "error": null
+    },
+    {
+      "model": "DS-R1",
+      "dataset": "LmSys",
+      "ep": 32,
+      "mean_par": 1.2103954490882625,
+      "transmit_amount": 16643,
+      "transmission_time_seconds": 1.6288020343466667,
+      "total_time_seconds": 74.2525289796424,
+      "runtime_seconds": 2.323610305786133,
+      "score": 112.50840225043711,
+      "error": null
+    }
+  ],
+  "mean_score": 109.10912233305602,
+  "error": null,
+  "finished_at": 1780117872.5863008,
+  "elapsed_seconds": 6.411742925643921
+}
