@@ -1,1 +1,6 @@
 drift_gate 768207
+mixture_deploy 768253
+spectral_cut 768255
+grouped_place 768256
+power_d_choices 768257
+dro_ambiguity 768258

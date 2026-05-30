@@ -28,3 +28,8 @@ uniquely-named `<name>.py` copy). The file inside the zip MUST be `submission.py
 - 768157 · **peakiter_safe** · _pending_ · run auto/runs/119_peakiter_safe
 - 768172 · **antiphase_block** · _pending_ · run auto/runs/120_antiphase_block
 - 768207 · **drift_gate** · _pending_ · run auto/runs/121_drift_gate
+- 768253 · **mixture_deploy** · _pending_ · run auto/runs/122_mixture_deploy
+- 768255 · **spectral_cut** · _pending_ · run auto/runs/123_spectral_cut
+- 768256 · **grouped_place** · _pending_ · run auto/runs/124_grouped_place
+- 768257 · **power_d_choices** · _pending_ · run auto/runs/125_power_d_choices
+- 768258 · **dro_ambiguity** · _pending_ · run auto/runs/126_dro_ambiguity

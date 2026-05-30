@@ -1,4 +1,18 @@
-"""drift_router — peakblock SOTA + DRIFT-ADAPTIVE recency target (new mechanism).
+"""grouped_place — drift_router SOTA + NODE-AWARE HIERARCHICAL placement at EP256.
+
+NEW MECHANISM (DS-V3 grouped routing / hardware topology): at high EP the devices are
+physically grouped into nodes (GROUP=8 devices/node). We place hierarchically: level 1
+greedily assigns expert-slots to NODES balancing node total load (node capacity =
+GROUP*exp_per_dev); level 2 assigns each node's slots to its GROUP devices balancing
+device load + duplicate penalty. This respects the comms topology (intra-node traffic
+is cheap, cross-node expensive) and balances at the granularity the hardware actually
+uses, instead of a flat global greedy that ignores node structure. Scoped to
+EP>BLOCK_MAXDEV (EP256) where node grouping is most pronounced and plain greedy LPT is
+the incumbent; EP<=128 is byte-identical to the SOTA so wins cannot regress. Feasible
+by construction (total slots = nodes*node_cap) -> no floor. Drift target, block/peak
+columns at EP<=128, sticky, no-trade band inherited unchanged.
+
+--- original drift_router note ---
 
 WHY (experiments/ceiling_decomp.py): with perfect foresight the SAME packer hits
 PAR ~1.0-1.4 at every EP, so packing is solved. On STATIONARY data the trailing
@@ -142,6 +156,53 @@ def _build_scalar(weight, n_device, n_exp_per_dev, prev=None):
     return deploy
 
 
+GROUP = int(os.environ.get("FB_GROUP", "8"))
+
+
+def _build_grouped(weight, n_device, n_exp_per_dev, prev=None, group=None):
+    """Two-level node-aware placement. Level 1: slots -> nodes (balance node load).
+    Level 2: each node's slots -> its `group` devices (balance device load + dup
+    penalty). Falls back to flat scalar greedy if n_device not divisible by group."""
+    group = GROUP if group is None else group
+    n_experts = weight.shape[0]
+    if group <= 1 or n_device % group != 0 or n_device // group < 2:
+        return _build_scalar(weight, n_device, n_exp_per_dev, prev)
+    n_nodes = n_device // group
+    node_cap = group * n_exp_per_dev
+    replicas, slot_expert, slot_weight, order = _replicas_and_order(
+        weight, n_device, n_exp_per_dev)
+    # Level 1: assign each slot to a node, balancing node load.
+    node_of = np.empty(slot_weight.shape[0], dtype=np.int64)
+    node_load = np.zeros(n_nodes)
+    node_count = np.zeros(n_nodes, dtype=np.int64)
+    for idx in order:
+        score = node_load.copy()
+        score[node_count >= node_cap] = np.inf
+        nd = int(np.argmin(score))
+        node_of[idx] = nd
+        node_load[nd] += slot_weight[idx]
+        node_count[nd] += 1
+    # Level 2: within each node, assign its slots to its `group` devices.
+    deploy = np.full((n_device, n_exp_per_dev), -1, dtype=np.int64)
+    big = float(slot_weight.sum()) + 1.0
+    for nd in range(n_nodes):
+        base = nd * group
+        dev_load = np.zeros(group)
+        dev_count = np.zeros(group, dtype=np.int64)
+        present = np.zeros((group, n_experts), dtype=bool)
+        sl = [i for i in order if node_of[i] == nd]
+        for idx in sl:
+            e = int(slot_expert[idx])
+            score = dev_load + np.where(present[:, e], big, 0.0)
+            score[dev_count >= n_exp_per_dev] = np.inf
+            g = int(np.argmin(score))
+            deploy[base + g, int(dev_count[g])] = e
+            dev_load[g] += slot_weight[idx]
+            dev_count[g] += 1
+            present[g, e] = True
+    return deploy
+
+
 def _build_block(weight, block_w, n_device, n_exp_per_dev, prev=None):
     n_experts = weight.shape[0]
     replicas, slot_expert, slot_weight, order = _replicas_and_order(
@@ -253,7 +314,8 @@ def rebalance(hotness, n_device, n_red_expert):
         if use_block:
             candidate[l] = _build_block(risk[l], block_w[l], n_device, n_exp_per_dev, prev)
         else:
-            candidate[l] = _build_scalar(risk[l], n_device, n_exp_per_dev, prev)
+            # EP>BLOCK_MAXDEV (EP256): node-aware hierarchical placement.
+            candidate[l] = _build_grouped(risk[l], n_device, n_exp_per_dev, prev)
 
     if cur is None:
         init = _init_deploy_table(n_device, n_experts, n_exp_per_dev)

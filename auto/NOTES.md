@@ -260,3 +260,15 @@ retired hik0njmv/ba4k2v8b on my side; reply via send_message and I'll target you
   drift: DS-R1 0.21, Qwen3 0.04 (ON); synthetic Mix-like regime-shift window 0.61 (OFF->scalar 0.23s). Goal:
   bank the EP128 peak-iteration win on stationary single-source cases while dodging the Mix_DS-R1_EP128 cumulative
   timeout. RISK: a low-drift Mix sub-segment window could still trigger peakiter and floor. Server is the test.
+
+2026-05-30 ~13:05  WAVE of 5 NEW MECHANISMS submitted (runs 122-126), all passed EP32/64/128/256
+  proxy+floor gate (no error, no -1e6 floor, valid shape, within SOTA timing envelope). Base=drift_router 114.181.
+  - 122 mixture_deploy (id768253): 2 data-driven REGIME-CENTROID columns (2-means along top PC, 6 power iters on
+    96-row subsample) appended to block cols. Targets Mix forecasting (mixture of regimes). BLOCKS=4 -> 7 cols.
+  - 123 spectral_cut (id768255): SPECTRAL PHASE column = per-expert coord on co-spiking principal axis (power iter),
+    shifted +/rescaled to mean-mass; greedy spreads correlated, pairs anti-correlated. BLOCKS=5 -> 7 cols.
+  - 124 grouped_place (id768256): NODE-AWARE hierarchical placement @EP256 (GROUP=8): L1 slots->nodes, L2 nodes->devs.
+  - 125 power_d_choices (id768257): POWER-OF-D-CHOICES (d=2) randomized placement @EP256 (Mitzenmacher).
+  - 126 dro_ambiguity (id768258): robust replication sizing — copies sized by mean+3*std (worst-case ambiguity),
+    decoupled from placement risk (mean+2*std). All EP.
+  Plus 120 antiphase_block (id768172) earlier = VALLEY column (anti-phase/cov lever). [!] sinkhorn_pack = dead end (degenerates to greedy).

@@ -1,4 +1,16 @@
-"""drift_router — peakblock SOTA + DRIFT-ADAPTIVE recency target (new mechanism).
+"""power_d_choices — drift_router SOTA + POWER-OF-D-CHOICES placement at EP256.
+
+NEW MECHANISM (Mitzenmacher's "power of two choices"): instead of one deterministic
+greedy LPT pass that can lock into pathological orderings, each slot (in descending
+weight) samples D=2 candidate devices at random and goes to the less-loaded one (with
+room, duplicate-penalized). Two random choices give near-optimal balance with O(1)
+work per slot and break the structural ties/pathologies a single greedy can fall into.
+Scoped to EP>BLOCK_MAXDEV (EP256), where each device has ~2 slots and plain greedy LPT
+is the incumbent — a clean A/B; EP<=128 is byte-identical to the SOTA. Deterministic
+RNG seed -> reproducible. Feasible by construction -> no floor. Everything else
+(drift target, block/peak at EP<=128, sticky, no-trade band) inherited unchanged.
+
+--- original drift_router note ---
 
 WHY (experiments/ceiling_decomp.py): with perfect foresight the SAME packer hits
 PAR ~1.0-1.4 at every EP, so packing is solved. On STATIONARY data the trailing
@@ -142,6 +154,39 @@ def _build_scalar(weight, n_device, n_exp_per_dev, prev=None):
     return deploy
 
 
+DCHOICE = int(os.environ.get("FB_DCHOICE", "2"))
+
+
+def _build_powerd(weight, n_device, n_exp_per_dev, prev=None, d=None):
+    """Power-of-d-choices: each slot picks the least-loaded of d random devices with
+    room (duplicate-penalized). Deterministic seed for reproducibility."""
+    d = DCHOICE if d is None else d
+    n_experts = weight.shape[0]
+    replicas, slot_expert, slot_weight, order = _replicas_and_order(
+        weight, n_device, n_exp_per_dev)
+    deploy = np.full((n_device, n_exp_per_dev), -1, dtype=np.int64)
+    dev_load = np.zeros(n_device)
+    dev_count = np.zeros(n_device, dtype=np.int64)
+    present = np.zeros((n_device, n_experts), dtype=bool)
+    big = float(slot_weight.sum()) + 1.0
+    rng = np.random.default_rng(1234 + n_device)
+    avail = list(range(n_device))                 # devices with remaining room
+    for idx in order:
+        e = int(slot_expert[idx])
+        k = min(d, len(avail))
+        cands = rng.choice(np.asarray(avail), size=k, replace=False) if k > 1 \
+            else np.asarray(avail[:1])
+        score = dev_load[cands] + np.where(present[cands, e], big, 0.0)
+        c = int(cands[int(np.argmin(score))])
+        deploy[c, int(dev_count[c])] = e
+        dev_load[c] += slot_weight[idx]
+        dev_count[c] += 1
+        present[c, e] = True
+        if dev_count[c] >= n_exp_per_dev:
+            avail.remove(c)
+    return deploy
+
+
 def _build_block(weight, block_w, n_device, n_exp_per_dev, prev=None):
     n_experts = weight.shape[0]
     replicas, slot_expert, slot_weight, order = _replicas_and_order(
@@ -253,7 +298,8 @@ def rebalance(hotness, n_device, n_red_expert):
         if use_block:
             candidate[l] = _build_block(risk[l], block_w[l], n_device, n_exp_per_dev, prev)
         else:
-            candidate[l] = _build_scalar(risk[l], n_device, n_exp_per_dev, prev)
+            # EP>BLOCK_MAXDEV (EP256): power-of-d-choices randomized placement.
+            candidate[l] = _build_powerd(risk[l], n_device, n_exp_per_dev, prev)
 
     if cur is None:
         init = _init_deploy_table(n_device, n_experts, n_exp_per_dev)
