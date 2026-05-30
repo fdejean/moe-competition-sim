@@ -306,3 +306,19 @@ retired hik0njmv/ba4k2v8b on my side; reply via send_message and I'll target you
 2026-05-30 ~13:32  dro_cvar(127,id768314)=114.253 < dro_ambiguity 114.32 (mean_par 1.65622). Distribution-free CVaR
   replication does NOT beat Gaussian mean+3std. The std-based robust sizing is already near-optimal on this axis.
   SOTA STAYS dro_ambiguity 114.32. Replication-sizing axis looks tapped at the std+kappa formulation.
+
+2026-05-30 ~14:20  *** BUDGET RAISED 3x->6x by organizer. NEW SOTA = cov_iter_dro 114.76 ***
+  Server results this wave (base cov_match 114.35):
+  - cov_iter 114.61 (+0.26): 6x budget lets the REAL min-realized-peak EP256 matching run (vs cheap phase-fold). WIN.
+  - cov_dro 114.39 (+0.04): cov_match + robust replication (mean+3std). small WIN, orthogonal.
+  - cov_iter_dro 114.76 (+0.15 on cov_iter): STACK both winners (EP256 min-peak matching + robust replication). *** SOTA ***
+  - peakiter6 114.49 (< cov_iter): full-res peak-greedy @EP<=128 LOSES to block. Multi-scenario block columns
+    (temporal+peak) beat a single realized-peak objective. [!] dead for EP128.
+  - block_refine 114.24 (< cov_iter): iterative in-sample peak local-search @EP64/128 OVERFITS the window's peaks
+    (out-of-sample worse). Confirms handoff warning. [!] iterative peak-refine dead even at 6x.
+  LESSON: EP128 must stay BLOCK placement (richer/iterative EP128 = overfit or loses column info). The levers that
+  GENERALIZE are (1) EP256 anti-correlation MATCHING (2-slot regime, structural) and (2) ROBUST REPLICATION sizing.
+  Both are in cov_iter_dro. Note: EP256 in-sample-peak matching GENERALIZES (won) while EP128 in-sample refine does
+  NOT — anti-correlation structure is stable across windows; fine EP128 swaps chase noise.
+  NEXT IDEAS (positive-expectation, build on cov_iter_dro): robustify the EP256 matching itself (match on a CVaR/
+  denoised series instead of raw subsample, to generalize the pairing even better); optimal min-max matching vs greedy fold.
