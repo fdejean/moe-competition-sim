@@ -203,6 +203,34 @@
       "submission_id": 766932,
       "server": 111.808,
       "note": "cross-call shrinkage. 111.808 = marginal high but WITHIN NOISE of sticky_eplo 111.805 (mean_par 1.69631 vs 1.69633). The new class is ~NEUTRAL (persistence holds; single window already good). Not sweeping (would be noise-tuning)."
+    },
+    {
+      "nnn": "079",
+      "slug": "sticky_tau010",
+      "submission_id": 767164,
+      "server": 111.24,
+      "note": "lower TAU HURTS even with relabel (just costs transmit; placement not staleness-limited). TAU=0.2 optimal."
+    },
+    {
+      "nnn": "080",
+      "slug": "sticky_tau005",
+      "submission_id": 767165,
+      "server": 109.842,
+      "note": "lower TAU HURTS even with relabel (just costs transmit; placement not staleness-limited). TAU=0.2 optimal."
+    },
+    {
+      "nnn": "081",
+      "slug": "sticky_tau002",
+      "submission_id": 767167,
+      "server": 108.679,
+      "note": "lower TAU HURTS even with relabel (just costs transmit; placement not staleness-limited). TAU=0.2 optimal."
+    },
+    {
+      "nnn": "082",
+      "slug": "fold_pack",
+      "submission_id": 767177,
+      "server": null,
+      "note": "ENTIRELY NEW architecture: largest-remainder proportional replicas + vectorized boustrophedon FOLDING placement (no water-fill/greedy-LPT/relabel). 0.03s/call (5x faster than finance_band). Proxy 103 (folding packs cruder than LPT)."
     }
   ],
   "timing_calibration": {
