@@ -10,11 +10,10 @@
     "note": "SOTA at loop start. Beat THIS proxy number to justify a submission."
   },
   "best_server": {
-    "variant": "peak_cospike_k6",
+    "variant": "peak_cospike_k6(tuning) / peak_cospike_k4(mechanism)",
     "score": 114.044,
-    "mean_par": 1.66079,
-    "id": 767416,
-    "note": "k-sweep peak: k4=113.995,k5=114.024,k6=114.044. k-creep is TUNING (stopped per directive). Pivoted to novel mechanisms (robust median location, EP256 max-sticky transmit)."
+    "mechanism_sota": 113.995,
+    "note": "k6=114.044 is best raw server but a forbidden k-sweep; the MECHANISM SOTA is peak_cospike (joint-peak+block). Novel mechanisms strata/scenario/spike all < combo. Pivoting to orthogonal levers (redeploy policy etc)."
   },
   "submit_budget": {
     "max_submissions_tonight": 1000,
@@ -342,7 +341,7 @@
   },
   "summary": {
     "submissions": 40,
-    "sota": "peak_cospike_k4 113.995",
+    "sota": "114.044 (peak_cospike_k6, tuning) / mechanism 113.995",
     "prior_best": "finance_band 111.264",
     "gain": "+1.258",
     "key_lever": "EP-adaptive co-spiking (block-balance placement @EP<=128, fast @EP256)"

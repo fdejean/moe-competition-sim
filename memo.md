@@ -596,3 +596,7 @@ make the realized peak. New structural DOF (replica-target ≠ placement-target)
 
 **Meta:** 100 (113.765) & 101 (113.855) both land ~neutral vs the well-tuned SOTA 113.895.
 Architectural variants on the saturated base aren't enough — need bigger mechanism swings.
+
+### 9j. Round results + pivot to orthogonal levers
+Sweeps k4t07/k5/k6/k4t07pf05 = 114.006/114.024/114.044/114.039 (FORBIDDEN tuning; best raw 114.044, not chasing). Novel mechanisms this round all LOST to the combo: strata_pack 113.69 (load-strata<temporal blocks), scenario_robust 111.786 (worst-iter min-max too conservative), spike_replicate 112.91 (spike-max replication overshoots). LEARNING: placement-column family is converging (temporal blocks win); replication tweaks overshoot. PIVOT to orthogonal levers.
+- regime_track (095): NEW LEVER = redeploy POLICY. Adds a distribution-DRIFT trigger (cosine distance of place_w from deployed-for vector > 0.12) on top of the PAR-gain band, so non-stationary Mix layers re-track instead of holding stale. Placement unchanged. (submitted)
