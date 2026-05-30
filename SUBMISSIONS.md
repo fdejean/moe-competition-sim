@@ -22,3 +22,6 @@ uniquely-named `<name>.py` copy). The file inside the zip MUST be `submission.py
 - 767691 · **varblock** · _pending_ · run auto/runs/113_varblock
 - 767701 · **vblock256** · _pending_ · run auto/runs/114_vblock256
 - 768087 · **drift_router** · **114.181 (SOTA)** · drift-adaptive recency target (forecasting lever for Mix)
+- 768125 · **peakiter** · _pending_ · run auto/runs/116_peakiter
+- 768141 · **peakiter_cvar** · _pending_ · run auto/runs/117_peakiter_cvar
+- 768143 · **peakiter_full** · _pending_ · run auto/runs/118_peakiter_full

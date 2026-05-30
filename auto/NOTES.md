@@ -207,3 +207,12 @@ retired hik0njmv/ba4k2v8b on my side; reply via send_message and I'll target you
   proxies (gradual/step/periodic) showed it neutral-to-negative -> SERVER IS THE ORACLE, vindicated.
   vblock256(EP256 block, id767701)=114.099 < peakblock -> EP256 block placement confirmed DEAD on server too.
   NOT tuning GAMMA (forbidden). NEXT real lever: covariance-aware EP256 pairing (anti-correlated experts share a device).
+
+2026-05-30 ~12:42  *** BUDGET FINDING: real per-call budget = 3x DS-EPLB wall time = DS-EPLB itself is 1.2s@EP128 / 2.4s@EP256 (measured), so budget ~3.6s/7s, we used 0.2s -> 15-35x HEADROOM. Prior "0.15s or floor" lore was WRONG (confused a python O(n^2) loop timeout w/ compute budget). ***
+  NEW LEVER peakiter(116,id768125): place by minimizing each device PEAK summed load over the subsampled
+  window (S=128) at EP>=64 -> TRUE co-spiking placement at full temporal resolution (subsumes coarse blocks
+  AND covariance-pairing). FIRST method to move EP256 PAR: in-sample LmSys scalar 1.357->1.310 @EP256,
+  1.289->1.214 @EP128. Build 0.3-0.8s << budget. Swap-refine on top = negligible (+0.000..0.003; greedy already
+  locally optimal, EP256 2-slots nothing to swap). Variants: peakiter_cvar(117,id768141, robust top-5% peak vs
+  single max, EP256 1st-call 3.5s=1.5x DS still safe, in-sample 1.3064) + peakiter_full(118,id768143, peak-iter
+  at ALL EP incl 32). All EP256-smoke clean, correct (no dup experts). Server pending.
