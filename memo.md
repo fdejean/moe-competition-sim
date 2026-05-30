@@ -600,3 +600,22 @@ Architectural variants on the saturated base aren't enough — need bigger mecha
 ### 9j. Round results + pivot to orthogonal levers
 Sweeps k4t07/k5/k6/k4t07pf05 = 114.006/114.024/114.044/114.039 (FORBIDDEN tuning; best raw 114.044, not chasing). Novel mechanisms this round all LOST to the combo: strata_pack 113.69 (load-strata<temporal blocks), scenario_robust 111.786 (worst-iter min-max too conservative), spike_replicate 112.91 (spike-max replication overshoots). LEARNING: placement-column family is converging (temporal blocks win); replication tweaks overshoot. PIVOT to orthogonal levers.
 - regime_track (095): NEW LEVER = redeploy POLICY. Adds a distribution-DRIFT trigger (cosine distance of place_w from deployed-for vector > 0.12) on top of the PAR-gain band, so non-stationary Mix layers re-track instead of holding stale. Placement unchanged. (submitted)
+
+### 102 joint_peak_replicate — server=113.419 (mean_par 1.66684) HURT (−0.48)
+Pure joint-peak replication (RTHETA=1.0) over-concentrates copies on spike experts →
+starves others → worse, same failure mode as per-expert p95. Replication target should
+stay moderate. Decoupled-replication lane = dead at the extreme.
+
+### ADAPTIVE-BAND lane (the validated big swing)
+Diagnostic: on DS-R1 LmSys EP128/256 we BEAT DS-EPLB (par 1.56/2.01 vs its 1.69/2.12,
+case scores 117.6/115.4) — so holding is fine on stationary traces. The mean (113.9) is
+dragged by the non-stationary MIX cases. Synthetic 3-regime-shift test: HOLD par=2.33 vs
+ADAPT(redeploy each window) par=1.77 → **+0.566 PAR available from adapting** under drift.
+Caveat: DS-R1 LmSys first/second-half "drift" = 0.226 (mostly NOISE, not regime) → a hard
+drift threshold over-triggers.
+- 103 drift_adapt (DRIFT_THRESH=0.12): MIS-CALIBRATED (LmSys drift 0.226 > 0.12 → triggers
+  everywhere → transmit blowup expected). Submitted as a data point; superseded by 104.
+- 104 recent_band: NOISE-ROBUST adaptive band — gate redeploy on whether `cur` is stale on
+  the RECENT (2nd-half) window, not a drift threshold. Regime shift → cur scores badly on
+  recent → redeploy; noise → hold. Holds on stationary EP32/64 (validated), redeploys
+  EP128/256. EP256-safe (0.16–0.26s). Submitted. *Best remaining big-swing bet.*
