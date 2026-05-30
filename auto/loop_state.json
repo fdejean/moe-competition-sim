@@ -133,6 +133,14 @@
       "ts": "2026-05-30T03:25:00+02:00",
       "server": 111.751,
       "note": "*** BEATS finance_band! 111.751 vs 111.264. PAR-neutral (1.6929) + transmit -18.5% (686k vs 842k) via O(n_device) heaviest-expert device-align + slot-preserve. EP256-safe. NEW SOTA. ***"
+    },
+    {
+      "nnn": "069",
+      "slug": "cheap_relabel_v2",
+      "submission_id": 766601,
+      "ts": "2026-05-30T03:35:00+02:00",
+      "server": 111.746,
+      "note": "exact-set+heaviest align. transmit 680k (< v1 686k) but mean_par 1.6937 (> v1 1.6929) -> 111.746 ~= v1 111.751. Relabel timing couples to PAR; alignment maxed at ~111.75. cheap_relabel(v1) stays SOTA."
     }
   ],
   "timing_calibration": {
