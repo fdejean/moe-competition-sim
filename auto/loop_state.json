@@ -302,6 +302,13 @@
       "submission_id": 767254,
       "server": 111.845,
       "note": "stay-bias CONFLICTS with co-spiking (mean_par 1.702): stay pulls experts back to old device, undoing the co-spiking spread. Relabel (PAR-neutral) is fine; stay-bias (placement-changing) is not. Drop stay for co-spiking variants."
+    },
+    {
+      "nnn": "093",
+      "slug": "epadaptive_p95ep256",
+      "submission_id": 767275,
+      "server": null,
+      "note": "SOTA base (co-spiking<=EP128 k4) + p95 replication ONLY at EP256 (isolate E2 replication lever on the 2-slot cases)."
     }
   ],
   "timing_calibration": {
