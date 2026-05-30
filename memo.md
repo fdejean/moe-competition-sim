@@ -403,3 +403,14 @@ PAR frontier.
 
 **Logging protocol (per user instruction): every change/submission/result is appended here AND to
 auto/NOTES.md + auto/loop_state.json, with rationale + proxy + server + takeaway, before moving on.**
+
+### 9e. *** BREAKTHROUGH: peak_balance = 112.159 (NEW SOTA, +0.35 over 111.808) ***
+The robust-minimax / joint-peak placement WORKS and breaks the peer's "converged"
+111.8 ceiling. Mechanism recap: per layer, pick the top-10% iterations by TOTAL load
+(the actual co-spiking spikes), and place/replicate to balance each expert's mean
+load DURING those peak iterations (blended 50/50 with the window mean). Still a single
+scalar LPT (254ms, EP256-safe). Why it beat the peer's failed tail attempts: theirs
+were MARGINAL (each expert's own p95 ~ mean+λstd); this selects the JOINT peak
+iterations (which experts are hot together) — that's the co-spiking structure in a
+scalar weight. Next: THETA/PEAKFRAC sweep + combine joint-peak weight WITH the EP-gated
+block placement (cospike_hybrid) for compounding.

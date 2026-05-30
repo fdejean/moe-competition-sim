@@ -246,6 +246,13 @@
       "submission_id": 767219,
       "server": null,
       "note": "epadaptive (co-spiking @EP<=64) + p95 replication @EP>=128 (peer E3 lever, pure p95 not max(p95,gauss)). Attacks both ends. Pending."
+    },
+    {
+      "nnn": "085",
+      "slug": "epadaptive_ep128",
+      "submission_id": 767221,
+      "server": null,
+      "note": "co-spiking through EP128 (block_pack proved EP128 server-safe; only EP256 floored). Captures EP128 cases (PAR 1.6-2.6, big headroom). Fast+relabel only at EP256. Pending."
     }
   ],
   "timing_calibration": {
