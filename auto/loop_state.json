@@ -30,7 +30,8 @@
     {"nnn": "051", "slug": "fb_tau005_l2", "submission_id": 766506, "ts": "2026-05-30T02:00:00+02:00", "server": null, "note": "finance_band TAU=0.05 (redeploy aggressively, lower PAR, transmit~free). finance_band-speed."},
     {"nnn": "052", "slug": "fb_tau01_l2", "submission_id": 766507, "ts": "2026-05-30T02:00:00+02:00", "server": null, "note": "finance_band TAU=0.1."},
     {"nnn": "053", "slug": "fb_window512_l2", "submission_id": 766508, "ts": "2026-05-30T02:00:00+02:00", "server": null, "note": "finance_band trailing WINDOW=512 (track ShareGPT drift)."},
-    {"nnn": "054", "slug": "fb_lambda25", "submission_id": 766509, "ts": "2026-05-30T02:00:00+02:00", "server": null, "note": "finance_band LAMBDA=2.5 (more variance replication)."}
+    {"nnn": "054", "slug": "fb_lambda25", "submission_id": 766509, "ts": "2026-05-30T02:00:00+02:00", "server": 111.115, "note": "LAMBDA=2.5 ~= finance_band. Replication tuning tapped out."},
+    {"nnn": "056", "slug": "block_pack", "submission_id": 766542, "ts": "2026-05-30T02:25:00+02:00", "proxy": 109.11, "server": null, "note": "CO-SPIKING block balancing (k=8). Best proxy yet (109.11); DS-R1 PAR 1.235->1.210 at same transmit, EP128-safe 0.19s/call. The promising lane."}
   ],
   "timing_calibration": {
     "ds_eplb_baseline_per_call_local_s": {"Qwen3_EP128": 0.98, "DSR1_EP128": 1.13, "Qwen3_EP32": 0.28},

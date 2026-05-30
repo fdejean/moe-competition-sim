@@ -45,5 +45,31 @@ Status legend: `[ ]` pending · `[~]` in progress · `[x]` done (proxy recorded)
 - [ ] **combo_best**: best Tier-1 packer + best Tier-2 replication, tuned.
 - [ ] **sweep_best**: λ/TAU/window sweep on the new best architecture (cheap, low ceiling).
 
+## ===== STRATEGIC PIVOT (2026-05-30 ~02:15, server-data-driven) =====
+Server truth: realized PAR≈1.69 but mean-load PAR≈1.05 (floor 1.0). The gap is
+**CO-SPIKING** (per-iteration variance), NOT mean packing or replication budget.
+Budget = 3× DS-EPLB per case → only finance_band-speed (single build+band) survives.
+=> ABANDON: all iterative refine/relabel (−1e6), all replication-weight tuning
+   (cvar/convex/λ — tapped out, λ2 is peak), all band/window tuning (smaller TAU
+   explodes transmit; shorter window worsens PAR). DO NOT REPEAT THESE.
+=> NEW FOCUS: co-spiking-aware placement in ONE finance_band-speed pass.
+
+### Co-spiking lane (pending)
+- [~] **block_pack** (k=8): balance each device's load across k temporal blocks at
+  once (multi-factor temporal diversification) in one greedy pass. 0.13-0.19s/call.
+- [ ] **block_pack k=16 / k=32**: finer temporal resolution (if EP128 timing allows).
+- [ ] **spike_iter_pack**: balance device load across the top-S spikiest iterations
+  of the window (the ones that actually set PAR), not uniform blocks.
+- [ ] **antic orr-lite**: cheap anti-correlation pairing of experts onto devices.
+- [ ] If co-spiking lane stalls on server: PIVOT to a crazy new idea (e.g. learn a
+  per-layer permutation via cheap spectral/coloring; or model device load as a
+  portfolio and solve a 1-pass risk-parity assignment).
+
 ## Done / results (append as we go)
-- band_refine_transmin (SOTA at start): proxy 108.557; submitting to server first.
+- band_refine_transmin (021): server **-1e6** (EP128 timeout). ABANDONED.
+- rep_aware_refine (050): server **-1e6** (EP64 timeout). ABANDONED.
+- fb_tau005/tau01/window512/lambda25 (051-054): server 106.6/109.3/105.3/111.1 — all
+  <= finance_band 111.26. Cheap tuning TAPPED OUT.
+- pack_refine_fast (peer 061): server **109.84** (PASSED but < finance_band; swap
+  refine barely moves realized PAR and costs transmit). Mean-packing is NOT the lever.
+- **finance_band λ2 = 111.26 remains the server SOTA to beat.**
