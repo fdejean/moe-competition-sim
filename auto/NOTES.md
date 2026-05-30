@@ -244,3 +244,13 @@ retired hik0njmv/ba4k2v8b on my side; reply via send_message and I'll target you
   *** STANDING SOTA = drift_router 114.181 (the real session win: scalar-speed drift-adaptive recency target). ***
   Placement is fully maxed (block/peak too slow; scalar is the tight-budget ceiling). Remaining lever = scalar-
   speed forecasting (drift recency already +0.049; further gains marginal). EP256 = structural wall (2 slots).
+
+2026-05-30 ~12:55  [!] sinkhorn_pack (from moe_literature.pdf §3.3, Expert Choice paper) — NOT SUBMITTED, dead end.
+  The paper's load-balance-by-construction is entropy-regularized assignment via Sinkhorn/Dykstra projections,
+  BUT it targets equal CARDINALITY (fixed token-bucket size k) — the easy case. Our problem is equal LOAD
+  (weighted min-max device packing). With homogeneous devices and no slot×device cost, the Sinkhorn potential
+  has only a device term -> every slot gets an IDENTICAL device preference -> it collapses to greedy LPT (no
+  extra signal). Consistent with the ceiling analysis (oracle ≈ greedy: packing is SOLVED). A global balancer
+  cannot beat greedy where greedy already hits the oracle. CONFIRMS: alt packers (L2 113.1, dotprod 112.7,
+  now sinkhorn≈greedy) all fail; the only packing-side win is ADDING scenario information (peakblock/antiphase).
+  The PDF's real lesson for us is just "balance is the objective" — which we already do; no transferable algo.
