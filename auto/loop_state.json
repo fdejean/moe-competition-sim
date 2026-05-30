@@ -314,8 +314,15 @@
       "nnn": "094",
       "slug": "epadaptive_k4_lamhi",
       "submission_id": 767284,
+      "server": 112.474,
+      "note": "high-EP lambda=1.5: PAR 1.6808 (hair lower) but composite slightly worse (transmit). ~tied, drop. lambda=2 stays."
+    },
+    {
+      "nnn": "095",
+      "slug": "epadaptive_refine",
+      "submission_id": null,
       "server": null,
-      "note": "k4 SOTA base + high-EP lambda=1.5 (eplo finding) at n_device>=128"
+      "note": "co-spiking k4 + fixed-30-pass VECTORIZED block-swap refine @EP<=128 (EP128 0.28s, under budget). Tests if refining the co-spiking placement lowers realized PAR further."
     }
   ],
   "timing_calibration": {
