@@ -200,3 +200,11 @@ Hyperparameters get ONE sensible default and are left alone.
   = 3× DS-EPLB; iterative refine/relabel-O(nd²) floor to −1e6). Always EP256 smoke-test
   before submit.
 - LOG every submission + rationale in memo.md (§9). Never sign commits as Claude.
+
+### ⚠️ HARD CONSTRAINT (learned 2026-05-30 ~09:00): Mix_DS-R1_EP128 budget edge
+The "Mix" dataset has a TIGHTER per-call time budget than LmSys. The EP128 block-build
+path (~0.25s) sits right at 3×-DS-EPLB for Mix_DS-R1_EP128 and FLOORS (-1e6) stochastically.
+=> For ANY submission, set FB_BLOCK_MAXDEV=64 (block placement only at EP<=64; scalar at
+EP>=128) UNLESS the EP128 build is verified < ~0.15s. A −1e6 floor wipes the whole run; never
+risk it for a fractional co-spiking gain at EP128. Smoke-test the FIRST call (cur=None, builds
++aligns all layers) at EP128, not just the second call.

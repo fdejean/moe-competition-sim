@@ -619,3 +619,15 @@ drift threshold over-triggers.
   the RECENT (2nd-half) window, not a drift threshold. Regime shift → cur scores badly on
   recent → redeploy; noise → hold. Holds on stationary EP32/64 (validated), redeploys
   EP128/256. EP256-safe (0.16–0.26s). Submitted. *Best remaining big-swing bet.*
+
+### ⚠️ FLOOR LESSON (cron must heed): Mix_DS-R1_EP128 block-build timeout
+A submission floored (−1e6) on Mix_DS-R1_EP128 timing out in _build_block. "Mix" has a
+TIGHTER budget than LmSys; the EP128 block path (~0.25s) is at the 3×-DS-EPLB edge and
+floors stochastically (100 passed, 103/104 risked it). FIX: FB_BLOCK_MAXDEV=64 (scalar at
+EP≥128) for all submissions unless EP128 build verified <0.15s. Smoke the FIRST call too.
+
+### 103 drift_adapt — FLOORED (−1e6, Mix_DS-R1_EP128 timeout) + mis-calibrated (DRIFT_THRESH
+0.12 < LmSys noise-drift 0.226 → over-triggers). Abandoned.
+### 105 recent_band_safe — recent_band (noise-robust adaptive band) + BLOCK_MAXDEV=64 (safe).
+EP128 now scalar 0.16–0.19s, EP256 0.26s. Tests the adaptive-band big-swing WITHOUT floor
+risk. Submitted. The +0.566-PAR-under-drift mechanism, made safe.
