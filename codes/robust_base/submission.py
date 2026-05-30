@@ -208,7 +208,12 @@ def rebalance(hotness, n_device, n_red_expert):
     # mis-predicts the next regime's load -> realized PAR >> mean-load PAR at high EP.
     # The per-expert MEDIAN tracks the persistent structure (robust to spike
     # iterations); the joint-peak term separately buys spike insurance.
-    loc = np.median(hotness, axis=0)
+    # Subsample the window before the median: full-window np.median floors on long
+    # server traces (O(T log T) sort over L*E elements). Capping to ~192 rows keeps
+    # the robust-location signal while staying finance_band-speed / EP256-safe.
+    _T = hotness.shape[0]
+    _src = hotness if _T <= 192 else hotness[:: max(1, _T // 192)]
+    loc = np.median(_src, axis=0)
     peak = _peak_mean(hotness) if THETA > 0 else loc
     place_w = (1.0 - THETA) * loc + THETA * peak
     lam = LAMBDA_HI if n_device >= 128 else LAMBDA
