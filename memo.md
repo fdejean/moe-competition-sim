@@ -467,3 +467,46 @@ The two validated PAR levers COMPOUND, exactly as hoped:
 Progression: 111.808 → 112.159 → 113.189 → **113.895**. The "PAR is saturated" claim is
 fully refuted; realized PAR went 1.696 → 1.663. Next: sweep the combo (BLOCKS k∈{2,4,5},
 PEAKFRAC∈{0.05,0.20}) and attack the worst case DS-R1 Mix EP256 (still scalar path).
+
+---
+
+## 9. Idea-engine loop (30-min cadence, cron 45953249) — cycle log
+
+### Cycle 1 — 2026-05-30 ~07:05
+**Role locked:** expert idea-engine. Each cycle: read what changed, brainstorm
+independently (no anchoring), propose ONE novel finance_band-speed/EP256-safe lever,
+hand to active peer (hik0njmv holds SOTA sticky_eplo=111.805).
+
+**Killed (independent test):** cross-layer template-sharing / transmit reuse. Measured
+DS-R1 cross-layer hotness-profile correlation = **0.002** (Qwen3 0.026); 52/58 distinct
+per-layer argmax experts. Layers route independently → no shared template, dead axis.
+
+**Mechanism discovery:** at high EP the mean load is **nearly FLAT** — top-8/256 experts
+= only **9%** of load (Qwen3 19%). So the high-EP realized peak (PAR 1.4–3.4) is NOT a
+persistent dominant expert; it's **diffuse spiky tails (variance)**. Explains why
+factor_snake (single co-spiking eigenvector) failed (E2) and why tail replication wins.
+
+**Proposed novel lever — EVT / order-statistic replication (parameter-free):**
+size replicas by the q-quantile of per-iteration load with **q = 1 − k/n_device** (k≈2–3),
+so q auto-scales with EP. Rationale: realized PAR = max over n_device devices → the
+governing order statistic is the ~(1−1/n_device) quantile, which rises with EP.
+Validated (DS-R1, realized PAR vs fb mean+2·std):
+| | EP128 | EP256 |
+|---|---|---|
+| fb mean+2·std | 1.3301 | 1.4141 |
+| p90 | −0.0106 | −0.0112 |
+| **p95** | **−0.0124** | −0.0158 |
+| **p99** | −0.0112 | **−0.0181** |
+| m+2·sqrt(var) | −0.0045 | −0.0044 |
+| variance-proportional | +0.31 (blows up) | +0.42 |
+→ optimum quantile RISES with EP (p95@128, p99@256) exactly as q=1−k/ndev predicts.
+One np.quantile, EP-gated ≥64. Sent to hik0njmv; offered codes/evt_replicate/.
+
+### 9g. Combo sweep results + SOTA = peak_cospike_k4 113.995
+- peak_cospike_k4 (BLOCKS=4): **113.995** (mean_par 1.66143) — NEW SOTA. Finer temporal blocks (k4>k3) help the block placement.
+- peak_cospike_t07 (θ=0.7): 113.938 — θ=0.7 marginally beats θ=0.5.
+- peak_cospike_pf05 (PEAKFRAC=0.05): 113.903 ~= k3 combo (0.05–0.10 both fine).
+- peak_cospike_k5: poll process died before creating the submission (LOOP BUG) — resubmitting.
+**Loop robustness fix:** background poll processes are killed when a turn ends, orphaning results
+(server still evaluates). Switched to `--no-wait` submit (instant id) + poll-by-id each wake via
+`auto/pending_subs.txt`. Next wave: combine the wins — k4+θ0.7, plus k5/k6 (push block resolution).

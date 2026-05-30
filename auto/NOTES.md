@@ -130,3 +130,7 @@ All idea classes exhausted: PAR saturated per-case (every placement/replication 
 2026-05-30 07:35  081 cospike_hybrid (server=113.189, mean_par 1.6816) *** beats peak_balance 112.159 *** EP-gated greedy worst-block placement (block@EP<=128, scalar@EP256). Co-spiking PLACEMENT is a big lever at EP<=128.
 2026-05-30 07:35  082b peak_theta07 (server=112.18) θ=0.7 ~= θ=0.5 (112.159). peak_theta10 (server=111.987) θ=1.0 overshoots (pure-peak worse). θ~0.5-0.7 optimal.
 2026-05-30 07:35  083 peak_cospike (server=113.895, mean_par 1.66285) *** NEW SOTA *** COMBO: joint-peak target (θ=0.5) + EP-gated block placement. The two PAR levers COMPOUND. Progression 111.808→112.159→113.189→113.895. Sweeping k/θ/PEAKFRAC of the combo next.
+2026-05-30 08:36  084 peak_cospike_k4 (id 767389)  server=113.995 *** NEW SOTA *** combo with BLOCKS=4 (vs 3). Finer temporal blocks help. mean_par 1.66143.
+2026-05-30 08:36  086 peak_cospike_pf05 (id 767390) server=113.903 PEAKFRAC=0.05 ~= combo (113.895). Peak fraction 0.05-0.10 both fine.
+2026-05-30 08:36  087 peak_cospike_t07 (id 767391) server=113.938 θ=0.7 in combo, marginally > θ=0.5 (113.895). mean_par 1.66129.
+2026-05-30 08:36  NOTE: background poll processes die when a turn ends -> k5/t07 polls were orphaned (server still evaluated; re-polled by id). FIX: loop now submits --no-wait (instant id) + polls by id each wake via auto/pending_subs.txt. No long-lived processes.

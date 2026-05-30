@@ -10,10 +10,11 @@
     "note": "SOTA at loop start. Beat THIS proxy number to justify a submission."
   },
   "best_server": {
-    "variant": "peak_cospike",
-    "score": 113.895,
-    "mean_par": 1.66285,
-    "note": "COMBO of joint-peak placement target + EP-gated greedy block placement (block@EP<=128, scalar@EP256). Two PAR levers compound. id pending. Progression 111.808(shrink)->112.159(peak)->113.189(block hybrid)->113.895(combo). Sweeping k/theta/PEAKFRAC."
+    "variant": "peak_cospike_k4",
+    "score": 113.995,
+    "mean_par": 1.66143,
+    "id": 767389,
+    "note": "Combo (joint-peak target + EP-gated block placement) with BLOCKS=4. Progression 111.808->112.159->113.189->113.895(k3)->113.995(k4). theta=0.7 also good (113.938)."
   },
   "submit_budget": {
     "max_submissions_tonight": 1000,
@@ -341,7 +342,7 @@
   },
   "summary": {
     "submissions": 40,
-    "sota": "peak_cospike 113.895",
+    "sota": "peak_cospike_k4 113.995",
     "prior_best": "finance_band 111.264",
     "gain": "+1.258",
     "key_lever": "EP-adaptive co-spiking (block-balance placement @EP<=128, fast @EP256)"

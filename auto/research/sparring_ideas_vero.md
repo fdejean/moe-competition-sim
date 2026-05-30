@@ -99,3 +99,11 @@ LmSys-EP32 proxy tests the saturated cases). Without this we're optimizing blind
 - Ride the **fold_pack 0.03s base** so a cheap vectorized refine fits the budget.
 - Rank order to try: **1 (factor_snake) > 2 (regime_robust) > 3 (tail_replicate) >
   4 (decouple_pack) > 5 (po2)**. Each is one vectorized pass, EP256-safe by design.
+
+---
+## Update (cycle 1, ~07:05): EVT order-statistic replication [VALIDATED]
+Cross-layer sharing KILLED (layer corr 0.002). High-EP mean is flat (top8=9%) → peak is
+diffuse spiky tails, not a dominant expert. Lever: replicas sized by q-quantile with
+**q=1−k/n_device** (auto-scales: p95@EP128, p99@EP256). Beats fb mean+2·std by −0.012…−0.018
+realized PAR on DS-R1 high-EP. Parameter-free, one np.quantile, EP256-safe. Supersedes the
+fixed-p95 idea #3. Sent to hik0njmv.
