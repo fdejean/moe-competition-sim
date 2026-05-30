@@ -169,3 +169,16 @@ placement +1.0), not from sweeps. Every loop cycle should test a **completely ne
 idea** drawn from literature / science / finance / OR — bold, divergent, high-ceiling
 — not a parameter variant of the last one. Sweep a winner only briefly to confirm,
 then move on to the next novel mechanism. Target strong jumps, not 0.05 increments.
+
+## ⛔ ABSOLUTE RULE (2026-05-30, user, RESTATED & STRENGTHENED): NEVER EVER FINE-TUNE
+
+**NEVER EVER fine-tune.** Do NOT sweep block-k, lambda, TAU, THETA, PEAKFRAC, STAY,
+window, or ANY hyperparameter of an existing architecture. Not even "just to confirm."
+That is forbidden.
+
+**ONLY look for new strategies / bigger steps.** Every single loop cycle MUST introduce
+a genuinely NEW MECHANISM (a different algorithm / objective / representation / lever),
+drawn from literature, science, finance, or OR — pull the next unticked idea from
+`auto/novel_ideas.md` (and keep adding bolder ones). The goal is STRONG JUMPS, not
+0.05 increments. If an idea works, log it and move to the NEXT new idea — never tune it.
+Hyperparameters get ONE sensible default and are left alone.
