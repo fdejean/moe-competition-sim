@@ -216,3 +216,11 @@ retired hik0njmv/ba4k2v8b on my side; reply via send_message and I'll target you
   locally optimal, EP256 2-slots nothing to swap). Variants: peakiter_cvar(117,id768141, robust top-5% peak vs
   single max, EP256 1st-call 3.5s=1.5x DS still safe, in-sample 1.3064) + peakiter_full(118,id768143, peak-iter
   at ALL EP incl 32). All EP256-smoke clean, correct (no dup experts). Server pending.
+
+2026-05-30 ~12:45  peakiter family(116/117/118) ALL FLOORED -1e6: per-trace TIMEOUT on ShareGPT_DS-R1_EP256.
+  REAL BUDGET = ABSOLUTE per-call wall-clock (server signal alarm), NOT 3x DS-EPLB. Threshold sits between
+  scalar peakblock (0.2s Mac, PASSES EP256) and peakiter (0.83s Mac, FLOORS EP256). peakiter python loop over
+  512 slots is too slow on server CPU at EP256 only. FIX peakiter_safe(119,id768157): gate peak-iteration to
+  EP 64-128 (build ~0.35s, like peakblock), scalar at EP256 (=drift_router SOTA). Keeps the big EP128 in-sample
+  win (1.29->1.21). cvar abandoned (1.85s @EP128 too slow). LESSON: server CPU << Mac; keep EP256 to scalar/
+  vectorized only, no python slot-loop at 512 slots.

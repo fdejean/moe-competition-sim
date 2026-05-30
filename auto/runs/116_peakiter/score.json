@@ -1,1 +1,6 @@
-{"variant":"peakiter","id":"768125","server":"pending"}
+{
+  "variant": "peakiter",
+  "id": "768125",
+  "server": -1000000.0,
+  "note": "FLOORED -1e6: per-trace TIMEOUT on ShareGPT_DS-R1_EP256 (python slot-loop too slow on server CPU @512 slots)"
+}

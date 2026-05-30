@@ -1,1 +1,6 @@
-{"variant":"peakiter_cvar","id":"768141","server":"pending"}
+{
+  "variant": "peakiter_cvar",
+  "id": "768141",
+  "server": -1000000.0,
+  "note": "FLOORED -1e6: EP256 timeout (cvar partition even slower, 3.5s Mac)"
+}
