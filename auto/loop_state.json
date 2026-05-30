@@ -149,6 +149,27 @@
       "ts": "2026-05-30T03:45:00+02:00",
       "server": 111.802,
       "note": "*** NEW SOTA 111.802! *** cheap_relabel + stay-biased LPT (STAY=0.25). transmit 625k (<686k) at tiny PAR cost (1.6968) -> net +0.05. source-side transmit cut pays. Sweeping STAY."
+    },
+    {
+      "nnn": "071",
+      "slug": "sticky_stay015",
+      "submission_id": 766633,
+      "server": null,
+      "note": "STAY=0.15 (less aggressive stickiness)"
+    },
+    {
+      "nnn": "072",
+      "slug": "sticky_stay040",
+      "submission_id": 766634,
+      "server": null,
+      "note": "STAY=0.40"
+    },
+    {
+      "nnn": "073",
+      "slug": "sticky_stay060",
+      "submission_id": 766635,
+      "server": null,
+      "note": "STAY=0.60 (more transmit cut, more PAR risk)"
     }
   ],
   "timing_calibration": {
