@@ -91,6 +91,23 @@
       "proxy": 108.0,
       "server": 108.857,
       "note": "Scalar co-spiking premium HURTS: mean_par 1.717 > finance_band 1.692. Distorts load balance. Co-spiking lane dead within budget (strong version too slow, scalar version hurts)."
+    },
+    {
+      "nnn": "065",
+      "slug": "decouple_pack",
+      "submission_id": 766570,
+      "ts": "2026-05-30T03:00:00+02:00",
+      "proxy": 107.98,
+      "server": null,
+      "note": "replicate on risk, PLACE on mean. Tests whether finance_band's risk-packing helps or hurts the server."
+    },
+    {
+      "nnn": "055",
+      "slug": "fb_convex",
+      "submission_id": 766571,
+      "ts": "2026-05-30T03:00:00+02:00",
+      "server": null,
+      "note": "over-replicate hottest (water-fill on risk^1.5). Targets high-EP PAR floor. EP256-safe 0.22s."
     }
   ],
   "timing_calibration": {
