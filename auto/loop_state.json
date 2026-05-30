@@ -10,11 +10,11 @@
     "note": "SOTA at loop start. Beat THIS proxy number to justify a submission."
   },
   "best_server": {
-    "variant": "cheap_relabel",
-    "score": 111.751,
-    "mean_par": 1.6929,
-    "transmit": 686766,
-    "note": "NEW SOTA. finance_band PAR + cheap PAR-neutral transmit cut. Beats finance_band 111.264. Transmit is the recoverable lever, not PAR."
+    "variant": "sticky_relabel",
+    "score": 111.802,
+    "mean_par": 1.6968,
+    "transmit": 625212,
+    "note": "NEW SOTA. finance_band PAR + O(nd) relabel + stay-biased build. Transmit 842k->625k. Sweep STAY for more."
   },
   "submit_budget": {
     "max_submissions_tonight": 1000,
@@ -141,6 +141,14 @@
       "ts": "2026-05-30T03:35:00+02:00",
       "server": 111.746,
       "note": "exact-set+heaviest align. transmit 680k (< v1 686k) but mean_par 1.6937 (> v1 1.6929) -> 111.746 ~= v1 111.751. Relabel timing couples to PAR; alignment maxed at ~111.75. cheap_relabel(v1) stays SOTA."
+    },
+    {
+      "nnn": "070",
+      "slug": "sticky_relabel",
+      "submission_id": 766625,
+      "ts": "2026-05-30T03:45:00+02:00",
+      "server": 111.802,
+      "note": "*** NEW SOTA 111.802! *** cheap_relabel + stay-biased LPT (STAY=0.25). transmit 625k (<686k) at tiny PAR cost (1.6968) -> net +0.05. source-side transmit cut pays. Sweeping STAY."
     }
   ],
   "timing_calibration": {
