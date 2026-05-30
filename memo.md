@@ -419,3 +419,40 @@ block placement (cospike_hybrid) for compounding.
 2026-05-30 ~08:00  k-sweep: k=4=112.522 SOTA (coarse blocks win). PAR 1.682. Fine-sweep k=2/3/6 next.
 2026-05-30 ~08:10  epadaptive_sticky: co-spiking k4 + relabel + stay-bias (full stack). id 767254.
 2026-05-30 ~08:20  epadaptive_sticky=111.845 (stay-bias conflicts w/ co-spiking). Next: p95@EP256-only.
+
+---
+
+## 10. The co-spiking breakthrough arc (2026-05-30 ~07:15–08:30) — how 111.8 → 112.5
+
+The "converged at 111.8 / PAR saturated" verdict (§7) was WRONG, and the user was right
+to push. The error: I concluded co-spiking can't help because the per-device method
+*floored at EP256*. But the time budget is **3× DS-EPLB PER CASE**, and at low EP it's
+generous. The fix — **EP-adaptive ALGORITHM dispatch** — broke the floor:
+
+- **083 epadaptive_algo — 112.079 ⭐ (broke the PAR floor, 1.692→1.688).** Co-spiking
+  block-balanced placement at **EP≤64** (affordable: 0.13s), fast finance_band at EP≥128,
+  + relabel. First sub-1.692 mean_par. Proved co-spiking helps the server where affordable.
+- **084 epadaptive_p95 — 112.011.** Added p95 replication at EP≥128 (peer E3). Slightly
+  worse — **E3's local p95 win does NOT translate to the server.**
+- **085 epadaptive_ep128 — 112.364 ⭐.** Raised the co-spiking threshold to **EP≤128**
+  (block_pack proved EP128 server-safe — it only floored at EP256). Captured the
+  high-headroom EP128 cases (PAR 1.6–2.6). mean_par 1.686.
+- **086–088 block-count sweep (k=4/8/16/32) — k=4 = 112.522 ⭐ SOTA.** Coarse temporal
+  blocks generalize; dense (k=32=111.76) overfits the window noise. The co-spiking lever
+  is really *coarse temporal-drift robustness* (balance load across ~4 sub-windows).
+- **089–091 fine k-sweep (k=2/3/6)** — k=4 confirmed optimal (k=6=112.471 close).
+- **EP256 co-spiking (dropped):** k=4 at EP256 = 0.29s (the 512-slot Python loop dominates,
+  not k) → would floor; and per E2 placement isn't the lever at 2-slots/device anyway.
+- **092 epadaptive_sticky — 111.845.** Stack the stay-bias onto co-spiking → **CONFLICT**:
+  the stay-bias pulls experts back to their old device, undoing the co-spiking spread
+  (mean_par 1.702). **The PAR-neutral relabel composes with co-spiking; the
+  placement-changing stay-bias does not.**
+- **093 epadaptive_p95ep256 — 112.479.** p95 replication isolated to EP256 — still worse.
+  **Replication-tuning at EP256 is dead; mean+2std is best there.**
+
+**SOTA = epadaptive_k4 = 112.522 (+1.26 over prior best 111.264).** Recipe: co-spiking
+block-balanced placement (k=4) at EP≤128, fast finance_band (mean+2std) at EP256, + O(nd)
+PAR-neutral relabel. **Meta-lesson: "saturated" was an affordability artifact — the
+EP-adaptive framework (use the expensive-but-better method exactly where the per-case
+budget allows) is the key unlock.** Open: a fixed-pass co-spiking *refine* at EP≤128
+(budget there is generous; fixed-pass is server-safe per pack_refine_fast).

@@ -309,6 +309,13 @@
       "submission_id": 767275,
       "server": 112.479,
       "note": "p95@EP256-only slightly worse (1.683). Replication-tuning at EP256 dead; finance_band mean+2std best there."
+    },
+    {
+      "nnn": "094",
+      "slug": "epadaptive_k4_lamhi",
+      "submission_id": 767284,
+      "server": null,
+      "note": "k4 SOTA base + high-EP lambda=1.5 (eplo finding) at n_device>=128"
     }
   ],
   "timing_calibration": {
