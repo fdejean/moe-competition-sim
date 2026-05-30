@@ -15,7 +15,7 @@ SRC="codes/$NAME/submission.py"
 ( cd "codes/$NAME" && zip -j -q "../../submissions/$NAME.zip" submission.py )
 
 # frozen snapshot with a UNIQUELY-NAMED copy alongside submission.py
-N=$(printf "%03d" $(( $(ls auto/runs | sed -E 's/_.*//' | sort -n | tail -1) + 1 )))
+N=$(printf "%03d" $(( $(ls auto/runs | sed -nE 's/^([0-9]{3})_.*/\1/p' | sort -n | tail -1) + 1 )))
 DIR="auto/runs/${N}_${NAME}"
 mkdir -p "$DIR"
 cp "$SRC" "$DIR/submission.py"
