@@ -549,3 +549,18 @@ regimes are contiguous in time; the worst case (DS-R1 Mix) interleaves them, so 
 capture regimes temporal blocks miss. Combined with joint-peak target, EP-gated. (submitted; server pending)
 Backlog of bold mechanisms queued: ot_sinkhorn, regime_track, scenario_robust, match_ep256,
 spectral_cut, power_d_choices, marg_peak_repl, grouped_place, dro_ambiguity, mixture_deploy.
+
+---
+
+## §9 BUILDER LANE (aggressive, goal 120+) — own run #s 100+, cron be574349 (every 10min)
+
+### 100 regime_blocks — submitted (id pending, bg job)
+**Novel mechanism:** replace peak_cospike's *temporal* block decomposition with
+**load-regime blocks** — group the window's iterations into k=4 equal-count quantile
+bins by GLOBAL busyness (Σ load per iteration), and balance each device across those
+regimes. Co-spiking is about WHICH iterations are jointly hot, not when in time;
+temporal blocks only catch it if spikes cluster in time. Regime blocks are
+time-order-invariant → capture co-spiking directly; the top bin literally IS the joint
+spike set. EP≤128 block path; EP256 scalar (unchanged). **Rationale:** strictly more
+faithful co-spiking signal than temporal blocks, same cost.
+**Validation:** EP256 0.233s / EP128 0.254s / EP64 0.167s, shapes ok, full coverage → EP256-safe.

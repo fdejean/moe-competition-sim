@@ -182,3 +182,21 @@ drawn from literature, science, finance, or OR — pull the next unticked idea f
 `auto/novel_ideas.md` (and keep adding bolder ones). The goal is STRONG JUMPS, not
 0.05 increments. If an idea works, log it and move to the NEXT new idea — never tune it.
 Hyperparameters get ONE sensible default and are left alone.
+
+## ⚡ HACKATHON DIRECTIVE (vero builder lane, 2026-05-30) — GOAL: SCORE 120+
+
+**Mandate: explore NOVEL ideas for big jumps. Do NOT fine-tune hyperparameters.**
+- This is a hackathon. The objective is a strong jump to **120+**, not converging to the
+  optimal hyperparam config of an existing architecture.
+- STOP small fine-tuning (θ/k/λ/TAU sweeps, ±0.1 tweaks). If an idea only promises a
+  fraction of a point, skip it. Chase mechanisms that could move PAR by a lot.
+- Go in COMPLETELY new directions: new objectives, new estimators, new structure
+  (hierarchical/node-aware, regime/cluster decomposition, robust statistics, control
+  theory, RMT/random-matrix, optimal transport, etc.). Crazy is good.
+- WORK IN PARALLEL and IN FRONT of the other peers — own run #s **100+**, submit
+  aggressively and continuously via fdejean's `tools/codabench_submit.py`. The server
+  is the oracle (local LmSys proxy is non-predictive for the non-stationary cases).
+- Hard invariant still holds: must be finance_band-speed / EP256-safe (per-call budget
+  = 3× DS-EPLB; iterative refine/relabel-O(nd²) floor to −1e6). Always EP256 smoke-test
+  before submit.
+- LOG every submission + rationale in memo.md (§9). Never sign commits as Claude.
