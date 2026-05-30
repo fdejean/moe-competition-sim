@@ -10,11 +10,11 @@
     "note": "SOTA at loop start. Beat THIS proxy number to justify a submission."
   },
   "best_server": {
-    "variant": "peak_cospike_k4",
-    "score": 113.995,
-    "mean_par": 1.66143,
-    "id": 767389,
-    "note": "Combo (joint-peak target + EP-gated block placement) with BLOCKS=4. Progression 111.808->112.159->113.189->113.895(k3)->113.995(k4). theta=0.7 also good (113.938)."
+    "variant": "peak_cospike_k6",
+    "score": 114.044,
+    "mean_par": 1.66079,
+    "id": 767416,
+    "note": "k-sweep peak: k4=113.995,k5=114.024,k6=114.044. k-creep is TUNING (stopped per directive). Pivoted to novel mechanisms (robust median location, EP256 max-sticky transmit)."
   },
   "submit_budget": {
     "max_submissions_tonight": 1000,
