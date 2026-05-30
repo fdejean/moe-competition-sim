@@ -199,7 +199,7 @@ def plot_cospike_pairing():
         ax.set_xticks([])
         ax.legend(fontsize=9.5, frameon=False, loc="upper right")
     axes[0].set_ylabel("load")
-    axes[0].set_ylim(0, 2.4)
+    axes[0].set_ylim(0, 3.6)
     fig.suptitle("EP256 = 2 slots/device → placement is a PAIRING problem  (schematic)",
                  fontsize=14, fontweight="bold")
     save(fig, "06_cospike_pairing")
