@@ -174,9 +174,16 @@
     {
       "nnn": "074",
       "slug": "sticky_epadapt",
-      "submission_id": null,
+      "submission_id": 766668,
+      "server": 111.538,
+      "note": "EP-adaptive lambda=3 at high EP HURT (mean_par 1.7037). Replication tapped even EP-adaptively."
+    },
+    {
+      "nnn": "075",
+      "slug": "sticky_eplo",
+      "submission_id": 766676,
       "server": null,
-      "note": "sticky_relabel + EP-adaptive lambda (3.0 at EP>=128, targets high-EP realized PAR 2-3.4). Pending."
+      "note": "LESS variance replication at high EP (lambda=1.5 at EP>=128). Tests if scarce high-EP slots want less variance repl."
     }
   ],
   "timing_calibration": {
