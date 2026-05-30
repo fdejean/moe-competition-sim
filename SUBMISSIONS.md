@@ -33,3 +33,4 @@ uniquely-named `<name>.py` copy). The file inside the zip MUST be `submission.py
 - 768256 · **grouped_place** · _pending_ · run auto/runs/124_grouped_place
 - 768257 · **power_d_choices** · _pending_ · run auto/runs/125_power_d_choices
 - 768258 · **dro_ambiguity** · _pending_ · run auto/runs/126_dro_ambiguity
+- 768314 · **dro_cvar** · _pending_ · run auto/runs/127_dro_cvar

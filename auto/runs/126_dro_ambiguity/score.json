@@ -1,1 +1,6 @@
-{"variant":"dro_ambiguity","id":"768258","server":"pending"}
+{
+  "variant": "dro_ambiguity",
+  "id": "768258",
+  "server": 114.32,
+  "note": "NEW SOTA. Decoupled robust replication (KAPPA_REP=3.0 > placement lam=2.0)."
+}

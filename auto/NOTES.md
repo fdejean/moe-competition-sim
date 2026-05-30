@@ -278,3 +278,9 @@ retired hik0njmv/ba4k2v8b on my side; reply via send_message and I'll target you
   ITERATION CONCLUSIVELY CLOSED on the server (too slow for the tight Mix budget at any EP that includes Mix). ***
   FINAL STANDING SOTA = drift_router 114.181 (scalar-speed drift-adaptive recency target, +0.049 over peakblock).
   Placement fully maxed; only ~peakblock-speed survives Mix_DS-R1_EP128.
+
+2026-05-30 ~13:25  WAVE 120-126 RESULTS: dro_ambiguity(126)=114.32 *** NEW SOTA *** (decoupled robust replication,
+  copies=mean+3std > placement mean+2std). mixture_deploy=114.176, antiphase_block=114.138, spectral_cut=114.123,
+  grouped_place=113.926. KEY: REPLICATION SIZING is the winning axis; ALL placement-structure ideas lost.
+  dro_cvar(127,id768314): distribution-free extension -> size copies by per-expert empirical CVaR (mean of worst
+  10% iters, subsampled to 128 for ~scalar speed 0.26s) instead of Gaussian mean+3std. Floored at place_w. Server pending.

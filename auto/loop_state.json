@@ -10,11 +10,10 @@
     "note": "SOTA at loop start. Beat THIS proxy number to justify a submission."
   },
   "best_server": {
-    "variant": "drift_router",
-    "score": 114.181,
-    "mean_par": 1.65705,
-    "id": 768087,
-    "note": "peakblock + DRIFT-ADAPTIVE recency target (forecasting lever for non-stationary Mix). +0.049 over peakblock 114.132. Ceiling analysis: packing solved (oracle ~1.0); stationary cases near ceiling; Mix excess PAR is forecasting-recoverable."
+    "variant": "dro_ambiguity",
+    "score": 114.32,
+    "id": 768258,
+    "note": "drift_router + DECOUPLED distributionally-robust replication: copies sized by mean+3*std (tail insurance), placement still on mean+2*std. +0.14 over drift_router 114.181. High-variance experts get more copies BEFORE spikes land."
   },
   "submit_budget": {
     "max_submissions_tonight": 1000,
