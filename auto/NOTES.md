@@ -201,3 +201,9 @@ retired hik0njmv/ba4k2v8b on my side; reply via send_message and I'll target you
   (3.791 vs 3.794). 2-slots/device has no placement freedom. NOT submitting vb256_rich. Real EP256 lever
   would be COVARIANCE-AWARE PAIRING (pair anti-correlated experts on a device to cut device-total variance)
   -- LPT ignores covariance; the one untried high-ceiling EP256 idea. NEXT.
+
+2026-05-30 ~12:35  *** drift_router(115,id768087)=114.181 NEW SOTA (+0.049 over peakblock 114.132, mean_par 1.65705<1.65874) ***
+  The drift-adaptive recency target HELPS on real Mix non-stationarity even though my synthetic-drift
+  proxies (gradual/step/periodic) showed it neutral-to-negative -> SERVER IS THE ORACLE, vindicated.
+  vblock256(EP256 block, id767701)=114.099 < peakblock -> EP256 block placement confirmed DEAD on server too.
+  NOT tuning GAMMA (forbidden). NEXT real lever: covariance-aware EP256 pairing (anti-correlated experts share a device).

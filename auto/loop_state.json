@@ -10,11 +10,11 @@
     "note": "SOTA at loop start. Beat THIS proxy number to justify a submission."
   },
   "best_server": {
-    "variant": "peakblock",
-    "score": 114.132,
-    "mean_par": 1.65874,
-    "id": 767621,
-    "note": "NOVEL placement-level spike-awareness: joint-peak per-expert load appended as an EXTRA BLOCK COLUMN so the greedy balances devices across temporal blocks AND the co-spike scenario. +0.088 over k6 114.044. Direction: make PLACEMENT spike-aware, not just the target weight."
+    "variant": "drift_router",
+    "score": 114.181,
+    "mean_par": 1.65705,
+    "id": 768087,
+    "note": "peakblock + DRIFT-ADAPTIVE recency target (forecasting lever for non-stationary Mix). +0.049 over peakblock 114.132. Ceiling analysis: packing solved (oracle ~1.0); stationary cases near ceiling; Mix excess PAR is forecasting-recoverable."
   },
   "submit_budget": {
     "max_submissions_tonight": 1000,
