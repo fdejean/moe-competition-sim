@@ -564,3 +564,8 @@ time-order-invariant → capture co-spiking directly; the top bin literally IS t
 spike set. EP≤128 block path; EP256 scalar (unchanged). **Rationale:** strictly more
 faithful co-spiking signal than temporal blocks, same cost.
 **Validation:** EP256 0.233s / EP128 0.254s / EP64 0.167s, shapes ok, full coverage → EP256-safe.
+
+### 9i. Continuous novel mechanisms (no waiting; pipeline kept full)
+- scenario_robust (093, id 767434): distributionally-robust placement — min-max over the S worst INDIVIDUAL iterations (raw worst snapshots), not a mean. Robust-optimization paradigm.
+- spike_replicate (094): NEW LEVER (replication, not placement) — size replicas by each expert's MAX load over the worst-5% iters (spike-drivers get more copies), decoupled from joint-peak placement. Attacks E2's "EP256 = single spiky expert" finding.
+Both EP256-safe, submitted. Backlog continues: ot_sinkhorn, regime_track, match_ep256, spectral_cut, power_d_choices, grouped_place, dro_ambiguity, mixture_deploy.
