@@ -157,20 +157,51 @@ def plot_score_climb():
     scores = [100.0, 111.27, 111.80, 112.52, 113.90, 114.13,
               114.18, 114.32, 114.35, 114.61, 114.76]
     x = np.arange(len(scores))
-    fig, ax = plt.subplots(figsize=(10, 4.8))
-    ax.step(x, scores, where="mid", color=ACCENT, lw=2.0, alpha=0.5)
-    ax.scatter(x, scores, color=ACCENT, s=46, zorder=3)
-    ax.scatter([x[-1]], [scores[-1]], color=HOT, s=130, zorder=4)
-    ax.annotate("114.76", xy=(x[-1], scores[-1]), xytext=(0, 10),
-                textcoords="offset points", ha="center", color=HOT,
-                fontsize=13, fontweight="bold")
-    ax.axhline(100, color=GRAY, ls="--", lw=1.2)
-    ax.text(0.1, 100.6, "DS-EPLB = 100", color=GRAY, fontsize=10)
-    ax.set_title("Score climb: 100 → 114.76 (new mechanisms, not tuning)")
-    ax.set_ylabel("Codabench composite score")
-    ax.set_xticks(x)
-    ax.set_xticklabels(names, fontsize=8.5, rotation=30, ha="right")
-    ax.set_ylim(99, 116)
+
+    # broken y-axis: baseline at 100 sits below an axis "break"; the 111-115 action
+    # zone is expanded above it. Top panel = the real climb, bottom = the 100 anchor.
+    fig, (ax_t, ax_b) = plt.subplots(
+        2, 1, sharex=True, figsize=(15, 5.4),
+        gridspec_kw={"height_ratios": [5, 1], "hspace": 0.06})
+
+    for ax in (ax_t, ax_b):
+        ax.step(x, scores, where="mid", color=ACCENT, lw=2.2, alpha=0.45)
+        ax.scatter(x, scores, color=ACCENT, s=58, zorder=3)
+        ax.scatter([x[-1]], [scores[-1]], color=HOT, s=150, zorder=4)
+
+    # --- top panel: the 111 -> 114.76 climb, expanded -----------------------
+    ax_t.set_ylim(110.8, 115.4)
+    ax_t.set_yticks([111, 112, 113, 114, 115])
+    ax_t.annotate("114.76", xy=(x[-1], scores[-1]), xytext=(0, 11),
+                  textcoords="offset points", ha="center", color=HOT,
+                  fontsize=14, fontweight="bold")
+    ax_t.annotate("+11.3\n(transmit)", xy=(1, scores[1]), xytext=(1.15, 112.6),
+                  fontsize=10.5, color=GRAY,
+                  arrowprops=dict(arrowstyle="->", color=GRAY, alpha=0.7))
+    ax_t.set_title("Score climb: 100 → 114.76  (new mechanisms, not tuning)",
+                   fontsize=16)
+    ax_t.grid(True, alpha=0.25)
+
+    # --- bottom panel: the DS-EPLB = 100 anchor -----------------------------
+    ax_b.set_ylim(99.4, 100.6)
+    ax_b.set_yticks([100])
+    ax_b.axhline(100, color=GRAY, ls="--", lw=1.1, zorder=0)
+    ax_b.text(0.18, 100.18, "DS-EPLB = 100", color=GRAY, fontsize=10)
+    ax_b.grid(True, alpha=0.25)
+
+    # --- the break marks (lightning-bolt diagonals) -------------------------
+    ax_t.spines["bottom"].set_visible(False)
+    ax_b.spines["top"].set_visible(False)
+    ax_t.tick_params(bottom=False)
+    d = 0.4
+    kw = dict(marker=[(-1, -d), (1, d)], markersize=10, linestyle="none",
+              color="k", mec="k", mew=1.2, clip_on=False)
+    ax_t.plot([0, 1], [0, 0], transform=ax_t.transAxes, **kw)
+    ax_b.plot([0, 1], [1, 1], transform=ax_b.transAxes, **kw)
+
+    ax_b.set_xticks(x)
+    ax_b.set_xticklabels(names, fontsize=9, rotation=20, ha="right")
+    fig.supylabel("Codabench composite score", fontsize=12, x=0.06)
     save(fig, "05_score_climb")
 
 
