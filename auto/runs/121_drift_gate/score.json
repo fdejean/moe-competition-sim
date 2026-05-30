@@ -1,1 +1,6 @@
-{"variant":"drift_gate","id":"768207","server":"pending"}
+{
+  "variant": "drift_gate",
+  "id": "768207",
+  "server": -1000000.0,
+  "note": "FLOORED -1e6 on Mix_DS-R1_EP128: stationarity gate (L1-drift<=0.30) did NOT block all Mix windows -> low-drift Mix sub-segments still triggered peak-iteration -> cumulative per-trace timeout. CONCLUSIVE: peak-iteration is closed on the server at any EP touching Mix. SOTA stays drift_router 114.181."
+}

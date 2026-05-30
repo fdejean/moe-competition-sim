@@ -272,3 +272,9 @@ retired hik0njmv/ba4k2v8b on my side; reply via send_message and I'll target you
   - 126 dro_ambiguity (id768258): robust replication sizing — copies sized by mean+3*std (worst-case ambiguity),
     decoupled from placement risk (mean+2*std). All EP.
   Plus 120 antiphase_block (id768172) earlier = VALLEY column (anti-phase/cov lever). [!] sinkhorn_pack = dead end (degenerates to greedy).
+
+2026-05-30 ~13:10  drift_gate(121,id768207) FLOORED -1e6 on Mix_DS-R1_EP128. Stationarity gate (L1-drift<=0.30)
+  failed to block low-drift Mix sub-segment windows -> peak-iteration still fired -> cumulative timeout. *** PEAK-
+  ITERATION CONCLUSIVELY CLOSED on the server (too slow for the tight Mix budget at any EP that includes Mix). ***
+  FINAL STANDING SOTA = drift_router 114.181 (scalar-speed drift-adaptive recency target, +0.049 over peakblock).
+  Placement fully maxed; only ~peakblock-speed survives Mix_DS-R1_EP128.
