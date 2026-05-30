@@ -654,3 +654,10 @@ RECENT half-window as an extra block column = the most-recent regime's co-spike 
 PLACEMENT balances {2 temporal blocks, full-window peak, RECENT-regime peak}. Hardens placement
 to regime shifts (Mix) via the proven scenario-column mechanism, not a target tweak. BLOCKS=2 →
 4 columns = peakblock-safe EP128 timing (0.26s). EP256-safe. Submitted.
+
+### 108 wpeak_block — weighted-scenario greedy (structural, on the winning mechanism)
+The block greedy balances all scenario columns EQUALLY in its L-inf max. But realized PAR is
+driven by the SPIKE scenarios, so this up-weights the spike columns (full-window peak + recent
+peak) by WPEAK=1.6 in the max → placement prioritizes balancing the scenarios that set PAR over
+temporal averages. New structural knob on peakblock's winning "scenario column" mechanism (not a
+target/objective change, not hyperparam noise). 4 cols, EP128 0.276s (peakblock-safe). Submitted.
