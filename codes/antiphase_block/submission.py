@@ -53,7 +53,11 @@ TAU = float(os.environ.get("FB_TAU", "0.2"))
 LAMBDA = float(os.environ.get("FB_LAMBDA", "2.0"))
 LAMBDA_HI = float(os.environ.get("FB_LAMBDA_HI", "1.5"))
 STAY = float(os.environ.get("FB_STAY", "0.25"))
-BLOCKS = int(os.environ.get("FB_BLOCKS", "6"))
+# 5 temporal blocks (not 6) so total block columns = 5 + peak + valley = 7, the
+# SAME column count the proven-safe SOTA uses (6 + peak) -> identical EP128 build
+# cost / timing envelope, with the new VALLEY scenario swapped in for one coarse
+# temporal block. Keeps us inside the verified Mix_DS-R1_EP128 budget.
+BLOCKS = int(os.environ.get("FB_BLOCKS", "5"))
 BLOCK_MAXDEV = int(os.environ.get("FB_BLOCK_MAXDEV", "128"))
 THETA = float(os.environ.get("FB_THETA", "0.5"))
 PEAKFRAC = float(os.environ.get("FB_PEAKFRAC", "0.10"))

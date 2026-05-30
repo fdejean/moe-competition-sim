@@ -224,3 +224,15 @@ retired hik0njmv/ba4k2v8b on my side; reply via send_message and I'll target you
   EP 64-128 (build ~0.35s, like peakblock), scalar at EP256 (=drift_router SOTA). Keeps the big EP128 in-sample
   win (1.29->1.21). cvar abandoned (1.85s @EP128 too slow). LESSON: server CPU << Mac; keep EP256 to scalar/
   vectorized only, no python slot-loop at 512 slots.
+
+2026-05-30 ~12:50  120 antiphase_block (id768172) SUBMITTED — NEW MECHANISM: anti-phase/covariance
+  lever in SAFE column form. From moe_literature.pdf (Expert Choice routing paper): its transferable
+  nugget is balance-by-construction, but our ceiling analysis already shows packing is solved (greedy≈
+  oracle). The untried high-ceiling lever is the COVARIANCE term: var(dev)=var(e1)+var(e2)+2cov(e1,e2);
+  every method ignores cov. Explicit O(E^2) pairing is floor-unsafe; instead ADD a VALLEY scenario column
+  (mean load over LOWEST-total-load iters) alongside peakblock's PEAK column. L-inf block greedy then
+  balances devices across temporal blocks + peak + valley -> co-locates anti-phase experts -> cuts realized
+  cov WITHOUT pairwise compute or refine. Fits proven meta-pattern (info>objective; peakblock +0.088).
+  TIMING-SAFE: BLOCKS=5 so cols=5+peak+valley=7 == SOTA's 6+peak=7 (EP128 first-call 0.187s ~ SOTA 0.158s,
+  steady 0.178s; all experts present; EP128/EP256 smoke no floor). Base SOTA=drift_router 114.181. Server-judged.
+  (peakiter id768125 = the IMPLICIT full-resolution version, still pending; antiphase = explicit cheap column form.)
