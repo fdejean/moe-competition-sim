@@ -10,10 +10,10 @@
     "note": "SOTA at loop start. Beat THIS proxy number to justify a submission."
   },
   "best_server": {
-    "variant": "epadaptive_ep128",
-    "score": 112.364,
-    "mean_par": 1.68589,
-    "note": "NEW SOTA. Co-spiking block placement @EP<=128 + fast finance_band @EP256 + relabel. +1.10 over prior best. PAR floor broken 1.692->1.686. Next: co-spiking @EP256 (cheaper k)."
+    "variant": "epadaptive_k4",
+    "score": 112.522,
+    "mean_par": 1.68178,
+    "note": "NEW SOTA. Co-spiking <=EP128 with k=4 temporal blocks (coarse generalizes best) + fast finance_band @EP256 + relabel. +1.26 over prior best. PAR 1.692->1.682."
   },
   "submit_budget": {
     "max_submissions_tonight": 1000,
@@ -258,22 +258,22 @@
       "nnn": "086",
       "slug": "epadaptive_k4",
       "submission_id": 767238,
-      "server": null,
-      "note": "co-spiking <=EP128, k=4 blocks (coarser)"
+      "server": 112.522,
+      "note": "k=4 BEST: 112.522. coarse blocks generalize; dense overfits."
     },
     {
       "nnn": "087",
       "slug": "epadaptive_k16",
       "submission_id": 767240,
-      "server": null,
-      "note": "co-spiking <=EP128, k=16 blocks (finer)"
+      "server": 112.375,
+      "note": "k=16: 112.375. coarse blocks generalize; dense overfits."
     },
     {
       "nnn": "088",
       "slug": "epadaptive_k32",
       "submission_id": 767241,
-      "server": null,
-      "note": "co-spiking <=EP128, k=32 blocks (densest, 0.21s EP128, safe)"
+      "server": 111.764,
+      "note": "k=32 overfits: 111.764. coarse blocks generalize; dense overfits."
     }
   ],
   "timing_calibration": {
