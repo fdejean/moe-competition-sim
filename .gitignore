@@ -35,3 +35,4 @@ outputs/
 auto/_proxy/
 auto/_submit/
 **/__pycache__/
+.claude/*

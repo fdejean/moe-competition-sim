@@ -1,0 +1,70 @@
+
+=== DS-R1 / LmSys  interval=1024 ===
+    EP method             meanPAR   transmit    tx_s  total_s   score
+    32 DS-EPLB(base)       1.2578      82488    8.07    83.54  100.00
+    32 finance_band        1.2351      16632    1.63    75.73  110.31
+    32 full_always         1.2509      82690    8.09    83.15  100.47
+    32 minchurn_always     1.2560       9460    0.93    76.29  109.51
+    64 DS-EPLB(base)       1.4251      91888    8.99    94.50  100.00
+    64 finance_band        1.3828      18817    1.84    84.81  111.43
+    64 full_always         1.4078      91964    9.00    93.47  101.10
+    64 minchurn_always     1.4077      18655    1.83    86.29  109.52
+   128 DS-EPLB(base)       1.6915     110045   10.77   112.26  100.00
+   128 finance_band        1.6150      23330    2.28    99.18  113.19
+   128 full_always         1.6499     110426   10.81   109.80  102.24
+   128 minchurn_always     1.6526      36232    3.55   102.70  109.31
+   256 DS-EPLB(base)       2.1196     146767   14.36   141.54  100.00
+   256 finance_band        1.9940      34628    3.39   123.03  115.05
+   256 full_always         2.0427     146974   14.38   136.95  103.35
+   256 minchurn_always     2.0671      53671    5.25   129.28  109.48
+
+=== DS-R1 / LmSys  interval=128 ===
+    EP method             meanPAR   transmit    tx_s  total_s   score
+    32 DS-EPLB(base)       1.1302     531699   52.04   119.85  100.00
+    32 finance_band        1.2347      16640    1.63    75.71  158.29
+    32 full_always         1.1302     536778   52.53   120.34   99.59
+    32 minchurn_always     1.1313      46199    4.52    72.40  165.53
+    64 DS-EPLB(base)       1.2116     593604   58.09   130.79  100.00
+    64 finance_band        1.3960      18480    1.81    85.57  152.85
+    64 full_always         1.2117     597526   58.48   131.18   99.70
+    64 minchurn_always     1.2026      97728    9.56    81.72  160.04
+   128 DS-EPLB(base)       1.3167     711956   69.68   148.68  100.00
+   128 finance_band        1.3516     307194   30.06   111.16  133.75
+   128 full_always         1.3084     716229   70.10   148.60  100.05
+   128 minchurn_always     1.3031     201114   19.68    97.87  151.92
+   256 DS-EPLB(base)       1.4538     949000   92.88   180.11  100.00
+   256 finance_band        1.4657     507957   49.71   137.65  130.84
+   256 full_always         1.4295     953273   93.29   179.06  100.58
+   256 minchurn_always     1.4473     308247   30.17   117.00  153.93
+
+=== Qwen3 / LmSys  interval=1024 ===
+    EP method             meanPAR   transmit    tx_s  total_s   score
+    32 DS-EPLB(base)       1.2885      57793    5.66    82.97  100.00
+    32 finance_band        1.2885      14912    1.46    78.77  105.33
+    32 full_always         1.2892      58883    5.76    83.11   99.83
+    32 minchurn_always     1.2890      11211    1.10    78.44  105.78
+    64 DS-EPLB(base)       1.5318      69973    6.85    98.76  100.00
+    64 finance_band        1.5240      17905    1.75    93.19  105.97
+    64 full_always         1.5271      70715    6.92    98.54  100.21
+    64 minchurn_always     1.4969      22227    2.18    91.99  107.35
+   128 DS-EPLB(base)       1.8527      92891    9.09   120.25  100.00
+   128 finance_band        1.8359      23874    2.34   112.49  106.90
+   128 full_always         1.8406      93736    9.17   119.61  100.54
+   128 minchurn_always     1.9126      17749    1.74   116.49  103.23
+
+=== Qwen3 / LmSys  interval=128 ===
+    EP method             meanPAR   transmit    tx_s  total_s   score
+    32 DS-EPLB(base)       1.1279     315251   30.85    98.52  100.00
+    32 finance_band        1.1936      14926    1.46    73.07  134.83
+    32 full_always         1.1281     331310   32.42   100.11   98.41
+    32 minchurn_always     1.1282      36655    3.59    71.28  138.23
+    64 DS-EPLB(base)       1.2481     382815   37.46   112.35  100.00
+    64 finance_band        1.2856      29422    2.88    80.01  140.42
+    64 full_always         1.2419     395471   38.70   113.22   99.24
+    64 minchurn_always     1.1986      82872    8.11    80.03  140.39
+   128 DS-EPLB(base)       1.3348     511258   50.04   130.12  100.00
+   128 finance_band        1.3528      46401    4.54    85.71  151.82
+   128 full_always         1.3171     522709   51.16   130.18   99.95
+   128 minchurn_always     1.3811      56535    5.53    88.40  147.19
+
+wrote /home/wli/coding/hack/moe-competition-sim/experiments/results/oracle/incremental_sweep.csv

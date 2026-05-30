@@ -98,6 +98,10 @@ def _build_layer(load, n_device, n_exp_per_dev):
         deploy[d, int(dev_count[d])] = e
         dev_load[d] += slot_weight[idx]
         dev_count[d] += 1
+        
+    for d in range(n_device):
+        deploy[d] = np.sort(deploy[d])
+        
     return deploy
 
 
