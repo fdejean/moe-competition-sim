@@ -703,3 +703,8 @@ PASSES EP256; peak-iteration (0.83s Mac, python loop over 512 slots) FLOORS EP25
 **Dead ends:** swap-refine on peakiter (+0.000..0.003, greedy already optimal); momentum/trend
 extrapolation (catastrophic @EP256); cvar objective (1.85s @EP128, too slow on server).
 **Lesson:** EP256 must stay scalar or fully-vectorized — NO python loop over 512 slots on the slow server.
+
+
+## 2026-11-02 — project documentation review
+
+Read in full: vivek-user-supplied.md, ethan-perez-2024.md, research-ethos.md, perez-empirical-alignment.md, and sources.md (empirical-research references). Reviewed the recorded 114.76 score, its normalized-time-ratio definition, and the method/progression notes. No new simulator or scored competition result is claimed.
